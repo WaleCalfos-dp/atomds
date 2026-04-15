@@ -270,12 +270,6 @@ export function InputPage({ brand }: InputPageProps) {
                   Label Position: {lp}
                 </p>
                 <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '24px', overflow: 'auto' }}>
-                  {/* State headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '12px' }}>
-                    {ALL_STATES.map(s => (
-                      <span key={s} style={{ fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'system-ui,-apple-system,sans-serif', textAlign: 'center' }}>{s}</span>
-                    ))}
-                  </div>
                   {/* Unfilled row */}
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '16px', alignItems: 'start' }}>
                     {ALL_STATES.map(s => (
