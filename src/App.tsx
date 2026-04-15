@@ -1,6 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Shell } from './components/Shell';
 import { useBrand } from './hooks/useBrand';
+
+// Getting Started
+import { GettingStartedPage } from './pages/GettingStartedPage';
+
+// Foundations
+import { BrandFoundationsPage } from './pages/BrandFoundationsPage';
+import { BrandSwitcherPage } from './pages/BrandSwitcherPage';
+import { BordersPage } from './pages/BordersPage';
+import { SpacingPage } from './pages/SpacingPage';
+
+// Components
 import { BadgePage } from './pages/BadgePage';
 import { AlertPage } from './pages/AlertPage';
 import { ButtonPage } from './pages/ButtonPage';
@@ -16,7 +27,18 @@ export default function App() {
     <BrowserRouter>
       <Shell brand={brand} setBrand={setBrand}>
         <Routes>
-          <Route path="/" element={<Navigate to="/components/badge" replace />} />
+          <Route path="/" element={<Navigate to="/getting-started" replace />} />
+
+          {/* Getting Started */}
+          <Route path="/getting-started" element={<GettingStartedPage brand={brand} />} />
+
+          {/* Foundations */}
+          <Route path="/foundations/brand-foundations" element={<BrandFoundationsPage brand={brand} />} />
+          <Route path="/foundations/brand-switcher" element={<BrandSwitcherPage brand={brand} />} />
+          <Route path="/foundations/borders" element={<BordersPage brand={brand} />} />
+          <Route path="/foundations/spacing" element={<SpacingPage brand={brand} />} />
+
+          {/* Components */}
           <Route path="/components/alert" element={<AlertPage brand={brand} />} />
           <Route path="/components/button" element={<ButtonPage brand={brand} />} />
           <Route path="/components/badge" element={<BadgePage brand={brand} />} />

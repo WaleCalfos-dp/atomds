@@ -6,36 +6,55 @@ interface TopBarProps {
   setBrand: (brand: Brand) => void;
 }
 
-function routeLabel(pathname: string): string {
-  const segment = pathname.split('/').filter(Boolean).pop() ?? '';
-  return segment.charAt(0).toUpperCase() + segment.slice(1);
+function routeMeta(pathname: string): { parent: string; label: string } {
+  const segments = pathname.split('/').filter(Boolean);
+
+  if (segments[0] === 'getting-started') {
+    return { parent: 'Docs', label: 'Getting Started' };
+  }
+  if (segments[0] === 'foundations' && segments[1]) {
+    const label = segments[1]
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    return { parent: 'Foundations', label };
+  }
+  if (segments[0] === 'components' && segments[1]) {
+    const label = segments[1].charAt(0).toUpperCase() + segments[1].slice(1);
+    return { parent: 'Components', label };
+  }
+  return { parent: 'Docs', label: '' };
 }
 
 export function TopBar({ brand, setBrand }: TopBarProps) {
   const { pathname } = useLocation();
-  const label = routeLabel(pathname);
+  const { parent, label } = routeMeta(pathname);
 
   return (
     <header className="fixed top-0 left-60 right-0 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm">
-        <span className="text-slate-400">Components</span>
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          className="text-slate-300"
-        >
-          <path
-            d="M5 3l4 4-4 4"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="text-slate-800 font-medium">{label}</span>
+        <span className="text-slate-400">{parent}</span>
+        {label && (
+          <>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              className="text-slate-300"
+            >
+              <path
+                d="M5 3l4 4-4 4"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="text-slate-800 font-medium">{label}</span>
+          </>
+        )}
       </nav>
 
       {/* Brand Switcher */}
