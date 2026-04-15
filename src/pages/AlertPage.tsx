@@ -43,6 +43,28 @@ const TYPE_COLORS: Record<AlertType, { bg: string; border: string }> = {
   Muted:       { bg: '#f1f5f9', border: '#94a3b8' },
 };
 
+// ─── Reusable SegBtn (segmented button for boolean toggles) ──────────────────
+function SegBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '5px 4px', borderRadius: '6px', border: 'none',
+        backgroundColor: active ? '#fff' : 'transparent',
+        color: active ? '#111827' : '#6b7280',
+        fontSize: '11px', fontWeight: active ? 600 : 400,
+        cursor: 'pointer',
+        boxShadow: active ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+        transition: 'all 0.15s ease',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 // Accessibility rows
 const A11Y_ROWS = [
   {
@@ -81,9 +103,12 @@ export function AlertPage({ brand }: AlertPageProps) {
   const [title, setTitle] = useState('Alert title');
   const [description, setDescription] = useState('This is a brief description that provides additional context.');
   const [showIcon, setShowIcon] = useState(true);
+  const [showButton, setShowButton] = useState(false);
+  const [showTitle, setShowTitle] = useState(true);
+  const [showDescription, setShowDescription] = useState(true);
   const [showDismiss, setShowDismiss] = useState(true);
 
-  const alertKey = `${type}-${option}-${title}-${description}-${showIcon}-${showDismiss}`;
+  const alertKey = `${type}-${option}-${title}-${description}-${showIcon}-${showButton}-${showTitle}-${showDescription}-${showDismiss}`;
   const TYPES: AlertType[] = ['Information', 'Success', 'Warning', 'Error', 'Muted'];
   const OPTIONS: AlertOption[] = ['Top Border', 'Full Border'];
 
@@ -134,6 +159,9 @@ export function AlertPage({ brand }: AlertPageProps) {
                     title={title}
                     description={description}
                     showIcon={showIcon}
+                    showButton={showButton}
+                    showTitle={showTitle}
+                    showDescription={showDescription}
                     showDismiss={showDismiss}
                     brand={brand}
                   />
@@ -230,10 +258,10 @@ export function AlertPage({ brand }: AlertPageProps) {
                 </div>
               </div>
 
-              {/* Title */}
+              {/* Title Text */}
               <div>
                 <p style={{ margin: '0 0 6px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Title
+                  Title Text
                 </p>
                 <input
                   type="text"
@@ -253,10 +281,10 @@ export function AlertPage({ brand }: AlertPageProps) {
                 />
               </div>
 
-              {/* Description */}
+              {/* Description Text */}
               <div>
                 <p style={{ margin: '0 0 6px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Description
+                  Description Text
                 </p>
                 <textarea
                   value={description}
@@ -278,26 +306,58 @@ export function AlertPage({ brand }: AlertPageProps) {
                 />
               </div>
 
-              {/* Toggles */}
+              {/* Icon */}
               <div>
                 <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Show
+                  Icon
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {[
-                    { label: 'Icon', val: showIcon, set: setShowIcon },
-                    { label: 'Dismiss', val: showDismiss, set: setShowDismiss },
-                  ].map(({ label, val, set }) => (
-                    <label key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12.5px', color: '#374151', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-                      <input
-                        type="checkbox"
-                        checked={val}
-                        onChange={e => set(e.target.checked)}
-                        style={{ width: '14px', height: '14px', accentColor: '#3b82f6', cursor: 'pointer' }}
-                      />
-                      {label}
-                    </label>
-                  ))}
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showIcon} onClick={() => setShowIcon(true)}>Show</SegBtn>
+                  <SegBtn active={!showIcon} onClick={() => setShowIcon(false)}>Hide</SegBtn>
+                </div>
+              </div>
+
+              {/* Button */}
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Button
+                </p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showButton} onClick={() => setShowButton(true)}>Show</SegBtn>
+                  <SegBtn active={!showButton} onClick={() => setShowButton(false)}>Hide</SegBtn>
+                </div>
+              </div>
+
+              {/* Title visibility */}
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Title
+                </p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showTitle} onClick={() => setShowTitle(true)}>Show</SegBtn>
+                  <SegBtn active={!showTitle} onClick={() => setShowTitle(false)}>Hide</SegBtn>
+                </div>
+              </div>
+
+              {/* Description visibility */}
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Description
+                </p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showDescription} onClick={() => setShowDescription(true)}>Show</SegBtn>
+                  <SegBtn active={!showDescription} onClick={() => setShowDescription(false)}>Hide</SegBtn>
+                </div>
+              </div>
+
+              {/* Close Icon */}
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Close Icon
+                </p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showDismiss} onClick={() => setShowDismiss(true)}>Show</SegBtn>
+                  <SegBtn active={!showDismiss} onClick={() => setShowDismiss(false)}>Hide</SegBtn>
                 </div>
               </div>
             </div>
@@ -356,44 +416,7 @@ export function AlertPage({ brand }: AlertPageProps) {
         </div>
       </section>
 
-      {/* ── 3. VARIANTS ──────────────────────────────────────────────────────── */}
-      <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>
-          Variants
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-
-          {/* Types row */}
-          <div>
-            <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, color: '#374151' }}>
-              Type — five semantic states
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(['Information', 'Success', 'Warning', 'Error', 'Muted'] as AlertType[]).map(t => (
-                <AlertLive key={t} type={t} option="Top Border" brand={brand} />
-              ))}
-            </div>
-          </div>
-
-          {/* Options row */}
-          <div>
-            <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, color: '#374151' }}>
-              Option — border style
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              {(['Top Border', 'Full Border'] as AlertOption[]).map(o => (
-                <div key={o}>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#6b7280' }}>{o}</p>
-                  <AlertLive type="Information" option={o} brand={brand} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ── 4. ANATOMY ────────────────────────────────────────────────────────── */}
+      {/* ── 3. ANATOMY ────────────────────────────────────────────────────────── */}
       <section>
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
           Anatomy
@@ -413,7 +436,7 @@ export function AlertPage({ brand }: AlertPageProps) {
             position: 'relative',
           }}
         >
-          <div style={{ transform: 'scale(1.6)', transformOrigin: 'center', width: '380px' }}>
+          <div style={{ width: '100%', maxWidth: '480px' }}>
             <AlertLive
               type="Information"
               option="Top Border"
@@ -430,8 +453,8 @@ export function AlertPage({ brand }: AlertPageProps) {
             <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
             <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>1</span>
           </div>
-          {/* Callout: 2 Leading icon — measured at 18% */}
-          <div style={{ position: 'absolute', top: '16px', left: '18%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Callout: 2 Leading icon — measured at 24% */}
+          <div style={{ position: 'absolute', top: '16px', left: '24%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>2</span>
             <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
           </div>
@@ -440,13 +463,13 @@ export function AlertPage({ brand }: AlertPageProps) {
             <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>3</span>
             <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
           </div>
-          {/* Callout: 4 Description — over description area ~58% */}
-          <div style={{ position: 'absolute', top: '16px', left: '58%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Callout: 4 Description — over description area ~50% */}
+          <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>4</span>
             <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
           </div>
-          {/* Callout: 5 Dismiss button — measured at 82% */}
-          <div style={{ position: 'absolute', top: '16px', left: '82%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Callout: 5 Dismiss button — measured at 76% */}
+          <div style={{ position: 'absolute', top: '16px', left: '76%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>5</span>
             <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
           </div>
@@ -484,6 +507,58 @@ export function AlertPage({ brand }: AlertPageProps) {
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#111827' }}>{label}</p>
                 <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#6b7280', lineHeight: 1.4 }}>{desc}</p>
               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 4. VARIANTS ──────────────────────────────────────────────────────── */}
+      <section>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
+          Variants
+        </h2>
+        <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Available property combinations for the Alert component.</p>
+
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden', marginBottom: '16px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 600, color: '#374151', width: '140px' }}>Property</th>
+                <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 600, color: '#374151' }}>Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { prop: 'Type', values: 'Information · Success · Warning · Error · Muted' },
+                { prop: 'Option', values: 'Top Border · Full Border' },
+                { prop: 'Icon', values: 'boolean (default true)' },
+                { prop: 'Button', values: 'boolean (default false)' },
+                { prop: 'Title', values: 'boolean (default true)' },
+                { prop: 'Description', values: 'boolean (default true)' },
+                { prop: 'Close Icon', values: 'boolean (default true)' },
+              ].map(({ prop, values }, i, arr) => (
+                <tr key={prop} style={{ borderBottom: i < arr.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                  <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151' }}>{prop}</td>
+                  <td style={{ padding: '10px 16px', color: '#6b7280' }}>{values}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Visual preview of all types */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+          {(['Information', 'Success', 'Warning', 'Error', 'Muted'] as AlertType[]).map(t => (
+            <AlertLive key={t} type={t} option="Top Border" brand={brand} />
+          ))}
+        </div>
+
+        {/* Border option comparison */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {(['Top Border', 'Full Border'] as AlertOption[]).map(o => (
+            <div key={o} style={{ padding: '20px 24px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{o}</p>
+              <AlertLive type="Information" option={o} brand={brand} />
             </div>
           ))}
         </div>

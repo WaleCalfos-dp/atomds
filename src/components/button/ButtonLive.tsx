@@ -3,10 +3,7 @@ import { type Brand } from '../../data/tokens';
 export type ButtonType =
   | 'Full Button'
   | 'Icon Only'
-  | 'Social Login'
-  | 'GooglePay'
-  | 'ApplePay'
-  | 'PayPal';
+  | 'Social Login';
 
 export type ButtonVariant =
   | 'Primary'
@@ -14,7 +11,11 @@ export type ButtonVariant =
   | 'Tertiary'
   | 'White'
   | 'Destructive'
-  | 'Destructive-Text';
+  | 'Destructive-Text'
+  | 'Loading'
+  | 'ApplePay'
+  | 'PayPal'
+  | 'GooglePay';
 
 export type ButtonSize = 'Default' | 'Small' | 'Tiny';
 export type ButtonState = 'Default' | 'Hover' | 'Focus' | 'Active' | 'Disabled' | 'Loading';
@@ -25,6 +26,7 @@ interface ButtonLiveProps {
   size?: ButtonSize;
   state?: ButtonState;
   label?: string;
+  showLabel?: boolean;
   showIconLeft?: boolean;
   showIconRight?: boolean;
   brand?: Brand;
@@ -169,6 +171,30 @@ const VARIANT_STYLES: Record<ButtonVariant, {
     border: 'none',
     overlayColor: 'var(--atom-foreground-feedback-fg-error)', hoverOp: 0.08, activeOp: 0.14, focusOp: 0.05,
   },
+  Loading: {
+    bg: 'var(--atom-background-primary-bg-primary-default)',
+    fg: 'var(--atom-foreground-primary-fg-brand-primary-inverse)',
+    border: 'none',
+    overlayColor: 'rgba(255,255,255,1)', hoverOp: 0.12, activeOp: 0.22, focusOp: 0.08,
+  },
+  ApplePay: {
+    bg: '#000000',
+    fg: '#ffffff',
+    border: 'none',
+    overlayColor: 'rgba(255,255,255,1)', hoverOp: 0.08, activeOp: 0.14, focusOp: 0.05,
+  },
+  PayPal: {
+    bg: 'rgb(23,155,215)',
+    fg: '#ffffff',
+    border: 'none',
+    overlayColor: 'rgba(255,255,255,1)', hoverOp: 0.08, activeOp: 0.14, focusOp: 0.05,
+  },
+  GooglePay: {
+    bg: '#000000',
+    fg: '#ffffff',
+    border: 'none',
+    overlayColor: 'rgba(255,255,255,1)', hoverOp: 0.08, activeOp: 0.14, focusOp: 0.05,
+  },
 };
 
 // ─── ButtonLive ───────────────────────────────────────────────────────────────
@@ -178,80 +204,82 @@ export function ButtonLive({
   size = 'Default',
   state = 'Default',
   label = 'Button Label',
+  showLabel = true,
   showIconLeft = false,
   showIconRight = false,
   brand = 'dragonpass',
 }: ButtonLiveProps) {
   const isDisabled = state === 'Disabled';
   const isLoading  = state === 'Loading';
-
-  const sharedDisabled: React.CSSProperties = isDisabled
-    ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' }
-    : {};
+  const isPaymentVariant = variant === 'ApplePay' || variant === 'PayPal' || variant === 'GooglePay';
+  const isLoadingVariant = variant === 'Loading';
 
   const focusRing = state === 'Focus' ? '0 0 0 3px rgba(59,130,246,0.4)' : undefined;
 
-  // ── Payment buttons — layout from Figma: [Button Label][8px][Logo] ──────────
   const s = FULL_SIZE[size];
-  const paymentShared: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    height: s.height, paddingLeft: s.paddingX, paddingRight: s.paddingX,
-    border: 'none', borderRadius: '999px',
-    cursor: isDisabled ? 'not-allowed' : 'pointer', outline: 'none',
-    boxShadow: focusRing, userSelect: 'none',
-    transition: 'opacity 0.15s ease', ...sharedDisabled,
-  };
 
-  // GooglePay: black bg, Figma node 8145:7892
-  if (buttonType === 'GooglePay') {
+  // ── Payment variant buttons — layout from Figma: [Button Label][8px][Logo] ──
+  if (isPaymentVariant) {
+    const pv = VARIANT_STYLES[variant];
+    const paymentShared: React.CSSProperties = {
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      height: s.height, paddingLeft: s.paddingX, paddingRight: s.paddingX,
+      backgroundColor: pv.bg, border: 'none', borderRadius: '999px',
+      cursor: isDisabled ? 'not-allowed' : 'pointer', outline: 'none',
+      boxShadow: focusRing, userSelect: 'none',
+      opacity: isDisabled ? 0.4 : 1,
+      pointerEvents: isDisabled ? 'none' : undefined,
+      transition: 'opacity 0.15s ease',
+    };
+
+    const paymentLogo = variant === 'GooglePay' ? <GooglePayLogo />
+      : variant === 'ApplePay' ? <ApplePayLogo />
+      : <PayPalLogo />;
+
     return (
-      <button disabled={isDisabled} style={{ ...paymentShared, backgroundColor: '#000000' }}>
+      <button disabled={isDisabled} style={paymentShared}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{
-            color: '#ffffff', fontSize: s.fontSize, fontWeight: 500,
-            fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
-            lineHeight: '20px', whiteSpace: 'nowrap',
-          }}>
-            {isLoading ? 'Loading…' : (label || 'Button Label')}
-          </span>
-          {isLoading ? <SpinnerIcon size={20} /> : <GooglePayLogo />}
+          {showLabel && (
+            <span style={{
+              color: '#ffffff', fontSize: s.fontSize, fontWeight: 500,
+              fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
+              lineHeight: '20px', whiteSpace: 'nowrap',
+            }}>
+              {isLoading ? 'Loading\u2026' : (label || 'Button Label')}
+            </span>
+          )}
+          {isLoading ? <SpinnerIcon size={20} /> : paymentLogo}
         </span>
       </button>
     );
   }
 
-  // ApplePay: black bg, Figma node 8145:7885
-  if (buttonType === 'ApplePay') {
+  // ── Loading variant — always shows spinner + "Loading..." ─────────────────
+  if (isLoadingVariant) {
+    const lv = VARIANT_STYLES.Loading;
     return (
-      <button disabled={isDisabled} style={{ ...paymentShared, backgroundColor: '#000000' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{
-            color: '#ffffff', fontSize: s.fontSize, fontWeight: 500,
-            fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
-            lineHeight: '20px', whiteSpace: 'nowrap',
-          }}>
-            {isLoading ? 'Loading…' : (label || 'Button Label')}
-          </span>
-          {isLoading ? <SpinnerIcon size={20} /> : <ApplePayLogo />}
-        </span>
-      </button>
-    );
-  }
-
-  // PayPal: blue bg rgb(23,155,215), Figma node 8145:7877
-  if (buttonType === 'PayPal') {
-    return (
-      <button disabled={isDisabled} style={{ ...paymentShared, backgroundColor: 'rgb(23,155,215)' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{
-            color: '#ffffff', fontSize: s.fontSize, fontWeight: 500,
-            fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
-            lineHeight: '20px', whiteSpace: 'nowrap',
-          }}>
-            {isLoading ? 'Loading…' : (label || 'Button Label')}
-          </span>
-          {isLoading ? <SpinnerIcon size={20} /> : <PayPalLogo />}
-        </span>
+      <button
+        disabled
+        aria-busy="true"
+        aria-label="Loading\u2026"
+        style={{
+          position: 'relative',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          height: s.height, paddingLeft: s.paddingX, paddingRight: s.paddingX,
+          backgroundColor: lv.bg, color: lv.fg, border: lv.border,
+          borderRadius: 'var(--atom-buttons-radius, 999px)',
+          fontSize: s.fontSize, fontWeight: 600,
+          fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
+          lineHeight: '20px',
+          cursor: 'not-allowed', opacity: 1,
+          outline: 'none', boxShadow: focusRing,
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap', userSelect: 'none', overflow: 'hidden',
+          transition: 'opacity 0.15s ease, box-shadow 0.15s ease',
+        }}
+      >
+        <SpinnerIcon />
+        {showLabel && <span>Loading&hellip;</span>}
       </button>
     );
   }
@@ -327,9 +355,12 @@ export function ButtonLive({
         {/* Provider logo slot (left) */}
         <PlaceholderIcon brand={brand} />
         {/* Centered label */}
-        <span style={{ flex: 1, textAlign: 'center' }}>
-          {isLoading ? 'Loading…' : (label || 'Continue with Provider')}
-        </span>
+        {showLabel && (
+          <span style={{ flex: 1, textAlign: 'center' }}>
+            {isLoading ? 'Loading\u2026' : (label || 'Continue with Provider')}
+          </span>
+        )}
+        {!showLabel && <span style={{ flex: 1 }} />}
         {/* Empty right slot (balances layout) */}
         <span style={{ width: '16px', flexShrink: 0 }} />
       </button>
@@ -347,7 +378,7 @@ export function ButtonLive({
     <button
       disabled={isDisabled}
       aria-busy={isLoading ? 'true' : undefined}
-      aria-label={isLoading ? 'Loading…' : label}
+      aria-label={isLoading ? 'Loading\u2026' : label}
       style={{
         position: 'relative',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
@@ -373,11 +404,11 @@ export function ButtonLive({
         }} />
       )}
       {isLoading ? (
-        <><SpinnerIcon /><span>Loading…</span></>
+        <><SpinnerIcon /><span>Loading&hellip;</span></>
       ) : (
         <>
           {showIconLeft  && <PlaceholderIcon brand={brand} />}
-          <span>{label || 'Button Label'}</span>
+          {showLabel && <span>{label || 'Button Label'}</span>}
           {showIconRight && <PlaceholderIcon brand={brand} />}
         </>
       )}

@@ -1,6 +1,6 @@
 import { type Brand } from '../../data/tokens';
 
-export type SwitchState = 'Default' | 'Disabled';
+export type SwitchState = 'Default' | 'Focused' | 'Disabled';
 
 interface SwitchLiveProps {
   on?: boolean;
@@ -18,6 +18,7 @@ export function SwitchLive({
   onChange,
 }: SwitchLiveProps) {
   const isDisabled = state === 'Disabled';
+  const isFocused = state === 'Focused';
 
   const trackBg = isDisabled
     ? 'var(--atom-background-primary-bg-primary-disabled, #ebe9e8)'
@@ -36,6 +37,10 @@ export function SwitchLive({
     : on
     ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)'
     : 'var(--atom-foreground-core-fg-primary, #4b4a4a)';
+
+  const focusRing = isFocused
+    ? '0 0 0 2px var(--atom-border-selection-and-focus-border-selected, #0a2333)'
+    : 'none';
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--atom-font-body, Poppins, sans-serif)' }}>
@@ -56,9 +61,10 @@ export function SwitchLive({
           backgroundColor: trackBg,
           border: 'none',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
-          transition: 'background-color 0.2s ease',
+          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
           flexShrink: 0,
           outline: 'none',
+          boxShadow: focusRing,
         }}
       >
         <div style={{

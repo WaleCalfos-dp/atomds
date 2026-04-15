@@ -187,7 +187,7 @@ export function InputPage({ brand }: InputPageProps) {
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Input component and their roles.</p>
         <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '72px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '240px' }}>
-          <div style={{ transform: 'scale(1.4)', transformOrigin: 'center' }}>
+          <div>
             <InputLive state="Default" label="Label" placeholder="Placeholder" helperText="Helper text" brand={brand} />
           </div>
           {/* #1 Label — above left */}
@@ -201,7 +201,7 @@ export function InputPage({ brand }: InputPageProps) {
             <CalloutDot num="2" />
           </div>
           {/* #3 Trailing icon — above right */}
-          <div style={{ position: 'absolute', top: '16px', left: '70%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '68%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="3" />
             <div style={LINE} />
           </div>

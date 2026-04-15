@@ -20,6 +20,11 @@ import { DividerPage } from './pages/DividerPage';
 import { InputPage } from './pages/InputPage';
 import { SwitchPage } from './pages/SwitchPage';
 import { TagsPage } from './pages/TagsPage';
+import { TooltipPage } from './pages/TooltipPage';
+import { LineItemPage } from './pages/LineItemPage';
+import { ProgressIndicatorPage } from './pages/ProgressIndicatorPage';
+import { StepsPage } from './pages/StepsPage';
+import { TabsPage } from './pages/TabsPage';
 
 export default function App() {
   const { brand, setBrand } = useBrand();
@@ -47,6 +52,11 @@ export default function App() {
           <Route path="/components/input" element={<InputPage brand={brand} />} />
           <Route path="/components/switch" element={<SwitchPage brand={brand} />} />
           <Route path="/components/tags" element={<TagsPage brand={brand} />} />
+          <Route path="/components/tooltip" element={<TooltipPage brand={brand} />} />
+          <Route path="/components/line-item" element={<LineItemPage brand={brand} />} />
+          <Route path="/components/progress-indicator" element={<ProgressIndicatorPage brand={brand} />} />
+          <Route path="/components/steps" element={<StepsPage brand={brand} />} />
+          <Route path="/components/tabs" element={<TabsPage brand={brand} />} />
         </Routes>
       </Shell>
     </BrowserRouter>

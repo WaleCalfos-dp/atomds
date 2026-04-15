@@ -24,31 +24,44 @@ function CalloutDot({ num }: { num: string }) {
   );
 }
 
-const ALL_STATES: SwitchState[] = ['Default', 'Disabled'];
+const ALL_STATES: SwitchState[] = ['Default', 'Focused', 'Disabled'];
 
 const LABEL_STYLE: React.CSSProperties = {
   margin: '0 0 8px', fontSize: '11px', fontWeight: 600,
   color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em',
 };
 
-const SEG_BASE: React.CSSProperties = {
-  padding: '6px 12px', fontSize: '12px', border: '1px solid #e5e7eb',
-  borderRadius: '6px', cursor: 'pointer', background: 'white', color: '#374151',
-  fontFamily: 'system-ui,-apple-system,sans-serif', fontWeight: 500,
-};
-const SEG_ACTIVE: React.CSSProperties = { ...SEG_BASE, background: '#111827', color: '#fff', borderColor: '#111827' };
+function SegBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '5px 4px', borderRadius: '6px', border: 'none',
+        backgroundColor: active ? '#fff' : 'transparent',
+        color: active ? '#111827' : '#6b7280',
+        fontSize: '11px', fontWeight: active ? 600 : 400,
+        cursor: 'pointer',
+        boxShadow: active ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+        transition: 'all 0.15s ease',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 type TokenRow = { key: string; tokenKey: string; label: string; cssVar: string; activeWhen: (s: SwitchState, on: boolean) => boolean };
 
 const TOKEN_ROWS: TokenRow[] = [
-  { key: 'off-track',   tokenKey: 'atom.background.core.bg-muted',                        label: 'Off track',        cssVar: '--atom-background-core-bg-muted',                       activeWhen: (s, on) => s === 'Default' && !on },
-  { key: 'on-track',    tokenKey: 'atom.background.primary.bg-primary-pressed',            label: 'On track',         cssVar: '--atom-background-primary-bg-primary-pressed',           activeWhen: (s, on) => s === 'Default' && on },
+  { key: 'off-track',   tokenKey: 'atom.background.core.bg-muted',                        label: 'Off track',        cssVar: '--atom-background-core-bg-muted',                       activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && !on },
+  { key: 'on-track',    tokenKey: 'atom.background.primary.bg-primary-pressed',            label: 'On track',         cssVar: '--atom-background-primary-bg-primary-pressed',           activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && on },
   { key: 'dis-track',   tokenKey: 'atom.background.primary.bg-primary-disabled',           label: 'Disabled track',   cssVar: '--atom-background-primary-bg-primary-disabled',          activeWhen: (s) => s === 'Disabled' },
-  { key: 'off-thumb',   tokenKey: 'atom.foreground.primary.fg-brand-primary',              label: 'Off thumb',        cssVar: '--atom-foreground-primary-fg-brand-primary',             activeWhen: (s, on) => s === 'Default' && !on },
-  { key: 'on-thumb',    tokenKey: 'atom.foreground.primary.fg-brand-primary-inverse',      label: 'On thumb',         cssVar: '--atom-foreground-primary-fg-brand-primary-inverse',     activeWhen: (s, on) => s === 'Default' && on },
+  { key: 'off-thumb',   tokenKey: 'atom.foreground.primary.fg-brand-primary',              label: 'Off thumb',        cssVar: '--atom-foreground-primary-fg-brand-primary',             activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && !on },
+  { key: 'on-thumb',    tokenKey: 'atom.foreground.primary.fg-brand-primary-inverse',      label: 'On thumb',         cssVar: '--atom-foreground-primary-fg-brand-primary-inverse',     activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && on },
   { key: 'dis-thumb',   tokenKey: 'atom.foreground.states.fg-disabled-inverse',            label: 'Disabled thumb',   cssVar: '--atom-foreground-states-fg-disabled-inverse',           activeWhen: (s) => s === 'Disabled' },
-  { key: 'off-label',   tokenKey: 'atom.foreground.core.fg-primary',                       label: 'Off label',        cssVar: '--atom-foreground-core-fg-primary',                      activeWhen: (s, on) => s === 'Default' && !on },
-  { key: 'on-label',    tokenKey: 'atom.foreground.primary.fg-brand-primary',              label: 'On label',         cssVar: '--atom-foreground-primary-fg-brand-primary',             activeWhen: (s, on) => s === 'Default' && on },
+  { key: 'off-label',   tokenKey: 'atom.foreground.core.fg-primary',                       label: 'Off label',        cssVar: '--atom-foreground-core-fg-primary',                      activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && !on },
+  { key: 'on-label',    tokenKey: 'atom.foreground.primary.fg-brand-primary',              label: 'On label',         cssVar: '--atom-foreground-primary-fg-brand-primary',             activeWhen: (s, on) => (s === 'Default' || s === 'Focused') && on },
   { key: 'dis-label',   tokenKey: 'atom.foreground.states.fg-disabled',                    label: 'Disabled label',   cssVar: '--atom-foreground-states-fg-disabled',                   activeWhen: (s) => s === 'Disabled' },
 ];
 
@@ -77,9 +90,7 @@ export function SwitchPage({ brand }: SwitchPageProps) {
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px', ...DOTTED_BG }}>
               <AnimatePresence mode="wait">
                 <motion.div key={previewKey} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-                  <div style={{ transform: 'scale(2)', transformOrigin: 'center' }}>
-                    <SwitchLive state={state} on={on} onChange={setOn} brand={brand} />
-                  </div>
+                  <SwitchLive state={state} on={on} onChange={setOn} brand={brand} />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -88,17 +99,17 @@ export function SwitchPage({ brand }: SwitchPageProps) {
             <div style={{ width: '224px', borderLeft: '1px solid #e5e7eb', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#fafafa', flexShrink: 0 }}>
               <div>
                 <p style={LABEL_STYLE}>State</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
                   {ALL_STATES.map(s => (
-                    <button key={s} onClick={() => setState(s)} style={state === s ? SEG_ACTIVE : SEG_BASE}>{s}</button>
+                    <SegBtn key={s} active={state === s} onClick={() => setState(s)}>{s}</SegBtn>
                   ))}
                 </div>
               </div>
               <div>
                 <p style={LABEL_STYLE}>On</p>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
                   {([true, false] as const).map(v => (
-                    <button key={String(v)} onClick={() => setOn(v)} style={on === v ? SEG_ACTIVE : SEG_BASE}>{v ? 'True' : 'False'}</button>
+                    <SegBtn key={String(v)} active={on === v} onClick={() => setOn(v)}>{v ? 'True' : 'False'}</SegBtn>
                   ))}
                 </div>
               </div>
@@ -126,22 +137,20 @@ export function SwitchPage({ brand }: SwitchPageProps) {
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Switch component and their roles.</p>
         <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '64px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '180px' }}>
-          <div style={{ transform: 'scale(3)', transformOrigin: 'center' }}>
-            <SwitchLive state="Default" on={true} brand={brand} />
-          </div>
+          <SwitchLive state="Default" on={true} brand={brand} />
 
           {/* #1 Track */}
-          <div style={{ position: 'absolute', bottom: '16px', left: '42%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', bottom: '16px', left: '48%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={LINE} />
             <CalloutDot num="1" />
           </div>
           {/* #2 Thumb */}
-          <div style={{ position: 'absolute', top: '16px', left: '48%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="2" />
             <div style={LINE} />
           </div>
           {/* #3 Label */}
-          <div style={{ position: 'absolute', top: '16px', left: '60%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '53%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="3" />
             <div style={LINE} />
           </div>
@@ -187,6 +196,20 @@ export function SwitchPage({ brand }: SwitchPageProps) {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Visual preview of all variant combinations */}
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          {ALL_STATES.map(s =>
+            [false, true].map(isOn => (
+              <div key={`${s}-${isOn}`} style={{ padding: '20px 24px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
+                  {s} · {isOn ? 'On' : 'Off'}
+                </p>
+                <SwitchLive state={s} on={isOn} brand={brand} />
+              </div>
+            ))
+          )}
         </div>
       </section>
 

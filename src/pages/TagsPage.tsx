@@ -24,19 +24,32 @@ function CalloutDot({ num }: { num: string }) {
   );
 }
 
-const ALL_STATES: TagState[] = ['Default', 'Selected', 'Disabled'];
+const ALL_STATES: TagState[] = ['Default', 'Selected', 'Disabled', 'Hover', 'Focused'];
 
 const LABEL_STYLE: React.CSSProperties = {
   margin: '0 0 8px', fontSize: '11px', fontWeight: 600,
   color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em',
 };
 
-const SEG_BASE: React.CSSProperties = {
-  padding: '6px 12px', fontSize: '12px', border: '1px solid #e5e7eb',
-  borderRadius: '6px', cursor: 'pointer', background: 'white', color: '#374151',
-  fontFamily: 'system-ui,-apple-system,sans-serif', fontWeight: 500,
-};
-const SEG_ACTIVE: React.CSSProperties = { ...SEG_BASE, background: '#111827', color: '#fff', borderColor: '#111827' };
+function SegBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '5px 4px', borderRadius: '6px', border: 'none',
+        backgroundColor: active ? '#fff' : 'transparent',
+        color: active ? '#111827' : '#6b7280',
+        fontSize: '11px', fontWeight: active ? 600 : 400,
+        cursor: 'pointer',
+        boxShadow: active ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+        transition: 'all 0.15s ease',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 type TokenRow = { key: string; tokenKey: string; label: string; cssVar: string; activeWhen: (s: TagState) => boolean };
 
@@ -62,9 +75,10 @@ export function TagsPage({ brand }: TagsPageProps) {
   const [state, setState] = useState<TagState>('Default');
   const [tagLabel, setTagLabel] = useState('Label');
   const [showIcon, setShowIcon] = useState(true);
+  const [showIconRight, setShowIconRight] = useState(false);
 
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
-  const previewKey = `${state}-${showIcon}`;
+  const previewKey = `${state}-${showIcon}-${showIconRight}`;
 
   return (
     <div className="space-y-10">
@@ -77,9 +91,7 @@ export function TagsPage({ brand }: TagsPageProps) {
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px', ...DOTTED_BG }}>
               <AnimatePresence mode="wait">
                 <motion.div key={previewKey} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-                  <div style={{ transform: 'scale(2.5)', transformOrigin: 'center' }}>
-                    <TagsLive state={state} label={tagLabel} showIconLeft={showIcon} brand={brand} />
-                  </div>
+                  <TagsLive state={state} label={tagLabel} showIconLeft={showIcon} showIconRight={showIconRight} brand={brand} />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -88,9 +100,9 @@ export function TagsPage({ brand }: TagsPageProps) {
             <div style={{ width: '224px', borderLeft: '1px solid #e5e7eb', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#fafafa', flexShrink: 0 }}>
               <div>
                 <p style={LABEL_STYLE}>State</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
                   {ALL_STATES.map(s => (
-                    <button key={s} onClick={() => setState(s)} style={state === s ? SEG_ACTIVE : SEG_BASE}>{s}</button>
+                    <SegBtn key={s} active={state === s} onClick={() => setState(s)}>{s}</SegBtn>
                   ))}
                 </div>
               </div>
@@ -100,9 +112,16 @@ export function TagsPage({ brand }: TagsPageProps) {
               </div>
               <div>
                 <p style={LABEL_STYLE}>Icon Left</p>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button onClick={() => setShowIcon(true)} style={showIcon ? SEG_ACTIVE : SEG_BASE}>Show</button>
-                  <button onClick={() => setShowIcon(false)} style={!showIcon ? SEG_ACTIVE : SEG_BASE}>Hide</button>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showIcon} onClick={() => setShowIcon(true)}>Show</SegBtn>
+                  <SegBtn active={!showIcon} onClick={() => setShowIcon(false)}>Hide</SegBtn>
+                </div>
+              </div>
+              <div>
+                <p style={LABEL_STYLE}>Icon Right</p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showIconRight} onClick={() => setShowIconRight(true)}>Show</SegBtn>
+                  <SegBtn active={!showIconRight} onClick={() => setShowIconRight(false)}>Hide</SegBtn>
                 </div>
               </div>
             </div>
@@ -129,22 +148,20 @@ export function TagsPage({ brand }: TagsPageProps) {
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Tags component and their roles.</p>
         <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '64px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '180px' }}>
-          <div style={{ transform: 'scale(3.5)', transformOrigin: 'center' }}>
-            <TagsLive state="Selected" label="Label" showIconLeft={true} brand={brand} />
-          </div>
+          <TagsLive state="Selected" label="Label" showIconLeft={true} brand={brand} />
 
           {/* #1 Container */}
-          <div style={{ position: 'absolute', bottom: '16px', left: '38%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={LINE} />
             <CalloutDot num="1" />
           </div>
           {/* #2 Icon */}
-          <div style={{ position: 'absolute', top: '16px', left: '44%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '47%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="2" />
             <div style={LINE} />
           </div>
           {/* #3 Label */}
-          <div style={{ position: 'absolute', top: '16px', left: '54%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '52%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="3" />
             <div style={LINE} />
           </div>
@@ -171,13 +188,6 @@ export function TagsPage({ brand }: TagsPageProps) {
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Variants</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Available states and visual combinations.</p>
 
-        {/* Visual variant grid */}
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', padding: '24px', ...DOTTED_BG, borderRadius: '12px', marginBottom: '16px', alignItems: 'center' }}>
-          {ALL_STATES.map(s => (
-            <TagsLive key={s} state={s} label={s} showIconLeft={true} brand={brand} />
-          ))}
-        </div>
-
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: 'system-ui,-apple-system,sans-serif' }}>
             <thead>
@@ -188,9 +198,9 @@ export function TagsPage({ brand }: TagsPageProps) {
             </thead>
             <tbody>
               {[
-                { prop: 'State', values: 'Default · Hover · Selected · Focused · Disabled' },
+                { prop: 'State', values: 'Default · Selected · Disabled · Hover · Focused' },
                 { prop: 'Icon Left', values: 'Show · Hide' },
-                { prop: 'Icon Right', values: 'Show (Selected only) · Hide' },
+                { prop: 'Icon Right', values: 'Show · Hide' },
               ].map(({ prop, values }, i) => (
                 <tr key={prop} style={{ borderBottom: i < 2 ? '1px solid #f3f4f6' : 'none' }}>
                   <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151' }}>{prop}</td>
@@ -199,6 +209,16 @@ export function TagsPage({ brand }: TagsPageProps) {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Visual preview of all state + icon combinations */}
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+          {ALL_STATES.map(s => (
+            <div key={s} style={{ padding: '20px 24px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{s}</p>
+              <TagsLive state={s} label="Label" showIconLeft={true} brand={brand} />
+            </div>
+          ))}
         </div>
       </section>
 

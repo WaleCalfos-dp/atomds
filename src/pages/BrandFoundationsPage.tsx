@@ -1,167 +1,574 @@
-import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { Link } from 'react-router-dom';
+import { type Brand, BRANDS, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { ButtonLive } from '../components/button/ButtonLive';
+import { BadgeLive } from '../components/badge/BadgeLive';
+import { TagsLive } from '../components/tags/TagsLive';
 
 interface BrandFoundationsPageProps {
   brand: Brand;
 }
 
-const FOUNDATION_ITEMS = [
+// ─── Shared dotted preview surface ────────────────────────────────────────
+const DOTTED_BG: React.CSSProperties = {
+  backgroundColor: '#f2f2f2',
+  backgroundImage: 'radial-gradient(circle, #c8c8c8 1px, transparent 1px)',
+  backgroundSize: '20px 20px',
+};
+
+// ─── Brand initial for the placeholder logo mark ──────────────────────────
+const BRAND_INITIAL: Record<Brand, string> = {
+  dragonpass: 'D',
+  mastercard: 'M',
+  investec:   'I',
+  visa:       'V',
+  greyscale:  'G',
+  assurant:   'A',
+};
+
+// ─── Colour palette to surface for the current brand ─────────────────────
+const PALETTE_SWATCHES = [
+  { key: 'atom.background.primary.bg-primary-default' as const, label: 'Primary' },
+  { key: 'atom.foreground.primary.fg-brand-primary'   as const, label: 'Brand FG' },
+  { key: 'atom.foreground.feedback.fg-success'        as const, label: 'Success' },
+  { key: 'atom.foreground.feedback.fg-warning'        as const, label: 'Warning' },
+  { key: 'atom.foreground.feedback.fg-error'          as const, label: 'Error' },
+  { key: 'atom.foreground.feedback.fg-info'           as const, label: 'Info' },
+] as const;
+
+// ─── Stroke-based icon set preview ────────────────────────────────────────
+const ICON_PATHS = [
+  'M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z', // search
+  'M5 13l4 4L19 7',                                       // check
+  'M5 12h14M12 5l7 7-7 7',                                // arrow right
+  'M12 5v14M5 12h14',                                     // plus
+];
+
+// ─── Numbered usage steps ─────────────────────────────────────────────────
+const USAGE_STEPS = [
+  'The brand supplies a foundation file containing its colour palette, typography choices, and icon set.',
+  'The Atom team loads these foundations into the Brand Switcher, translating raw values into semantic tokens.',
+  'Every component pulls from the token layer, so the brand\'s identity flows through automatically — no overrides.',
+  'Designers and developers assemble the final branded experience by composing existing Atom components.',
+] as const;
+
+// ─── Why it matters ───────────────────────────────────────────────────────
+const WHY_IT_MATTERS = [
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
-      </svg>
-    ),
-    title: 'Colours',
+    title: 'Single source of truth',
     description:
-      'The complete colour vocabulary for the brand — primaries, secondaries, neutrals, accents, and state-specific values. Every colour is mapped to a semantic token so components never reference raw hex values.',
-    showSwatches: true,
+      'Every brand decision lives in one place, eliminating style drift and one-off overrides.',
   },
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-      </svg>
-    ),
-    title: 'Typography',
+    title: 'Shared component library',
     description:
-      'The typographic personality of the brand: font families, weights, and a type scale that creates clear visual hierarchy. Mapped to tokens like font.family.heading, font.size.body, and font.weight.medium so type styling stays consistent everywhere.',
-    showSwatches: false,
+      'Multiple brands share the same React package — no forking, no parallel bug fixes, no duplicated code.',
   },
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
-      </svg>
-    ),
-    title: 'Logos',
+    title: 'Instant brand switching',
     description:
-      'The official mark of the brand, supplied in the formats and lockups needed for navigation headers, splash screens, and branded touchpoints. Treat these as immutable — they come directly from the brand.',
-    showSwatches: false,
+      'Swap the foundation file and the entire product re-themes. Demos and prototypes become trivial.',
   },
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    title: 'Icon Set',
+    title: 'Lower long-term cost',
     description:
-      'A curated set of brand-approved icons in outline, filled, and functional styles. Designed to work at every size in the system and align with the brand\'s visual tone.',
-    showSwatches: false,
+      'Centralising brand decisions cuts maintenance, audits, and the surface area for visual bugs over time.',
+  },
+  {
+    title: 'Scales with the business',
+    description:
+      'Go from two brands to twenty without redesigning a single component or rewriting a single line of CSS.',
+  },
+  {
+    title: 'Accessibility by default',
+    description:
+      'Every brand pairing is contrast-tested before it ships, so accessibility never gets bolted on later.',
   },
 ] as const;
 
-const SWATCH_KEYS = [
-  { key: 'atom.background.primary.bg-primary-default' as const, label: 'bg-primary-default' },
-  { key: 'atom.foreground.primary.fg-brand-primary' as const, label: 'fg-brand-primary' },
-  { key: 'atom.foreground.core.fg-interactive-icon' as const, label: 'fg-interactive-icon' },
-];
-
 export function BrandFoundationsPage({ brand }: BrandFoundationsPageProps) {
   const resolved = RESOLVED_SEMANTIC_TOKENS[brand];
+  const currentBrand = BRANDS.find((b) => b.id === brand) ?? BRANDS[0];
+  const initial = BRAND_INITIAL[brand];
 
   return (
-    <div className="max-w-4xl mx-auto px-8 py-10">
-      {/* ── Header ── */}
-      <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
-        Brand Foundations
-      </h1>
-      <p className="text-base text-slate-500 mb-10">
-        Every brand tells a different story. Foundations make sure the system
-        listens.
-      </p>
+    <div className="space-y-20">
+      {/* ─────────────────────────── HERO ─────────────────────────── */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: 'var(--color-brand)' }}
+            />
+            Foundations · Brand
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {BRANDS.length} brands ship today
+          </span>
+        </div>
 
-      {/* ── Intro ── */}
-      <p className="text-sm text-slate-600 leading-relaxed mb-4">
-        Brand Foundations are where each brand's identity enters the design
-        system. They capture the colours, typography, logos, and icons that
-        make a brand recognisable — then translate those raw ingredients into
-        tokens that every component can consume. The result: one component
-        library that speaks the visual language of any brand you point it at.
-      </p>
+        <h1 className="text-[40px] leading-[1.1] font-bold text-slate-900 tracking-tight mb-4">
+          Every brand
+          <br />
+          <span style={{ color: 'var(--color-brand)' }}>starts here.</span>
+        </h1>
+        <p className="text-lg text-slate-600 leading-relaxed max-w-2xl">
+          Brand Foundations are where each brand's identity enters the design system —
+          colours, typography, and icons. Atom translates those raw ingredients into
+          semantic tokens that every component can wear.
+        </p>
+      </section>
 
-      <hr className="border-slate-200 my-10" />
-
-      {/* ── What Brand Foundations Include ── */}
-      <h2 className="text-xl font-semibold text-slate-800 mt-12 mb-4">
-        What Brand Foundations Include
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-        {FOUNDATION_ITEMS.map((item) => (
+      {/* ──────────── LIVE BRAND SHOWCASE CARD ──────────── */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
+          Currently active foundation
+        </h2>
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          {/* Header strip — rendered in current brand colour */}
           <div
-            key={item.title}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="px-6 py-5 flex items-center gap-4"
+            style={{ backgroundColor: 'var(--color-brand)' }}
           >
-            <div className="flex items-center gap-2 mb-2 text-slate-700">
-              {item.icon}
-              <h3 className="text-lg font-semibold text-slate-700">
+            <div className="w-12 h-12 rounded-lg bg-white/15 flex items-center justify-center text-white text-2xl font-bold">
+              {initial}
+            </div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
+                Foundation
+              </div>
+              <div className="text-2xl font-bold text-white">
+                {currentBrand.label}
+              </div>
+            </div>
+            <div className="ml-auto text-right">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
+                Primary
+              </div>
+              <div className="text-sm font-mono text-white/95">
+                {currentBrand.primary}
+              </div>
+            </div>
+          </div>
+          {/* Live components on dotted surface */}
+          <div className="p-8" style={DOTTED_BG}>
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              <ButtonLive
+                buttonType="Full Button"
+                variant="Primary"
+                size="Default"
+                state="Default"
+                label="Brand action"
+                showLabel
+                showIconLeft={false}
+                showIconRight={false}
+                brand={brand}
+              />
+              <BadgeLive
+                state="Brand"
+                curveRadius="Standard"
+                label="Live"
+                showIconLeft={false}
+                showIconRight={false}
+                brand={brand}
+              />
+              <TagsLive
+                state="Selected"
+                label="Brand-aware"
+                showIconLeft
+                showIconRight={false}
+                brand={brand}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ──────────── WHAT'S INSIDE A FOUNDATION ──────────── */}
+      <section>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          What's inside a foundation
+        </h2>
+        <p className="text-base text-slate-600 mb-8 max-w-2xl">
+          Three ingredients combine to give every brand its voice. Atom translates each
+          one into tokens so components inherit the brand automatically.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* 01 · Colours */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                01
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">Colours</h3>
+            </div>
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              The complete colour vocabulary — primaries, surfaces, and feedback states.
+              Every value maps to a semantic token.
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {PALETTE_SWATCHES.map((s) => (
+                <div key={s.key} className="flex flex-col items-center gap-1">
+                  <div
+                    className="w-full h-12 rounded-md border border-slate-200"
+                    style={{ backgroundColor: resolved[s.key] }}
+                  />
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 02 · Typography */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                02
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">Typography</h3>
+            </div>
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              Font families, weights, and a type scale that creates clear visual
+              hierarchy across every screen.
+            </p>
+            <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <div
+                className="text-5xl font-bold leading-none mb-3"
+                style={{ color: 'var(--color-brand)' }}
+              >
+                Aa
+              </div>
+              <div className="text-xl font-semibold text-slate-900 leading-tight mb-1">
+                Display headline
+              </div>
+              <div className="text-sm text-slate-700 mb-1">
+                Body copy at the regular reading size.
+              </div>
+              <div className="text-[11px] text-slate-400">Caption · 11px</div>
+            </div>
+          </div>
+
+          {/* 03 · Icons */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                03
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">Icon Set</h3>
+            </div>
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              A curated set of brand-approved icons in outline, filled, and functional
+              styles. Designed to work at every size in the system.
+            </p>
+            <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 flex items-center justify-around">
+              {ICON_PATHS.map((path, i) => (
+                <svg
+                  key={i}
+                  className="w-7 h-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="var(--color-brand)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d={path} />
+                </svg>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ──────────── ALL BRANDS AT A GLANCE ──────────── */}
+      <section>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          Six foundations. One system.
+        </h2>
+        <p className="text-base text-slate-600 mb-8 max-w-2xl">
+          Every brand below ships with Atom today. Adding the next one is a
+          configuration change, not a redesign.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {BRANDS.map((b) => {
+            const isActive = b.id === brand;
+            return (
+              <div
+                key={b.id}
+                className={`rounded-xl border bg-white p-4 transition-all ${
+                  isActive ? 'border-slate-900 shadow-md' : 'border-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-base font-bold text-white shrink-0"
+                    style={{ backgroundColor: b.primary }}
+                  >
+                    {BRAND_INITIAL[b.id]}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-slate-900 truncate">
+                      {b.label}
+                    </div>
+                    <div className="text-[10px] font-mono text-slate-400 truncate">
+                      {b.primary}
+                    </div>
+                  </div>
+                </div>
+                {isActive ? (
+                  <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Active
+                  </div>
+                ) : (
+                  <div className="text-[10px] font-medium text-slate-400">
+                    Switch to preview
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ──────────── FROM FOUNDATION TO COMPONENT ──────────── */}
+      <section>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          From foundation to component
+        </h2>
+        <p className="text-base text-slate-600 mb-8 max-w-2xl">
+          A foundation file becomes a live component in three hops. None of them ever
+          touch the component itself.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Step 1 · Foundation file */}
+          <div className="relative">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 h-full">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                Step 1
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-2">
+                Foundation file
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Brand provides palette, type, and icons.
+              </p>
+              <div className="rounded-md bg-slate-900 p-3 font-mono text-[11px] text-slate-300 leading-relaxed">
+                <div>
+                  <span className="text-slate-500">primary:</span>{' '}
+                  <span className="text-amber-300">"{currentBrand.primary}"</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">font:</span>{' '}
+                  <span className="text-amber-300">"Inter"</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">radius:</span>{' '}
+                  <span className="text-amber-300">8</span>
+                </div>
+              </div>
+            </div>
+            {/* Arrow connector (lg only) */}
+            <div className="hidden lg:flex absolute top-1/2 -right-2 -translate-y-1/2 z-10">
+              <svg
+                className="w-4 h-4 text-slate-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Step 2 · Semantic tokens */}
+          <div className="relative">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 h-full">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                Step 2
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 mb-2">
+                Semantic tokens
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Atom translates raw values into semantic roles.
+              </p>
+              <div className="rounded-md bg-slate-900 p-3 font-mono text-[11px] text-slate-300 leading-relaxed">
+                <div>
+                  <span className="text-slate-500">bg-primary-default:</span>
+                </div>
+                <div className="ml-2">
+                  <span className="text-emerald-300">
+                    "{resolved['atom.background.primary.bg-primary-default']}"
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500">fg-brand-primary:</span>
+                </div>
+                <div className="ml-2">
+                  <span className="text-emerald-300">
+                    "{resolved['atom.foreground.primary.fg-brand-primary']}"
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* Arrow connector (lg only) */}
+            <div className="hidden lg:flex absolute top-1/2 -right-2 -translate-y-1/2 z-10">
+              <svg
+                className="w-4 h-4 text-slate-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Step 3 · Live component */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              Step 3
+            </div>
+            <h3 className="text-base font-semibold text-slate-900 mb-2">
+              Live component
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Components consume tokens — never raw values.
+            </p>
+            <div
+              className="rounded-md p-4 flex items-center justify-center min-h-[88px]"
+              style={DOTTED_BG}
+            >
+              <ButtonLive
+                buttonType="Full Button"
+                variant="Primary"
+                size="Tiny"
+                state="Default"
+                label="Brand"
+                showLabel
+                showIconLeft={false}
+                showIconRight={false}
+                brand={brand}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ──────────── HOW FOUNDATIONS ARE USED ──────────── */}
+      <section>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          How foundations are used
+        </h2>
+        <p className="text-base text-slate-600 mb-8 max-w-2xl">
+          From raw brand assets to a fully themed product in four moves.
+        </p>
+        <ol className="space-y-4">
+          {USAGE_STEPS.map((step, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
+            >
+              <span
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                style={{ backgroundColor: 'var(--color-brand)' }}
+              >
+                {i + 1}
+              </span>
+              <span className="text-sm text-slate-700 leading-relaxed pt-1">
+                {step}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* ──────────── WHY IT MATTERS ──────────── */}
+      <section>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          Why foundations matter
+        </h2>
+        <p className="text-base text-slate-600 mb-8 max-w-2xl">
+          The discipline of putting brand decisions inside foundations pays off across
+          the entire product lifecycle.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {WHY_IT_MATTERS.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-xl border border-slate-200 bg-white p-5"
+            >
+              <h3 className="text-base font-semibold text-slate-900 mb-1.5">
                 {item.title}
               </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {item.description}
+              </p>
             </div>
-            <p className="text-sm text-slate-600 leading-relaxed mb-3">
-              {item.description}
-            </p>
-            {item.showSwatches && (
-              <div className="flex items-center gap-3">
-                {SWATCH_KEYS.map((s) => (
-                  <div key={s.key} className="flex flex-col items-center gap-1">
-                    <div
-                      className="w-8 h-8 rounded-md border border-slate-200"
-                      style={{ backgroundColor: resolved[s.key] }}
-                    />
-                    <span className="text-[10px] font-mono text-slate-400">
-                      {s.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
 
-      <hr className="border-slate-200 my-10" />
-
-      {/* ── How Brand Foundations Are Used ── */}
-      <h2 className="text-xl font-semibold text-slate-800 mt-12 mb-4">
-        How Brand Foundations Are Used
-      </h2>
-      <ol className="space-y-4 mb-6">
-        {[
-          'The brand supplies a foundation file containing its colour palette, typography choices, and logo assets',
-          'The Atom team loads these foundations into the Brand Switcher, translating raw values into semantic tokens',
-          'Every component in the system pulls from the token layer, so the brand\'s identity flows through automatically',
-          'Screens and flows assemble the final branded experience — no manual overrides needed',
-        ].map((step, i) => (
-          <li key={i} className="flex items-start gap-3">
-            <span
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5"
+      {/* ──────────── FINAL CTA ──────────── */}
+      <section>
+        <div
+          className="rounded-2xl border border-slate-200 p-8 sm:p-10 text-center"
+          style={{
+            backgroundImage:
+              'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+          }}
+        >
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            See foundations in motion
+          </h2>
+          <p className="text-base text-slate-600 mb-6 max-w-xl mx-auto">
+            Once foundations are loaded, the Brand Switcher takes over — and every
+            component in the library re-themes instantly.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/foundations/brand-switcher"
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: 'var(--color-brand)' }}
             >
-              {i + 1}
-            </span>
-            <span className="text-sm text-slate-600 leading-relaxed">
-              {step}
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <hr className="border-slate-200 my-10" />
-
-      {/* ── Why Brand Foundations Matter ── */}
-      <h2 className="text-xl font-semibold text-slate-800 mt-12 mb-4">
-        Why Brand Foundations Matter
-      </h2>
-      <ul className="list-disc list-inside space-y-1.5 text-sm text-slate-600 mb-6">
-        <li>They create a single source of truth for each brand's identity, eliminating style drift and one-off overrides</li>
-        <li>They let multiple brands share one component library without forking or duplicating code</li>
-        <li>They make brand switching instant and predictable — swap the foundation, and the entire product updates</li>
-        <li>They cut long-term maintenance by centralising every brand decision in one place</li>
-        <li>They scale gracefully: go from two brands to twenty without redesigning a single component</li>
-      </ul>
+              Explore Brand Switcher
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </Link>
+            <Link
+              to="/components/button"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Browse components
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

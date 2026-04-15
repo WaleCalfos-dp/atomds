@@ -26,11 +26,15 @@ const DARK_BG: React.CSSProperties = {
 };
 
 const ALL_TYPES: ButtonType[] = [
-  'Full Button', 'Icon Only', 'Social Login', 'GooglePay', 'ApplePay', 'PayPal',
+  'Full Button', 'Icon Only', 'Social Login',
+];
+
+const ALL_VARIANTS: ButtonVariant[] = [
+  'Primary', 'Secondary', 'Tertiary', 'Destructive', 'White', 'Loading', 'Destructive-Text', 'ApplePay', 'PayPal', 'GooglePay',
 ];
 
 const FULL_BUTTON_VARIANTS: ButtonVariant[] = [
-  'Primary', 'Secondary', 'Tertiary', 'White', 'Destructive', 'Destructive-Text',
+  'Primary', 'Secondary', 'Tertiary', 'White', 'Destructive', 'Destructive-Text', 'Loading',
 ];
 
 const ICON_ONLY_VARIANTS: ButtonVariant[] = ['Primary', 'Secondary'];
@@ -40,11 +44,11 @@ const ALL_SIZES: ButtonSize[] = ['Default', 'Small', 'Tiny'];
 const ALL_STATES: ButtonState[] = ['Default', 'Hover', 'Focus', 'Active', 'Disabled', 'Loading'];
 
 // Variants available per type
-function variantsForType(type: ButtonType): ButtonVariant[] | null {
-  if (type === 'Full Button') return FULL_BUTTON_VARIANTS;
+function variantsForType(type: ButtonType): ButtonVariant[] {
+  if (type === 'Full Button') return ALL_VARIANTS;
   if (type === 'Icon Only')   return ICON_ONLY_VARIANTS;
   if (type === 'Social Login') return SOCIAL_LOGIN_VARIANTS;
-  return null; // payment buttons have no variant selector
+  return ALL_VARIANTS;
 }
 
 const VARIANT_META: Record<ButtonVariant, { dotColor: string; dotBorder: string }> = {
@@ -54,6 +58,10 @@ const VARIANT_META: Record<ButtonVariant, { dotColor: string; dotBorder: string 
   White:              { dotColor: '#e2e8f0', dotBorder: '#94a3b8' },
   Destructive:        { dotColor: 'var(--atom-background-alert-bg-error-full)', dotBorder: 'var(--atom-background-alert-bg-error-full)' },
   'Destructive-Text': { dotColor: 'transparent', dotBorder: 'var(--atom-foreground-feedback-fg-error)' },
+  Loading:            { dotColor: 'var(--atom-background-primary-bg-primary-default)', dotBorder: 'var(--atom-background-primary-bg-primary-default)' },
+  ApplePay:           { dotColor: '#000000', dotBorder: '#000000' },
+  PayPal:             { dotColor: '#179bd7', dotBorder: '#179bd7' },
+  GooglePay:          { dotColor: '#000000', dotBorder: '#4285F4' },
 };
 
 const TOKEN_TABLE_ROWS: {
@@ -68,7 +76,7 @@ const TOKEN_TABLE_ROWS: {
   { label: 'Destructive bg',       cssVar: '--atom-background-alert-bg-error-full',                 tokenKey: 'atom.background.alert.bg-error-full',                     fallback: '#e02d3c', types: ['Full Button'], variants: ['Destructive'] },
   { label: 'Destructive-Text fg',  cssVar: '--atom-foreground-feedback-fg-error',                   tokenKey: 'atom.foreground.feedback.fg-error',                       fallback: '#e02d3c', types: ['Full Button'], variants: ['Destructive-Text'] },
   { label: 'Border radius',        cssVar: '--atom-buttons-radius',                                                                                                      fallback: '999px',  types: ['Full Button', 'Icon Only', 'Social Login'], variants: FULL_BUTTON_VARIANTS },
-  { label: 'Focus ring',           cssVar: '--atom-border-selection-and-focus-border-primary-focus', tokenKey: 'atom.border.selection-and-focus.border-primary-focus',    fallback: '#3b82f6', types: ALL_TYPES, variants: FULL_BUTTON_VARIANTS },
+  { label: 'Focus ring',           cssVar: '--atom-border-selection-and-focus-border-primary-focus', tokenKey: 'atom.border.selection-and-focus.border-primary-focus',    fallback: '#3b82f6', types: ALL_TYPES, variants: ALL_VARIANTS },
 ];
 
 const A11Y_ROWS = [
@@ -90,9 +98,9 @@ function isLightColor(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 }
 
-function canvasBg(buttonType: ButtonType, variant: ButtonVariant): React.CSSProperties {
-  // White variant and payment buttons look best on dark background
-  if (variant === 'White' || buttonType === 'GooglePay' || buttonType === 'ApplePay') return DARK_BG;
+function canvasBg(_buttonType: ButtonType, variant: ButtonVariant): React.CSSProperties {
+  // White variant and payment variants look best on dark background
+  if (variant === 'White' || variant === 'GooglePay' || variant === 'ApplePay') return DARK_BG;
   return DOTTED_BG;
 }
 
@@ -102,16 +110,17 @@ export function ButtonPage({ brand }: ButtonPageProps) {
   const [size, setSize]             = useState<ButtonSize>('Default');
   const [state, setState]           = useState<ButtonState>('Default');
   const [label, setLabel]           = useState('Button Label');
+  const [showLabel, setShowLabel]   = useState(true);
   const [showIconLeft,  setShowIconLeft]  = useState(false);
   const [showIconRight, setShowIconRight] = useState(false);
 
   const availableVariants = variantsForType(buttonType);
   // Reset variant when type changes and current variant isn't valid
   const effectiveVariant: ButtonVariant =
-    availableVariants && !availableVariants.includes(variant) ? availableVariants[0] : variant;
+    !availableVariants.includes(variant) ? availableVariants[0] : variant;
 
-  const buttonKey = `${buttonType}-${effectiveVariant}-${size}-${state}-${label}-${showIconLeft}-${showIconRight}`;
-  const isPayment = buttonType === 'GooglePay' || buttonType === 'ApplePay' || buttonType === 'PayPal';
+  const buttonKey = `${buttonType}-${effectiveVariant}-${size}-${state}-${label}-${showLabel}-${showIconLeft}-${showIconRight}`;
+  const isPayment = effectiveVariant === 'GooglePay' || effectiveVariant === 'ApplePay' || effectiveVariant === 'PayPal';
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
 
   return (
@@ -141,6 +150,7 @@ export function ButtonPage({ brand }: ButtonPageProps) {
                     size={size}
                     state={state}
                     label={label}
+                    showLabel={showLabel}
                     showIconLeft={showIconLeft}
                     showIconRight={showIconRight}
                     brand={brand}
@@ -173,33 +183,37 @@ export function ButtonPage({ brand }: ButtonPageProps) {
                 </div>
               </div>
 
-              {/* Variant — only for non-payment types */}
-              {availableVariants && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Variant</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {availableVariants.map((v) => {
-                      const meta = VARIANT_META[v];
-                      return (
-                        <button
-                          key={v}
-                          onClick={() => setVariant(v)}
-                          className={[
-                            'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-100',
-                            effectiveVariant === v
-                              ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                              : 'text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50',
-                          ].join(' ')}
-                        >
-                          <span className="w-2 h-2 rounded-full flex-shrink-0 border"
-                            style={{ backgroundColor: meta.dotColor, borderColor: meta.dotBorder }} />
-                          {v}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Variant */}
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Variant</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {availableVariants.map((v) => {
+                    const meta = VARIANT_META[v];
+                    return (
+                      <button
+                        key={v}
+                        onClick={() => setVariant(v)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '4px 10px', borderRadius: '6px',
+                          fontSize: '12px', fontWeight: 500, border: '1px solid',
+                          cursor: 'pointer', textAlign: 'left', width: '100%',
+                          transition: 'all 0.1s ease',
+                          ...(effectiveVariant === v
+                            ? { backgroundColor: '#0f172a', color: '#ffffff', borderColor: '#0f172a', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }
+                            : { backgroundColor: 'transparent', color: '#475569', borderColor: '#e2e8f0' }),
+                        }}
+                      >
+                        <span style={{
+                          width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                          border: '1.5px solid', backgroundColor: meta.dotColor, borderColor: meta.dotBorder,
+                        }} />
+                        {v}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
 
               {/* Size */}
               <div>
@@ -231,10 +245,37 @@ export function ButtonPage({ brand }: ButtonPageProps) {
                 </div>
               </div>
 
-              {/* Label — not for Icon Only or payment */}
+              {/* Label visibility toggle */}
               {buttonType !== 'Icon Only' && (
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Label</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Label</p>
+                  <div style={{ display: 'flex', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden', width: 'fit-content' }}>
+                    {(['Show', 'Hide'] as const).map((opt) => {
+                      const isActive = opt === 'Show' ? showLabel : !showLabel;
+                      return (
+                        <button
+                          key={opt}
+                          onClick={() => setShowLabel(opt === 'Show')}
+                          style={{
+                            padding: '6px 12px', fontSize: '12px', fontWeight: 500, border: 'none', cursor: 'pointer',
+                            transition: 'all 0.1s ease',
+                            ...(isActive
+                              ? { backgroundColor: '#0f172a', color: '#ffffff' }
+                              : { backgroundColor: 'transparent', color: '#475569' }),
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Label text — not for Icon Only or payment */}
+              {buttonType !== 'Icon Only' && !isPayment && (
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Button Label</p>
                   <input
                     type="text" value={label} maxLength={30}
                     onChange={(e) => setLabel(e.target.value)}
@@ -270,10 +311,10 @@ export function ButtonPage({ brand }: ButtonPageProps) {
                 </div>
               )}
 
-              {/* Payment note */}
+              {/* Payment variant note */}
               {isPayment && (
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Payment buttons use fixed provider branding. In production, integrate via the official provider SDK — do not replicate these styles manually.
+                <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                  Payment variants use fixed provider branding. In production, integrate via the official provider SDK — do not replicate these styles manually.
                 </p>
               )}
             </div>
@@ -287,7 +328,7 @@ export function ButtonPage({ brand }: ButtonPageProps) {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Button</h1>
             <p className="text-slate-500 text-sm max-w-xl">
-              The primary action element. Supports six Full Button variants, Icon Only, Social Login, and payment buttons (GooglePay, ApplePay, PayPal).
+              The primary action element. Three types (Full Button, Icon Only, Social Login) across ten variants including payment providers.
               All sized across Default / Small / Tiny. Font family updates per brand via <code className="text-xs bg-slate-100 px-1 rounded">--atom-font-body</code>.
             </p>
           </div>
@@ -315,7 +356,7 @@ export function ButtonPage({ brand }: ButtonPageProps) {
         <p className="text-sm text-slate-500 mb-5">Full Button anatomy. Icon Only has a single icon slot; Social Login adds a provider icon left-slot with justified layout.</p>
 
         <div className="relative flex items-center justify-center py-20 px-8 rounded-xl" style={DOTTED_BG}>
-          <div style={{ transform: 'scale(1.8)', transformOrigin: 'center' }}>
+          <div>
             <ButtonLive buttonType="Full Button" variant="Primary" size="Default" state="Default"
               label="Button Label" showIconLeft={true} showIconRight={true} brand={brand} />
           </div>
@@ -325,7 +366,7 @@ export function ButtonPage({ brand }: ButtonPageProps) {
             <span className="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[11px] font-bold shadow">1</span>
           </div>
           {/* 2 — Icon Left (top) */}
-          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '37%', transform: 'translateX(-50%)' }}>
+          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '40%', transform: 'translateX(-50%)' }}>
             <span className="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[11px] font-bold shadow">2</span>
             <div className="w-px bg-slate-400" style={{ height: '32px' }} />
           </div>
@@ -335,7 +376,7 @@ export function ButtonPage({ brand }: ButtonPageProps) {
             <div className="w-px bg-slate-400" style={{ height: '32px' }} />
           </div>
           {/* 4 — Icon Right (top) */}
-          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '63%', transform: 'translateX(-50%)' }}>
+          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '60%', transform: 'translateX(-50%)' }}>
             <span className="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[11px] font-bold shadow">4</span>
             <div className="w-px bg-slate-400" style={{ height: '32px' }} />
           </div>
@@ -375,12 +416,24 @@ export function ButtonPage({ brand }: ButtonPageProps) {
                 {
                   label: 'Type',
                   chips: [
-                    { text: 'Full Button', note: 'Primary · Secondary · Tertiary · White · Destructive · Destructive-Text' },
-                    { text: 'Icon Only',   note: 'Primary · Secondary' },
-                    { text: 'Social Login', note: 'Primary · Secondary' },
-                    { text: 'GooglePay',   note: 'Fixed branding' },
-                    { text: 'ApplePay',    note: 'Fixed branding' },
-                    { text: 'PayPal',      note: 'Fixed branding' },
+                    { text: 'Full Button', note: '' },
+                    { text: 'Icon Only',   note: '' },
+                    { text: 'Social Login', note: '' },
+                  ],
+                },
+                {
+                  label: 'Variant',
+                  chips: [
+                    { text: 'Primary', note: '' },
+                    { text: 'Secondary', note: '' },
+                    { text: 'Tertiary', note: '' },
+                    { text: 'Destructive', note: '' },
+                    { text: 'White', note: '' },
+                    { text: 'Loading', note: '' },
+                    { text: 'Destructive-Text', note: '' },
+                    { text: 'ApplePay', note: '' },
+                    { text: 'PayPal', note: '' },
+                    { text: 'GooglePay', note: '' },
                   ],
                 },
                 {
@@ -421,6 +474,24 @@ export function ButtonPage({ brand }: ButtonPageProps) {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Visual preview of all variants */}
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          {ALL_VARIANTS.map(v => {
+            const needsDark = v === 'White' || v === 'GooglePay' || v === 'ApplePay';
+            return (
+              <div key={v} style={{
+                padding: '20px 24px', borderRadius: '10px',
+                border: '1px solid #f3f4f6',
+                backgroundColor: needsDark ? '#1e293b' : '#fafafa',
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px',
+              }}>
+                <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: needsDark ? '#94a3b8' : '#6b7280' }}>{v}</p>
+                <ButtonLive buttonType="Full Button" variant={v} size="Default" state="Default" label="Label" brand={brand} />
+              </div>
+            );
+          })}
         </div>
       </section>
 

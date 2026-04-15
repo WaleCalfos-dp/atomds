@@ -41,8 +41,13 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/components/checkbox', label: 'Checkbox' },
       { to: '/components/divider', label: 'Divider' },
       { to: '/components/input', label: 'Input' },
+      { to: '/components/line-item', label: 'Line Item' },
+      { to: '/components/progress-indicator', label: 'Progress Indicator' },
+      { to: '/components/steps', label: 'Steps' },
       { to: '/components/switch', label: 'Switch' },
+      { to: '/components/tabs', label: 'Tabs' },
       { to: '/components/tags', label: 'Tags' },
+      { to: '/components/tooltip', label: 'Tooltip' },
     ],
   },
 ];

@@ -9,6 +9,9 @@ interface AlertLiveProps {
   title?: string;
   description?: string;
   showIcon?: boolean;
+  showButton?: boolean;
+  showTitle?: boolean;
+  showDescription?: boolean;
   showDismiss?: boolean;
   brand?: Brand;
 }
@@ -101,6 +104,9 @@ export function AlertLive({
   title = 'Title',
   description = 'Content goes here',
   showIcon = true,
+  showButton = false,
+  showTitle = true,
+  showDescription = true,
   showDismiss = true,
   brand = 'dragonpass',
 }: AlertLiveProps) {
@@ -146,7 +152,7 @@ export function AlertLive({
 
       {/* Text content */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {title && (
+        {showTitle && title && (
           <p style={{
             margin: 0,
             fontSize: '14px',
@@ -158,7 +164,7 @@ export function AlertLive({
             {title}
           </p>
         )}
-        {description && (
+        {showDescription && description && (
           <p style={{
             margin: 0,
             fontSize: '12px',
@@ -169,6 +175,28 @@ export function AlertLive({
           }}>
             {description}
           </p>
+        )}
+        {showButton && (
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              margin: 0,
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 500,
+              lineHeight: '18px',
+              color: t.iconColor,
+              fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
+              textDecoration: 'underline',
+              textUnderlineOffset: '2px',
+              alignSelf: 'flex-start',
+            }}
+            onClick={e => e.preventDefault()}
+          >
+            Action
+          </button>
         )}
       </div>
 

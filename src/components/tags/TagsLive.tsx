@@ -1,11 +1,12 @@
 import { type Brand } from '../../data/tokens';
 
-export type TagState = 'Default' | 'Selected' | 'Disabled';
+export type TagState = 'Default' | 'Selected' | 'Disabled' | 'Hover' | 'Focused';
 
 interface TagsLiveProps {
   state?: TagState;
   label?: string;
   showIconLeft?: boolean;
+  showIconRight?: boolean;
   brand?: Brand;
   onClick?: () => void;
 }
@@ -34,20 +35,33 @@ function CheckIcon() {
   );
 }
 
+function CloseIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0, display: 'block' }}>
+      <path d="M4 4L10 10M10 4L4 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function TagsLive({
   state = 'Default',
   label = 'Label',
   showIconLeft = true,
+  showIconRight = false,
   brand = 'dragonpass',
   onClick,
 }: TagsLiveProps) {
   const isSelected = state === 'Selected';
   const isDisabled = state === 'Disabled';
+  const isHover = state === 'Hover';
+  const isFocused = state === 'Focused';
 
   const containerBg = isSelected
     ? 'var(--atom-background-primary-bg-primary-pressed-brand, #0a2333)'
     : isDisabled
     ? 'var(--atom-background-primary-bg-primary-disabled-inverse, #faf8f7)'
+    : isHover
+    ? 'var(--atom-background-core-bg-muted, rgba(10,35,51,0.04))'
     : 'var(--atom-background-primary-bg-primary-inverse, #ffffff)';
 
   const containerBorder = isSelected
@@ -61,6 +75,10 @@ export function TagsLive({
     : isDisabled
     ? 'var(--atom-foreground-states-fg-disabled, #91908f)'
     : 'var(--atom-foreground-core-fg-primary, #4b4a4a)';
+
+  const boxShadow = isFocused
+    ? '0 0 0 2px var(--atom-border-selection-and-focus-border-selected, #0a2333)'
+    : 'none';
 
   return (
     <div
@@ -76,11 +94,12 @@ export function TagsLive({
         backgroundColor: containerBg,
         border: containerBorder,
         cursor: isDisabled ? 'not-allowed' : onClick ? 'pointer' : 'default',
-        transition: 'background-color 0.15s ease',
+        transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
         boxSizing: 'border-box',
         userSelect: 'none',
         fontFamily: 'var(--atom-font-body, Poppins, sans-serif)',
         color,
+        boxShadow,
       }}
     >
       {showIconLeft && <PlaceholderIcon brand={brand} size={14} />}
@@ -88,6 +107,7 @@ export function TagsLive({
         {label}
       </span>
       {isSelected && <CheckIcon />}
+      {showIconRight && <CloseIcon size={14} />}
     </div>
   );
 }

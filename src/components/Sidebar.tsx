@@ -112,6 +112,46 @@ const itemIcons: Record<string, React.ReactNode> = {
       <circle cx="4.5" cy="7" r="1" fill="currentColor" />
     </svg>
   ),
+  '/components/tooltip': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <rect x="1" y="1" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M5 10l2 3 2-3" fill="currentColor" />
+    </svg>
+  ),
+  '/components/line-item': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <line x1="1" y1="4" x2="8" y2="4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="10" y1="4" x2="13" y2="4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="1" y1="7" x2="6" y2="7" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="10" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="1" y1="10" x2="9" y2="10" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="11" y1="10" x2="13" y2="10" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    </svg>
+  ),
+  '/components/progress-indicator': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <rect x="1" y="5.5" width="12" height="3" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
+      <rect x="1.5" y="6" width="7" height="2" rx="1" fill="currentColor" />
+    </svg>
+  ),
+  '/components/steps': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <circle cx="3" cy="7" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <circle cx="7" cy="7" r="2" fill="currentColor" />
+      <circle cx="11" cy="7" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <line x1="5" y1="7" x2="5.5" y2="7" stroke="currentColor" strokeWidth="1" />
+      <line x1="8.5" y1="7" x2="9" y2="7" stroke="currentColor" strokeWidth="1" />
+    </svg>
+  ),
+  '/components/tabs': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <line x1="1" y1="11" x2="13" y2="11" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="2" y1="8" x2="4" y2="8" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="6.5" y1="8" x2="8.5" y2="8" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="10.5" y1="8" x2="12.5" y2="8" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    </svg>
+  ),
 };
 
 export function Sidebar({ brand: _brand }: SidebarProps) {

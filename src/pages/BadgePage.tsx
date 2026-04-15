@@ -264,10 +264,8 @@ export function BadgePage({ brand }: BadgePageProps) {
 
         {/* Diagram area */}
         <div className="relative flex items-center justify-center py-16 px-8 rounded-xl" style={DOTTED_BG}>
-          {/* Render the live badge at 2× for anatomy */}
-          <div style={{ transform: 'scale(2)', transformOrigin: 'center' }}>
-            <BadgeLive state={state} curveRadius={curveRadius} label={label} showIconLeft={true} showIconRight={true} brand={brand} />
-          </div>
+          {/* Render the live badge at 1:1 for anatomy */}
+          <BadgeLive state={state} curveRadius={curveRadius} label={label} showIconLeft={true} showIconRight={true} brand={brand} />
 
           {/* Callout: 1 Container (bottom) — line goes up to badge */}
           <div className="absolute bottom-4 flex flex-col items-center pointer-events-none" style={{ left: '50%', transform: 'translateX(-50%)' }}>
@@ -276,7 +274,7 @@ export function BadgePage({ brand }: BadgePageProps) {
           </div>
 
           {/* Callout: 2 Icon Left — line goes down to badge */}
-          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '44%', transform: 'translateX(-50%)' }}>
+          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '47%', transform: 'translateX(-50%)' }}>
             <span className="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[11px] font-bold shadow">2</span>
             <div className="w-px bg-slate-400" style={{ height: '32px' }} />
           </div>
@@ -288,7 +286,7 @@ export function BadgePage({ brand }: BadgePageProps) {
           </div>
 
           {/* Callout: 4 Icon Right — line goes down to badge */}
-          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '56%', transform: 'translateX(-50%)' }}>
+          <div className="absolute top-4 flex flex-col items-center pointer-events-none" style={{ left: '53%', transform: 'translateX(-50%)' }}>
             <span className="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[11px] font-bold shadow">4</span>
             <div className="w-px bg-slate-400" style={{ height: '32px' }} />
           </div>
@@ -350,6 +348,19 @@ export function BadgePage({ brand }: BadgePageProps) {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        {/* Visual preview of all state × curve radius combinations */}
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          {(['Brand', 'Success', 'Warning', 'Error', 'Information', 'Muted'] as BadgeState[]).map(s => (
+            <div key={s} style={{ padding: '20px 24px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{s}</p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <BadgeLive state={s} curveRadius="Full" label="Full" brand={brand} />
+                <BadgeLive state={s} curveRadius="Standard" label="Standard" brand={brand} />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

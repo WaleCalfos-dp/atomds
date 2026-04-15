@@ -13,15 +13,6 @@ const DOTTED_BG: React.CSSProperties = {
   backgroundSize: '20px 20px',
 };
 
-const CALLOUT = (_num: string): React.CSSProperties => ({
-  width: '20px', height: '20px', borderRadius: '50%',
-  backgroundColor: '#1e293b', color: 'white',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontSize: '11px', fontWeight: 700,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0,
-});
-void CALLOUT;
-
 const LINE: React.CSSProperties = {
   width: '1px', height: '32px', backgroundColor: '#94a3b8',
 };
@@ -310,24 +301,24 @@ export function CheckboxPage({ brand }: CheckboxPageProps) {
           ...DOTTED_BG, borderRadius: '12px', padding: '64px 48px',
           display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
         }}>
-          <div style={{ transform: 'scale(2.5)', transformOrigin: 'center' }}>
+          <div>
             <CheckboxLive type="Multi Checkbox" state="Default" checked={true} label="Label" brand={brand} />
           </div>
 
           {/* Callout 1 — Container (bottom, slightly left of checkbox center) */}
-          <div style={{ position: 'absolute', bottom: '16px', left: '40%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', bottom: '16px', left: '45%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={LINE} />
             <CalloutDot num="1" />
           </div>
 
           {/* Callout 2 — Check indicator (top, slightly right of checkbox center) */}
-          <div style={{ position: 'absolute', top: '16px', left: '44%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '46%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="2" />
             <div style={LINE} />
           </div>
 
           {/* Callout 3 — Label (top, centered on label text) */}
-          <div style={{ position: 'absolute', top: '16px', left: '55%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '16px', left: '53%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="3" />
             <div style={LINE} />
           </div>
@@ -378,6 +369,22 @@ export function CheckboxPage({ brand }: CheckboxPageProps) {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Visual preview of all type × state × checked combinations */}
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          {TYPES.map(t =>
+            STATES.map(s =>
+              [false, true].map(c => (
+                <div key={`${t}-${s}-${c}`} style={{ padding: '16px 20px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#6b7280' }}>
+                    {t} · {s} · {c ? 'Checked' : 'Unchecked'}
+                  </p>
+                  <CheckboxLive type={t} state={s} checked={c} label="Label" brand={brand} />
+                </div>
+              ))
+            )
+          )}
         </div>
       </section>
 
