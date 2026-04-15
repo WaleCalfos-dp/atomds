@@ -1,13 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig({
   plugins: [react(), tailwindcss()],
-  publicDir: path.resolve(__dirname, '../public'),
-  // Use `/atom/` base for production builds (GitHub Pages project site),
-  // but keep `/` for local dev so the dev server still serves at the root.
-  base: command === 'build' ? '/atom/' : '/',
-}))
+  // Use the default `public/` dir colocated with this Vite project.
+  // (The previous `'../public'` pointed to a stale screenshot dump
+  // outside the repo and skipped the real tracked favicon.)
+})
