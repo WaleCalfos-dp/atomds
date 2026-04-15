@@ -29,7 +29,7 @@ import { TabsPage } from './pages/TabsPage';
 export default function App() {
   const { brand, setBrand } = useBrand();
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Shell brand={brand} setBrand={setBrand}>
         <Routes>
           <Route path="/" element={<Navigate to="/getting-started" replace />} />
