@@ -271,15 +271,13 @@ export function InputPage({ brand }: InputPageProps) {
                 </p>
                 <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '24px', overflow: 'auto' }}>
                   {/* State headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '12px' }}>
-                    <div />
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '12px' }}>
                     {ALL_STATES.map(s => (
                       <span key={s} style={{ fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'system-ui,-apple-system,sans-serif', textAlign: 'center' }}>{s}</span>
                     ))}
                   </div>
                   {/* Unfilled row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '16px', alignItems: 'start' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: 'system-ui,-apple-system,sans-serif', paddingTop: '16px' }}>Unfilled</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', marginBottom: '16px', alignItems: 'start' }}>
                     {ALL_STATES.map(s => (
                       <div key={s} style={{ display: 'flex', justifyContent: 'center' }}>
                         <div style={{ transform: 'scale(0.72)', transformOrigin: 'top center' }}>
@@ -289,8 +287,7 @@ export function InputPage({ brand }: InputPageProps) {
                     ))}
                   </div>
                   {/* Filled row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', alignItems: 'start' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: 'system-ui,-apple-system,sans-serif', paddingTop: '16px' }}>Filled</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ALL_STATES.length}, 1fr)`, gap: '12px', alignItems: 'start' }}>
                     {ALL_STATES.map(s => (
                       <div key={s} style={{ display: 'flex', justifyContent: 'center' }}>
                         <div style={{ transform: 'scale(0.72)', transformOrigin: 'top center' }}>

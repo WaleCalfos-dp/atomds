@@ -86,16 +86,6 @@ function FlagIcon() {
   );
 }
 
-function CardIcon({ size = 16, color = 'currentColor' }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flexShrink: 0, display: 'block' }}>
-      <rect x="1" y="3" width="14" height="10" rx="1.5" stroke={color} strokeWidth="1.25" />
-      <line x1="1" y1="6.5" x2="15" y2="6.5" stroke={color} strokeWidth="1.5" />
-      <rect x="2.5" y="9" width="3.5" height="2" rx="0.5" fill={color} />
-    </svg>
-  );
-}
-
 function PaymentBadge({ disabled = false }: { disabled?: boolean }) {
   return (
     <div style={{
@@ -382,16 +372,11 @@ export function InputLive({
       );
     }
 
-    // ── Payment Inside: floating label + card icon + badge ────────────────────
+    // ── Payment Inside: floating label + badge ─────────────────────────────────
     if (isPayment) {
       return (
         <div style={wrapStyle}>
-          <InsideLabel trailing={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CardIcon size={16} color={iconColor} />
-              <PaymentBadge disabled={isDisabled} />
-            </span>
-          } />
+          <InsideLabel trailing={<PaymentBadge disabled={isDisabled} />} />
           {showHelperText && <HelperRow />}
         </div>
       );
@@ -516,7 +501,7 @@ export function InputLive({
     );
   }
 
-  // ── Payment: single field + card icon + badge ──────────────────────────────
+  // ── Payment: single field + badge ───────────────────────────────────────────
   if (isPayment) {
     return (
       <div style={wrapStyle}>
@@ -525,8 +510,7 @@ export function InputLive({
           <span style={{ flex: 1, fontSize: '14px', lineHeight: '20px', color: filled ? textColor : fgSecondary, fontFamily: font }}>
             {filled ? '•••• •••• •••• 4242' : placeholder}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, color: iconColor }}>
-            <CardIcon size={16} color={iconColor} />
+          <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             <PaymentBadge disabled={isDisabled} />
           </span>
         </div>
