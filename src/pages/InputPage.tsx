@@ -184,7 +184,7 @@ export function InputPage({ brand }: InputPageProps) {
 
       {/* ── 3. ANATOMY ─────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Input component and their roles.</p>
         <div style={{ ...DOTTED_BG, borderRadius: '12px', padding: '72px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '240px' }}>
           <div>
@@ -231,7 +231,7 @@ export function InputPage({ brand }: InputPageProps) {
 
       {/* ── 4. VARIANTS ────────────────────────────────────────────────────── */}
       <section>
-        <h2 id="variants" style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Variants</h2>
+        <h2 id="variants" className="text-base font-semibold text-slate-900 mb-1">Variants</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>All 140 variants across 7 types, 2 label positions, 5 states, and 2 fill states.</p>
 
         {/* Properties table */}
@@ -299,7 +299,7 @@ export function InputPage({ brand }: InputPageProps) {
 
       {/* ── 5. DESIGN TOKENS ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Design tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Active tokens for the selected state ({state}) are highlighted.
         </p>
@@ -344,7 +344,7 @@ export function InputPage({ brand }: InputPageProps) {
 
       {/* ── 6. ACCESSIBILITY ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Guidance for building inclusive form inputs.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {A11Y_ROWS.map(({ icon, title, body }) => (

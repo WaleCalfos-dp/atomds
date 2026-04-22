@@ -13,7 +13,73 @@ interface LineItemLiveProps {
   subtitleText?: string;
   showTitle?: boolean;
   showSubtitle?: boolean;
+  /** Location text shown beneath the title/subtitle in Flight type (e.g. "London, UK") */
+  locationText?: string;
+  /** Render a switch toggle on the right side of the row */
+  showSwitch?: boolean;
+  /** Initial state of the switch (visual only) */
+  switchChecked?: boolean;
+  /** Render a checkbox on the left side of the row (before any other content) */
+  showCheckbox?: boolean;
+  /** Initial state of the checkbox (visual only) */
+  checkboxChecked?: boolean;
   brand?: Brand;
+}
+
+/* Simple inline Switch visual (no interaction) */
+function InlineSwitch({ checked, color }: { checked: boolean; color: string }) {
+  return (
+    <div
+      style={{
+        width: '28px',
+        height: '16px',
+        borderRadius: '999px',
+        backgroundColor: checked ? color : 'rgba(0,0,0,0.18)',
+        position: 'relative',
+        flexShrink: 0,
+        transition: 'background-color 0.2s ease',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: '2px',
+          left: checked ? '14px' : '2px',
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          backgroundColor: '#ffffff',
+          transition: 'left 0.2s ease',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+        }}
+      />
+    </div>
+  );
+}
+
+/* Simple inline Checkbox visual (no interaction) */
+function InlineCheckbox({ checked, color, borderColor }: { checked: boolean; color: string; borderColor: string }) {
+  return (
+    <div
+      style={{
+        width: '16px',
+        height: '16px',
+        borderRadius: '4px',
+        border: `1.5px solid ${checked ? color : borderColor}`,
+        backgroundColor: checked ? color : 'transparent',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      {checked && (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M1.5 5L4 7.5L8.5 3" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </div>
+  );
 }
 
 /* Simple placeholder icon (filled circle with inner detail) */
@@ -73,12 +139,35 @@ export function LineItemLive({
   subtitleText = 'Subtitle text',
   showTitle = true,
   showSubtitle = true,
+  locationText = 'London, UK',
+  showSwitch = false,
+  switchChecked = false,
+  showCheckbox = false,
+  checkboxChecked = false,
   brand: _brand = 'dragonpass',
 }: LineItemLiveProps) {
   const isDark = mode === 'Dark';
   const isBold = weight === 'Bold';
 
   const fontFamily = 'var(--atom-font-body, Poppins, sans-serif)';
+
+  /* Switch + checkbox accent color based on brand surface */
+  const accentColor = isDark
+    ? 'var(--atom-foreground-primary-fg-brand-primary-inverse, #ffffff)'
+    : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
+  const controlBorderColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(10,35,51,0.4)';
+
+  /* Optional leading checkbox (before any other content) */
+  const leadingCheckbox = showCheckbox ? (
+    <InlineCheckbox checked={checkboxChecked} color={accentColor} borderColor={controlBorderColor} />
+  ) : null;
+
+  /* Optional trailing switch (after all other content) */
+  const trailingSwitch = showSwitch ? (
+    <div style={{ marginLeft: 'auto', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
+      <InlineSwitch checked={switchChecked} color={accentColor} />
+    </div>
+  ) : null;
 
   /* Color resolution based on mode */
   const titleColor = isDark
@@ -118,6 +207,7 @@ export function LineItemLive({
           boxSizing: 'border-box',
         }}
       >
+        {leadingCheckbox}
         {showIcon && (
           <div
             style={{
@@ -158,6 +248,7 @@ export function LineItemLive({
             </span>
           )}
         </div>
+        {trailingSwitch}
       </div>
     );
   }
@@ -175,6 +266,7 @@ export function LineItemLive({
           boxSizing: 'border-box',
         }}
       >
+        {leadingCheckbox}
         <FlagPlaceholder color={iconColor} />
         <span
           style={{
@@ -186,6 +278,7 @@ export function LineItemLive({
         >
           {titleText}
         </span>
+        {trailingSwitch}
       </div>
     );
   }
@@ -203,6 +296,7 @@ export function LineItemLive({
           boxSizing: 'border-box',
         }}
       >
+        {leadingCheckbox}
         <FlagPlaceholder color={iconColor} />
         <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '175px' }}>
           <span
@@ -226,6 +320,7 @@ export function LineItemLive({
             {subtitleText}
           </span>
         </div>
+        {trailingSwitch}
       </div>
     );
   }
@@ -242,6 +337,7 @@ export function LineItemLive({
         boxSizing: 'border-box',
       }}
     >
+      {leadingCheckbox}
       <FlightIcon color={isDark ? '#ffffff' : '#0a2333'} />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', gap: '6px' }}>
@@ -274,9 +370,10 @@ export function LineItemLive({
             lineHeight: 1.4,
           }}
         >
-          London, United Kingdom
+          {locationText}
         </span>
       </div>
+      {trailingSwitch}
     </div>
   );
 }

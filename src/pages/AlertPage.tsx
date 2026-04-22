@@ -418,9 +418,7 @@ export function AlertPage({ brand }: AlertPageProps) {
 
       {/* ── 3. ANATOMY ────────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-          Anatomy
-        </h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>
           Parts of the Alert component and their roles.
         </p>
@@ -436,7 +434,7 @@ export function AlertPage({ brand }: AlertPageProps) {
             position: 'relative',
           }}
         >
-          <div style={{ width: '100%', maxWidth: '480px' }}>
+          <div style={{ width: '100%', maxWidth: '408px', position: 'relative' }}>
             <AlertLive
               type="Information"
               option="Top Border"
@@ -446,39 +444,39 @@ export function AlertPage({ brand }: AlertPageProps) {
               showDismiss={true}
               brand={brand}
             />
-          </div>
 
-          {/* Callout: 1 Container — line goes up from below alert */}
-          <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
-            <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>1</span>
-          </div>
-          {/* Callout: 2 Leading icon — measured at 24% */}
-          <div style={{ position: 'absolute', top: '16px', left: '24%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>2</span>
-            <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
-          </div>
-          {/* Callout: 3 Title — over title text start area ~35% */}
-          <div style={{ position: 'absolute', top: '16px', left: '35%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>3</span>
-            <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
-          </div>
-          {/* Callout: 4 Description — over description area ~50% */}
-          <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>4</span>
-            <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
-          </div>
-          {/* Callout: 5 Dismiss button — measured at 76% */}
-          <div style={{ position: 'absolute', top: '16px', left: '76%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', flexShrink: 0 }}>5</span>
-            <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+            {/* Callout: 1 Container — line goes up from below alert */}
+            <div style={{ position: 'absolute', bottom: '-48px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)', flexShrink: 0 }}>1</span>
+            </div>
+            {/* Callout: 2 Leading icon — Figma SVG x≈26/408 = 6.4% */}
+            <div style={{ position: 'absolute', top: '-48px', left: '6.4%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)', flexShrink: 0 }}>2</span>
+              <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+            </div>
+            {/* Callout: 3 Title — Figma SVG x≈60/408 = 14.7% */}
+            <div style={{ position: 'absolute', top: '-48px', left: '14.7%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)', flexShrink: 0 }}>3</span>
+              <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+            </div>
+            {/* Callout: 4 Description — Figma SVG x≈100/408 = 24.5% */}
+            <div style={{ position: 'absolute', top: '-48px', left: '24.5%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)', flexShrink: 0 }}>4</span>
+              <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+            </div>
+            {/* Callout: 5 Dismiss button — Figma SVG x≈386/408 = 94.6% */}
+            <div style={{ position: 'absolute', top: '-48px', left: '94.6%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)', flexShrink: 0 }}>5</span>
+              <div style={{ width: '1px', height: '32px', backgroundColor: '#94a3b8' }} />
+            </div>
           </div>
         </div>
 
         {/* Anatomy legend */}
         <div
           style={{
-            marginTop: '24px',
+            marginTop: '16px',
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '10px',
@@ -502,7 +500,7 @@ export function AlertPage({ brand }: AlertPageProps) {
                 border: '1px solid #f3f4f6',
               }}
             >
-              <span style={{ fontSize: '16px', lineHeight: 1, flexShrink: 0, marginTop: '1px' }}>{num}</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827', flexShrink: 0, marginTop: '1px', minWidth: '12px' }}>{num}</span>
               <div>
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#111827' }}>{label}</p>
                 <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#6b7280', lineHeight: 1.4 }}>{desc}</p>
@@ -514,9 +512,7 @@ export function AlertPage({ brand }: AlertPageProps) {
 
       {/* ── 4. VARIANTS ──────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-          Variants
-        </h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Variants</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Available property combinations for the Alert component.</p>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden', marginBottom: '16px' }}>
@@ -566,9 +562,7 @@ export function AlertPage({ brand }: AlertPageProps) {
 
       {/* ── 5. DESIGN TOKENS ─────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-          Design tokens
-        </h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Active tokens for the selected type ({type}) are highlighted. Switch the Type control above to inspect other states.
         </p>
@@ -627,9 +621,7 @@ export function AlertPage({ brand }: AlertPageProps) {
 
       {/* ── 6. ACCESSIBILITY ─────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-          Accessibility
-        </h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Guidance for building inclusive experiences with the Alert component.
         </p>

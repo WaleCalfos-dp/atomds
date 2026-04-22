@@ -27,6 +27,7 @@ const BRAND_ICON_PATHS: Record<Brand, string> = {
   dragonpass: OUTLINE_PATH, investec: OUTLINE_PATH,
   mastercard: MC_SOLID_PATH, visa: OUTLINE_PATH,
   greyscale: OUTLINE_PATH, assurant: OUTLINE_PATH,
+  custom: OUTLINE_PATH,
 };
 
 function PlaceholderIcon({ brand = 'dragonpass', size = 16 }: { brand?: Brand; size?: number }) {

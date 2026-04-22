@@ -32,11 +32,18 @@ interface ButtonLiveProps {
   brand?: Brand;
 }
 
-// Full Button size → height + paddingX
+// Full Button size → height + paddingX (exact Figma dimensions)
 const FULL_SIZE: Record<ButtonSize, { height: string; paddingX: string; fontSize: string }> = {
   Default: { height: '64px', paddingX: '24px', fontSize: '14px' },
   Small:   { height: '52px', paddingX: '20px', fontSize: '14px' },
-  Tiny:    { height: '42px', paddingX: '16px', fontSize: '12px' },
+  Tiny:    { height: '44px', paddingX: '16px', fontSize: '12px' },
+};
+
+// Text-only variants (Tertiary, Destructive-Text) per Figma spec — no pill, no padding
+const TEXT_SIZE: Record<ButtonSize, { height: string; fontSize: string }> = {
+  Default: { height: '20px', fontSize: '14px' },
+  Small:   { height: '20px', fontSize: '14px' },
+  Tiny:    { height: '18px', fontSize: '12px' },
 };
 
 // Icon Only size → square dimension
@@ -69,6 +76,7 @@ const BRAND_ICON_PATHS: Record<Brand, string> = {
   dragonpass: OUTLINE_PATH, investec: OUTLINE_PATH,
   mastercard: MC_SOLID_PATH, visa: OUTLINE_PATH,
   greyscale: OUTLINE_PATH, assurant: OUTLINE_PATH,
+  custom: OUTLINE_PATH,
 };
 
 function PlaceholderIcon({ brand = 'dragonpass', size = 16 }: { brand?: Brand; size?: number }) {
@@ -221,9 +229,14 @@ export function ButtonLive({
   // ── Payment variant buttons — layout from Figma: [Button Label][8px][Logo] ──
   if (isPaymentVariant) {
     const pv = VARIANT_STYLES[variant];
+    // Apple Pay & Google Pay brand guidelines use 68px tall at Default; PayPal uses 64px.
+    const paymentHeight =
+      size === 'Default' && (variant === 'ApplePay' || variant === 'GooglePay')
+        ? '68px'
+        : s.height;
     const paymentShared: React.CSSProperties = {
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      height: s.height, paddingLeft: s.paddingX, paddingRight: s.paddingX,
+      height: paymentHeight, paddingLeft: s.paddingX, paddingRight: s.paddingX,
       backgroundColor: pv.bg, border: 'none', borderRadius: '999px',
       cursor: isDisabled ? 'not-allowed' : 'pointer', outline: 'none',
       boxShadow: focusRing, userSelect: 'none',
@@ -332,13 +345,15 @@ export function ButtonLive({
     const border = isSocialPrimary
       ? 'none'
       : '1px solid var(--atom-border-default-border-default-brand)';
+    // Social Login Tiny uses 42px height per Figma (distinct from Full Button Tiny=44px).
+    const socialHeight = size === 'Tiny' ? '42px' : FULL_SIZE[size].height;
     return (
       <button
         disabled={isDisabled}
         style={{
           position: 'relative',
           display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '300px', height: FULL_SIZE[size].height,
+          width: '300px', height: socialHeight,
           paddingLeft: '24px', paddingRight: '24px',
           backgroundColor: bg, color: fg, border,
           borderRadius: '999px',
@@ -363,6 +378,50 @@ export function ButtonLive({
         {!showLabel && <span style={{ flex: 1 }} />}
         {/* Empty right slot (balances layout) */}
         <span style={{ width: '16px', flexShrink: 0 }} />
+      </button>
+    );
+  }
+
+  // ── Text-only variants (Tertiary, Destructive-Text) ───────────────────────
+  // Figma: compact text link style — no pill, no padding, just colored text + optional icons.
+  if (variant === 'Tertiary' || variant === 'Destructive-Text') {
+    const t = TEXT_SIZE[size];
+    const textColor = variant === 'Tertiary'
+      ? 'var(--atom-foreground-core-fg-link, #006B99)'
+      : 'var(--atom-foreground-feedback-fg-error, #E02D3C)';
+    const stateUnderline =
+      state === 'Hover' || state === 'Active' ? 'underline' : 'none';
+    const stateOpacity = state === 'Active' ? 0.8 : 1;
+    return (
+      <button
+        disabled={isDisabled}
+        aria-busy={isLoading ? 'true' : undefined}
+        aria-label={isLoading ? 'Loading\u2026' : label}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          height: t.height, padding: 0,
+          backgroundColor: 'transparent', color: textColor, border: 'none',
+          fontSize: t.fontSize, fontWeight: 600,
+          fontFamily: 'var(--atom-font-body, system-ui, sans-serif)',
+          lineHeight: t.height,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+          opacity: isDisabled ? 0.4 : stateOpacity,
+          outline: 'none', boxShadow: focusRing,
+          pointerEvents: isDisabled ? 'none' : undefined,
+          whiteSpace: 'nowrap', userSelect: 'none',
+          textDecoration: stateUnderline,
+          transition: 'opacity 0.15s ease, box-shadow 0.15s ease',
+        }}
+      >
+        {isLoading ? (
+          <><SpinnerIcon /><span>Loading&hellip;</span></>
+        ) : (
+          <>
+            {showIconLeft  && <PlaceholderIcon brand={brand} />}
+            {showLabel && <span>{label || 'Button Label'}</span>}
+            {showIconRight && <PlaceholderIcon brand={brand} />}
+          </>
+        )}
       </button>
     );
   }

@@ -108,9 +108,14 @@ export function LineItemPage({ brand }: LineItemPageProps) {
   const [showIcon, setShowIcon] = useState(true);
   const [titleText, setTitleText] = useState('Title');
   const [subtitleText, setSubtitleText] = useState('Subtitle text');
+  const [locationText, setLocationText] = useState('London, UK');
+  const [showSwitch, setShowSwitch] = useState(false);
+  const [switchChecked, setSwitchChecked] = useState(false);
+  const [showCheckbox, setShowCheckbox] = useState(false);
+  const [checkboxChecked, setCheckboxChecked] = useState(false);
 
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
-  const previewKey = `${itemType}-${mode}-${weight}-${showIcon}-${titleText}-${subtitleText}`;
+  const previewKey = `${itemType}-${mode}-${weight}-${showIcon}-${titleText}-${subtitleText}-${locationText}-${showSwitch}-${switchChecked}-${showCheckbox}-${checkboxChecked}`;
 
   const isDarkPreview = mode === 'Dark';
   const canvasBg = isDarkPreview
@@ -152,6 +157,11 @@ export function LineItemPage({ brand }: LineItemPageProps) {
                     subtitleText={subtitleText}
                     showTitle={true}
                     showSubtitle={true}
+                    locationText={locationText}
+                    showSwitch={showSwitch}
+                    switchChecked={switchChecked}
+                    showCheckbox={showCheckbox}
+                    checkboxChecked={checkboxChecked}
                     brand={brand}
                   />
                 </motion.div>
@@ -234,6 +244,54 @@ export function LineItemPage({ brand }: LineItemPageProps) {
                   }}
                 />
               </div>
+
+              {/* Location input (Flight type only) */}
+              {itemType === 'Flight' && (
+                <div>
+                  <p style={{ ...LABEL_STYLE, margin: '0 0 6px' }}>Location</p>
+                  <input
+                    type="text"
+                    value={locationText}
+                    onChange={e => setLocationText(e.target.value)}
+                    style={{
+                      width: '100%', padding: '6px 8px', fontSize: '12.5px',
+                      border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                      boxSizing: 'border-box', fontFamily: 'system-ui, -apple-system, sans-serif',
+                      color: '#374151',
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Checkbox toggle */}
+              <div>
+                <p style={LABEL_STYLE}>Checkbox</p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showCheckbox} onClick={() => setShowCheckbox(true)}>Show</SegBtn>
+                  <SegBtn active={!showCheckbox} onClick={() => setShowCheckbox(false)}>Hide</SegBtn>
+                </div>
+                {showCheckbox && (
+                  <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px', marginTop: '6px' }}>
+                    <SegBtn active={checkboxChecked} onClick={() => setCheckboxChecked(true)}>Checked</SegBtn>
+                    <SegBtn active={!checkboxChecked} onClick={() => setCheckboxChecked(false)}>Unchecked</SegBtn>
+                  </div>
+                )}
+              </div>
+
+              {/* Switch toggle */}
+              <div>
+                <p style={LABEL_STYLE}>Switch</p>
+                <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px' }}>
+                  <SegBtn active={showSwitch} onClick={() => setShowSwitch(true)}>Show</SegBtn>
+                  <SegBtn active={!showSwitch} onClick={() => setShowSwitch(false)}>Hide</SegBtn>
+                </div>
+                {showSwitch && (
+                  <div style={{ display: 'flex', padding: '2px', backgroundColor: '#f3f4f6', borderRadius: '8px', gap: '2px', marginTop: '6px' }}>
+                    <SegBtn active={switchChecked} onClick={() => setSwitchChecked(true)}>On</SegBtn>
+                    <SegBtn active={!switchChecked} onClick={() => setSwitchChecked(false)}>Off</SegBtn>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -273,7 +331,7 @@ export function LineItemPage({ brand }: LineItemPageProps) {
 
       {/* -- 3. ANATOMY ------------------------------------------------------------ */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Line Item component and their roles.</p>
 
         <div style={{
@@ -326,7 +384,7 @@ export function LineItemPage({ brand }: LineItemPageProps) {
 
       {/* -- 4. VARIANTS ----------------------------------------------------------- */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Variants</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Available property combinations for the Line Item component.</p>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
@@ -345,6 +403,9 @@ export function LineItemPage({ brand }: LineItemPageProps) {
                 { prop: 'Icon', vals: 'Show \u00b7 Hide (optional toggle)' },
                 { prop: 'Title', vals: 'Show \u00b7 Hide (optional toggle)' },
                 { prop: 'Subtitle', vals: 'Show \u00b7 Hide (optional toggle)' },
+                { prop: 'Checkbox', vals: 'Show \u00b7 Hide \u2014 renders a leading checkbox (checked / unchecked)' },
+                { prop: 'Switch', vals: 'Show \u00b7 Hide \u2014 renders a trailing switch toggle (on / off)' },
+                { prop: 'Location', vals: 'Free-form string (Flight type only) \u2014 e.g. "London, UK"' },
               ].map(({ prop, vals }, i, arr) => (
                 <tr key={prop} style={{ borderBottom: i < arr.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
                   <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151' }}>{prop}</td>
@@ -382,7 +443,7 @@ export function LineItemPage({ brand }: LineItemPageProps) {
 
       {/* -- 5. DESIGN TOKENS ------------------------------------------------------ */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Design tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           The Line Item uses foreground and background tokens that update per brand and mode.
         </p>
@@ -428,7 +489,7 @@ export function LineItemPage({ brand }: LineItemPageProps) {
 
       {/* -- 6. ACCESSIBILITY ------------------------------------------------------ */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Guidance for building inclusive experiences with the Line Item component.
         </p>

@@ -53,6 +53,7 @@ const BRAND_ICON_PATHS: Record<Brand, string> = {
   visa:       OUTLINE_PATH, // fallback → dragonpass outline
   greyscale:  OUTLINE_PATH, // fallback → dragonpass outline
   assurant:   OUTLINE_PATH,
+  custom:     OUTLINE_PATH,
 };
 
 // ─── Placeholder icon — uses the real Figma SVG path ──────────────────────

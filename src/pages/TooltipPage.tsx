@@ -263,7 +263,7 @@ export function TooltipPage({ brand }: TooltipPageProps) {
 
       {/* ── 3. ANATOMY ─────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Tooltip component and their roles.</p>
 
         <div style={{
@@ -279,31 +279,31 @@ export function TooltipPage({ brand }: TooltipPageProps) {
           </div>
 
           {/* Callout 2 — Arrow (bottom center, slightly offset) */}
-          <div style={{ position: 'absolute', bottom: '12px', left: '53%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={LINE} />
             <CalloutDot num="2" />
           </div>
 
           {/* Callout 3 — Icon Left (top left) */}
-          <div style={{ position: 'absolute', top: '12px', left: '42%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '12px', left: '40%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="3" />
             <div style={LINE} />
           </div>
 
           {/* Callout 4 — Title (top center-left) */}
-          <div style={{ position: 'absolute', top: '12px', left: '47%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '12px', left: '46%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="4" />
             <div style={LINE} />
           </div>
 
           {/* Callout 5 — Description (top center-right) */}
-          <div style={{ position: 'absolute', top: '12px', left: '53%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '12px', left: '52%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="5" />
             <div style={LINE} />
           </div>
 
           {/* Callout 6 — Icon Right (top right) */}
-          <div style={{ position: 'absolute', top: '12px', left: '58%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '12px', left: '60%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CalloutDot num="6" />
             <div style={LINE} />
           </div>
@@ -334,7 +334,7 @@ export function TooltipPage({ brand }: TooltipPageProps) {
 
       {/* ── 4. VARIANTS ────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Variants</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>Available property combinations for the Tooltip component.</p>
 
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
@@ -377,7 +377,7 @@ export function TooltipPage({ brand }: TooltipPageProps) {
 
       {/* ── 5. DESIGN TOKENS ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Design tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           The Tooltip uses brand primary tokens for its container and inverse foreground for text.
         </p>
@@ -423,7 +423,7 @@ export function TooltipPage({ brand }: TooltipPageProps) {
 
       {/* ── 6. ACCESSIBILITY ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Guidance for building inclusive experiences with the Tooltip component.
         </p>

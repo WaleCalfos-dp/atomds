@@ -1,4 +1,4 @@
-export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant';
+export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant' | 'custom';
 
 export const BRANDS: { id: Brand; label: string; primary: string }[] = [
   { id: 'dragonpass', label: 'Dragonpass', primary: '#0a2333' },
@@ -496,3 +496,12 @@ export const RESOLVED_SEMANTIC_TOKENS: Record<string, BrandTokens> = {
     'atom.foreground.feedback.fg-error-hover': '#2b0101',
   },
 };
+
+// The 'custom' brand is populated at runtime by useCustomBrand when the user
+// saves a portal-authored theme. Default to dragonpass so unexpected early
+// reads are safe.
+RESOLVED_SEMANTIC_TOKENS.custom = RESOLVED_SEMANTIC_TOKENS.dragonpass;
+
+export function setCustomTokens(tokens: BrandTokens | null) {
+  RESOLVED_SEMANTIC_TOKENS.custom = tokens ?? RESOLVED_SEMANTIC_TOKENS.dragonpass;
+}

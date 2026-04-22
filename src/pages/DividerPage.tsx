@@ -155,7 +155,7 @@ export function DividerPage({ brand }: DividerPageProps) {
 
       {/* ── 3. ANATOMY ─────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>Parts of the Divider component and their roles.</p>
 
         <div style={{
@@ -200,7 +200,7 @@ export function DividerPage({ brand }: DividerPageProps) {
 
       {/* ── 4. VARIANTS TABLE ──────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">Variants</h2>
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
             <thead>
@@ -231,7 +231,7 @@ export function DividerPage({ brand }: DividerPageProps) {
 
       {/* ── 5. DESIGN TOKENS ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Design tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           The Divider uses a single token for both styles.
         </p>
@@ -267,7 +267,7 @@ export function DividerPage({ brand }: DividerPageProps) {
 
       {/* ── 6. ACCESSIBILITY ───────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
           Guidance for building inclusive experiences with the Divider component.
         </p>

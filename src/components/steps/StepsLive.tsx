@@ -1,6 +1,7 @@
 import { type Brand } from '../../data/tokens';
 
 export type StepsOrientation = 'Horizontal' | 'Vertical';
+export type StepType = 'Number' | 'Checkmark' | 'Icon';
 
 interface StepsLiveProps {
   totalSteps?: number;
@@ -8,6 +9,10 @@ interface StepsLiveProps {
   orientation?: StepsOrientation;
   labels?: string[];
   bodyTexts?: string[];
+  /** How completed steps render their indicator — 'Checkmark' (default), 'Number', or 'Icon' */
+  stepType?: StepType;
+  /** 1-indexed step numbers that should render as Disabled (grayed out, non-interactive) */
+  disabledSteps?: number[];
   brand?: Brand;
 }
 
@@ -25,12 +30,23 @@ function CheckmarkIcon() {
   );
 }
 
+/* Generic "step icon" — used when stepType === 'Icon' (small filled dot) */
+function StepDotIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <circle cx="5" cy="5" r="3" fill="var(--atom-foreground-primary-fg-brand-primary-inverse, #ffffff)" />
+    </svg>
+  );
+}
+
 export function StepsLive({
   totalSteps = 3,
   currentStep = 1,
   orientation = 'Horizontal',
   labels,
   bodyTexts,
+  stepType = 'Checkmark',
+  disabledSteps = [],
   brand: _brand = 'dragonpass',
 }: StepsLiveProps) {
   const clamped = Math.max(2, Math.min(8, totalSteps));
@@ -49,12 +65,14 @@ export function StepsLive({
   const numberUpcoming = 'var(--atom-foreground-states-fg-disabled-inverse, #ffffff)';
   const connectorColor = 'var(--atom-border-default-border-divider, #cdcbcb)';
   const labelColor = 'var(--atom-foreground-core-fg-primary, #4b4a4a)';
+  const labelColorDisabled = 'var(--atom-foreground-core-fg-secondary, #737272)';
 
   const steps = Array.from({ length: clamped }, (_, i) => {
     const stepNum = i + 1;
     const isCompleted = stepNum < active;
     const isActive = stepNum === active;
-    return { stepNum, isCompleted, isActive, label: stepLabels[i], body: stepBodies[i] };
+    const isDisabled = disabledSteps.includes(stepNum);
+    return { stepNum, isCompleted, isActive, isDisabled, label: stepLabels[i], body: stepBodies[i] };
   });
 
   return (
@@ -69,7 +87,7 @@ export function StepsLive({
         fontFamily: 'var(--atom-font-body, Poppins, sans-serif)',
       }}
     >
-      {steps.map(({ stepNum, isCompleted, isActive, label, body }, idx) => {
+      {steps.map(({ stepNum, isCompleted, isActive, isDisabled, label, body }, idx) => {
         const showConnector = idx < steps.length - 1;
 
         return (
@@ -103,20 +121,24 @@ export function StepsLive({
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  backgroundColor: isCompleted || isActive
-                    ? circleBgActive
-                    : circleBgUpcoming,
+                  backgroundColor: isDisabled
+                    ? circleBgUpcoming
+                    : (isCompleted || isActive)
+                      ? circleBgActive
+                      : circleBgUpcoming,
                   transition: 'background-color 0.2s ease',
                 }}
               >
-                {isCompleted ? (
+                {!isDisabled && stepType === 'Checkmark' && isCompleted ? (
                   <CheckmarkIcon />
+                ) : !isDisabled && stepType === 'Icon' && (isCompleted || isActive) ? (
+                  <StepDotIcon />
                 ) : (
                   <span
                     style={{
                       fontSize: '10px',
                       fontWeight: 500,
-                      color: isCompleted || isActive ? numberActive : numberUpcoming,
+                      color: !isDisabled && (isCompleted || isActive) ? numberActive : numberUpcoming,
                       lineHeight: 1,
                     }}
                   >
@@ -166,7 +188,7 @@ export function StepsLive({
                 style={{
                   fontSize: '14px',
                   fontWeight: 500,
-                  color: labelColor,
+                  color: isDisabled ? labelColorDisabled : labelColor,
                   whiteSpace: 'nowrap',
                   transition: 'color 0.2s ease',
                   userSelect: 'none',
@@ -180,7 +202,7 @@ export function StepsLive({
                   style={{
                     fontSize: '12px',
                     fontWeight: 400,
-                    color: labelColor,
+                    color: isDisabled ? labelColorDisabled : labelColor,
                     lineHeight: 1.4,
                     transition: 'color 0.2s ease',
                     userSelect: 'none',
