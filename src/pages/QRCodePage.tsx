@@ -1,7 +1,36 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QRCodeLive, type QRCodeType } from '../components/qr-code/QRCodeLive';
+import type { QRCodeType } from '../components/qr-code/QRCodeLive';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+
+// Figma-exported variant SVGs. One per shipped combination of
+// (Code Type, Product Module, State, Type). These are the definitive
+// rendering truth — they override any procedural reconstruction.
+import barcodeAllFailedDark       from '../assets/qr-variants/barcode-all-failed-dark.svg';
+import barcodeAllFailedLight      from '../assets/qr-variants/barcode-all-failed-light.svg';
+import barcodeAllGeneratingDark   from '../assets/qr-variants/barcode-all-generating-dark.svg';
+import barcodeAllGeneratingLight  from '../assets/qr-variants/barcode-all-generating-light.svg';
+import barcodeAllSuccessDark      from '../assets/qr-variants/barcode-all-success-dark.svg';
+import barcodeAllSuccessLight     from '../assets/qr-variants/barcode-all-success-light.svg';
+import healthDefaultLight         from '../assets/qr-variants/health-healthandwellness-default-light.svg';
+import membershipAllDefaultDark   from '../assets/qr-variants/membership-all-default-dark.svg';
+import membershipAllDefaultLight  from '../assets/qr-variants/membership-all-default-light.svg';
+import membershipAllFailedDark    from '../assets/qr-variants/membership-all-failed-dark.svg';
+import membershipAllFailedLight   from '../assets/qr-variants/membership-all-failed-light.svg';
+import membershipAllGenDark       from '../assets/qr-variants/membership-all-generating-dark.svg';
+import membershipAllGenLight      from '../assets/qr-variants/membership-all-generating-light.svg';
+import qrAllFailedDark            from '../assets/qr-variants/qr-all-failed-dark.svg';
+import qrAllFailedLight           from '../assets/qr-variants/qr-all-failed-light.svg';
+import qrAllGeneratingDark        from '../assets/qr-variants/qr-all-generating-dark.svg';
+import qrAllGeneratingLight       from '../assets/qr-variants/qr-all-generating-light.svg';
+import qrDiningSuccessDark        from '../assets/qr-variants/qr-dining-success-dark.svg';
+import qrDiningSuccessLight       from '../assets/qr-variants/qr-dining-success-light.svg';
+import qrESIMSuccessDark          from '../assets/qr-variants/qr-esim-success-dark.svg';
+import qrESIMSuccessLight         from '../assets/qr-variants/qr-esim-success-light.svg';
+import qrFastTrackSuccessDark     from '../assets/qr-variants/qr-fasttrack-success-dark.svg';
+import qrFastTrackSuccessLight    from '../assets/qr-variants/qr-fasttrack-success-light.svg';
+import qrLoungeSuccessDark        from '../assets/qr-variants/qr-lounge-success-dark.svg';
+import qrLoungeSuccessLight       from '../assets/qr-variants/qr-lounge-success-light.svg';
 
 interface QRCodePageProps {
   brand: Brand;
@@ -88,200 +117,46 @@ function isLightColor(hex: string): boolean {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
- * Glyph renderers — one per Code Type
+ * Figma variant lookup + preview renderer
+ *
+ * The preview is a straight render of the Figma SVG export for the current
+ * `(Code Type, Product Module, State, Type)` tuple. When the tuple is not
+ * one of the 25 shipped variants, the renderer shows a dashed placeholder
+ * explaining the gap.
+ *
+ * Note on brands: the SVGs are DragonPass-mode exports. Flipping the TopBar
+ * brand pill does NOT repaint them (they are static assets, not CSS-
+ * variable-driven). The token swatch table in Section 5 is where brand
+ * colour changes are shown.
  * ────────────────────────────────────────────────────────────────────────── */
 
-function BarcodeGlyph({ dark, size = 140 }: { dark: boolean; size?: number }) {
-  const widths = [3, 1, 2, 1, 4, 1, 2, 3, 1, 2, 1, 3, 2, 1, 4, 1, 2, 1, 3, 2, 1, 2, 3, 1];
-  const fg = dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-  const bg = dark ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' : '#ffffff';
-  const total = widths.reduce((a, b) => a + b, 0);
-  const unit = size / total;
-  let x = 0;
-  return (
-    <svg width={size} height={size * 0.55} viewBox={`0 0 ${size} ${size * 0.55}`} aria-label="Barcode">
-      <rect x="0" y="0" width={size} height={size * 0.55} fill={bg} rx="4" />
-      {widths.map((w, i) => {
-        const rect = <rect key={i} x={x} y="6" width={(w === 1 ? unit : unit * w) - unit * 0.2} height={size * 0.55 - 12} fill={i % 2 === 0 ? fg : 'transparent'} />;
-        x += unit * w;
-        return rect;
-      })}
-    </svg>
-  );
-}
-
-function MembershipIdGlyph({ dark, size = 140 }: { dark: boolean; size?: number }) {
-  const fg = dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-  const bg = dark ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' : '#ffffff';
-  return (
-    <div
-      style={{
-        width: size, height: size * 0.62, borderRadius: 8,
-        backgroundColor: bg,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        gap: 6, padding: '8px 12px',
-        border: dark ? 'none' : '1px solid var(--atom-border-default-border-default, #cdcbcb)',
-      }}
-    >
-      <span style={{ fontSize: 10, fontWeight: 600, color: fg, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7 }}>
-        Membership ID
-      </span>
-      <span style={{ fontSize: 22, fontWeight: 700, color: fg, letterSpacing: '0.12em', fontFamily: 'ui-monospace, monospace' }}>
-        DP-18462
-      </span>
-      <span style={{ fontSize: 10, color: fg, opacity: 0.6 }}>Scan or present at check-in</span>
-    </div>
-  );
-}
-
-function HealthGlyph({ dark, size = 140 }: { dark: boolean; size?: number }) {
-  const fg = dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-  const bg = dark ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' : '#ffffff';
-  return (
-    <div
-      style={{
-        width: size, height: size, borderRadius: 12,
-        backgroundColor: bg,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: dark ? 'none' : '1px solid var(--atom-border-default-border-default, #cdcbcb)',
-      }}
-    >
-      <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
-        <path
-          d="M36 63s-22-13.2-22-30A12 12 0 0 1 36 22 12 12 0 0 1 58 33C58 49.8 36 63 36 63Z"
-          fill="none" stroke={fg} strokeWidth="3" strokeLinejoin="round"
-        />
-        <path d="M22 36h9l3-6 6 12 3-6h9" fill="none" stroke={fg} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-  );
-}
-
-function CodeGlyph({ codeType, dark, size = 140 }: { codeType: CodeType; dark: boolean; size?: number }) {
-  if (codeType === 'Barcode')       return <BarcodeGlyph      dark={dark} size={size} />;
-  if (codeType === 'Membership ID') return <MembershipIdGlyph dark={dark} size={size} />;
-  if (codeType === 'Health')        return <HealthGlyph       dark={dark} size={size} />;
-  return (
-    <div style={{ pointerEvents: 'none' }}>
-      <QRCodeLive type={dark ? 'Dark' : 'Light'} />
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
- * Supporting card parts
- * ────────────────────────────────────────────────────────────────────────── */
-
-function ChevronIcon({ dir, dark }: { dir: 'left' | 'right'; dark: boolean }) {
-  const color = dark ? 'rgba(255,255,255,0.65)' : 'var(--atom-foreground-core-fg-tertiary, #afaead)';
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path
-        d={dir === 'left' ? 'M10 3l-5 5 5 5' : 'M6 3l5 5-5 5'}
-        fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function WalletCTA({ dark }: { dark: boolean }) {
-  const bg = dark ? '#ffffff' : '#000000';
-  const fg = dark ? '#000000' : '#ffffff';
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: 8,
-      padding: '8px 14px', borderRadius: 999,
-      backgroundColor: bg, color: fg,
-      fontSize: 11, fontWeight: 600, letterSpacing: '0.01em',
-    }}>
-      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" fill="none">
-        <rect x="1" y="3" width="12" height="9" rx="1.5" stroke={fg} strokeWidth="1.2" />
-        <rect x="9" y="6" width="4" height="3" fill={fg} />
-      </svg>
-      Add to Apple Wallet
-    </div>
-  );
-}
-
-function OfferRibbon({ text, dark }: { text: string; dark: boolean }) {
-  const bg = dark ? 'rgba(255,255,255,0.12)' : 'var(--atom-background-core-bg-accent, #d53f34)';
-  const fg = dark ? '#ffffff' : '#ffffff';
-  return (
-    <span style={{
-      display: 'inline-block', padding: '4px 10px', borderRadius: 999,
-      backgroundColor: bg, color: fg, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-    }}>{text}</span>
-  );
-}
-
-function Counter({ text, dark }: { text: string; dark: boolean }) {
-  const c = dark ? 'rgba(255,255,255,0.65)' : 'var(--atom-foreground-core-fg-secondary, #737272)';
-  return <span style={{ fontSize: 11, color: c, fontWeight: 500 }}>{text}</span>;
-}
-
-function Spinner() {
-  return (
-    <div
-      style={{
-        width: 40, height: 40, borderRadius: '50%',
-        border: '3px solid rgba(0,0,0,0.08)',
-        borderTopColor: 'var(--atom-foreground-core-fg-link, #006b99)',
-        animation: 'qr-spin 800ms linear infinite',
-      }}
-    >
-      <style>{`@keyframes qr-spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
-}
-
-function FailedIcon({ dark }: { dark: boolean }) {
-  const c = dark ? '#ff7a85' : 'var(--atom-foreground-feedback-fg-error, #e02d3c)';
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-      <circle cx="20" cy="20" r="18" fill="none" stroke={c} strokeWidth="2.5" />
-      <path d="M14 14l12 12M26 14L14 26" stroke={c} strokeWidth="2.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function RefreshButton({ dark }: { dark: boolean }) {
-  const bg = dark ? '#ffffff' : 'var(--atom-background-primary-bg-primary-default, #0a2333)';
-  const fg = dark ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' : '#ffffff';
-  return (
-    <button
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '8px 14px', borderRadius: 999,
-        backgroundColor: bg, color: fg, border: 'none',
-        fontSize: 12, fontWeight: 600, cursor: 'pointer',
-      }}
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M10 6A4 4 0 1 1 8.8 3.2M10 1.5V4H7.5" stroke={fg} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      Refresh
-    </button>
-  );
-}
-
-function BrandLogoBadge({ dark }: { dark: boolean }) {
-  const bg = dark ? 'rgba(255,255,255,0.12)' : 'var(--atom-background-core-bg-muted, #0a23330a)';
-  const fg = dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '2px 8px', borderRadius: 4, backgroundColor: bg, color: fg,
-      fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: 2, backgroundColor: fg }} />
-      Co-brand
-    </span>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
- * Preview state + inline Product Module renderers
- * ────────────────────────────────────────────────────────────────────────── */
+const VARIANT_SRC: Record<string, string> = {
+  'Barcode|All|Failed|Dark':                    barcodeAllFailedDark,
+  'Barcode|All|Failed|Light':                   barcodeAllFailedLight,
+  'Barcode|All|Generating|Dark':                barcodeAllGeneratingDark,
+  'Barcode|All|Generating|Light':               barcodeAllGeneratingLight,
+  'Barcode|All|Success|Dark':                   barcodeAllSuccessDark,
+  'Barcode|All|Success|Light':                  barcodeAllSuccessLight,
+  'Health|Health and Wellness|Default|Light':   healthDefaultLight,
+  'Membership ID|All|Default|Dark':             membershipAllDefaultDark,
+  'Membership ID|All|Default|Light':            membershipAllDefaultLight,
+  'Membership ID|All|Failed|Dark':              membershipAllFailedDark,
+  'Membership ID|All|Failed|Light':             membershipAllFailedLight,
+  'Membership ID|All|Generating|Dark':          membershipAllGenDark,
+  'Membership ID|All|Generating|Light':         membershipAllGenLight,
+  'QR|All|Failed|Dark':                         qrAllFailedDark,
+  'QR|All|Failed|Light':                        qrAllFailedLight,
+  'QR|All|Generating|Dark':                     qrAllGeneratingDark,
+  'QR|All|Generating|Light':                    qrAllGeneratingLight,
+  'QR|Dining|Success|Dark':                     qrDiningSuccessDark,
+  'QR|Dining|Success|Light':                    qrDiningSuccessLight,
+  'QR|eSIM|Success|Dark':                       qrESIMSuccessDark,
+  'QR|eSIM|Success|Light':                      qrESIMSuccessLight,
+  'QR|Fast Track|Success|Dark':                 qrFastTrackSuccessDark,
+  'QR|Fast Track|Success|Light':                qrFastTrackSuccessLight,
+  'QR|Lounge|Success|Dark':                     qrLoungeSuccessDark,
+  'QR|Lounge|Success|Light':                    qrLoungeSuccessLight,
+};
 
 interface PreviewState {
   codeType: CodeType;
@@ -292,304 +167,137 @@ interface PreviewState {
   t: Record<string, string>;
 }
 
-function QRCard({ children, dark }: { children: React.ReactNode; dark: boolean }) {
+function variantKey(c: CodeType, p: ProductModule, s: QRState, t: QRCodeType): string {
+  return `${c}|${p}|${s}|${t}`;
+}
+
+function FigmaVariantImage({
+  codeType, productModule, state, type,
+  maxWidth,
+}: {
+  codeType: CodeType;
+  productModule: ProductModule;
+  state: QRState;
+  type: QRCodeType;
+  maxWidth?: number | string;
+}) {
+  const src = VARIANT_SRC[variantKey(codeType, productModule, state, type)];
+  if (!src) {
+    return (
+      <div
+        role="img"
+        aria-label="No Figma export for this variant"
+        style={{
+          width: '100%',
+          maxWidth: maxWidth ?? 281,
+          aspectRatio: '281 / 485',
+          borderRadius: 12,
+          border: '1.5px dashed #cbd5e1',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24, textAlign: 'center',
+          fontFamily: 'var(--atom-font-body, Poppins, sans-serif)',
+          fontSize: 12, lineHeight: '18px', color: '#64748b',
+          backgroundColor: '#f8fafc',
+        }}
+      >
+        Figma ships 25 concrete variants, and this combination is not one of
+        them. Pick a different Code Type / Product Module / State pairing to
+        see the real design.
+      </div>
+    );
+  }
   return (
-    <div
+    <img
+      src={src}
+      alt={`${codeType} · ${productModule} · ${state} · ${type}`}
       style={{
-        fontFamily: 'var(--atom-font-body, Poppins, sans-serif)',
-        display: 'inline-flex', flexDirection: 'column',
-        alignItems: 'stretch', gap: 14,
-        padding: 24, minWidth: 260, maxWidth: 320,
-        backgroundColor: dark
-          ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)'
-          : 'var(--atom-background-primary-bg-primary-inverse, #ffffff)',
-        color: dark ? '#ffffff' : 'var(--atom-foreground-core-fg-primary, #4b4a4a)',
-        border: dark ? 'none' : '1px solid var(--atom-border-default-border-default, #cdcbcb)',
-        borderRadius: 16,
-        boxShadow: '0 1px 3px rgba(10,35,51,0.08)',
+        width: '100%',
+        maxWidth: maxWidth ?? 281,
+        height: 'auto',
+        display: 'block',
       }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({ leftChevron, counter, rightChevron }:
-  { leftChevron: React.ReactNode; counter: React.ReactNode; rightChevron: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 16, marginBottom: -8 }}>
-      <span style={{ width: 24, display: 'inline-flex', justifyContent: 'flex-start' }}>{leftChevron}</span>
-      <span>{counter}</span>
-      <span style={{ width: 24, display: 'inline-flex', justifyContent: 'flex-end' }}>{rightChevron}</span>
-    </div>
-  );
-}
-
-function GlyphFrame({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'flex', justifyContent: 'center' }}>{children}</div>;
-}
-
-function NameBlock({ name, card, dark }: { name: string; card: string; dark: boolean }) {
-  return (
-    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <span style={{ fontSize: 14, fontWeight: 600, color: dark ? '#ffffff' : 'var(--atom-foreground-core-fg-primary, #4b4a4a)' }}>{name}</span>
-      <span style={{
-        fontSize: 12, fontWeight: 400, letterSpacing: '0.04em',
-        color: dark ? 'rgba(255,255,255,0.7)' : 'var(--atom-foreground-core-fg-secondary, #737272)',
-      }}>{card}</span>
-    </div>
-  );
-}
-
-function Paragraph({ children, dark }: { children: React.ReactNode; dark: boolean }) {
-  return (
-    <p style={{
-      margin: 0, fontSize: 11, fontWeight: 400, lineHeight: 1.45, textAlign: 'center',
-      color: dark ? 'rgba(255,255,255,0.7)' : 'var(--atom-foreground-core-fg-secondary, #737272)',
-    }}>{children}</p>
-  );
-}
-
-function LabelRow({ label, value, dark }: { label: string; value: string; dark: boolean }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'baseline', gap: 8,
-      padding: '8px 0',
-      borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'var(--atom-border-default-border-divider, #cdcbcb)'}`,
-    }}>
-      <span style={{ minWidth: 82, fontSize: 11, fontWeight: 500, color: dark ? 'rgba(255,255,255,0.6)' : 'var(--atom-foreground-core-fg-secondary, #737272)' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: dark ? '#ffffff' : 'var(--atom-foreground-core-fg-primary, #4b4a4a)' }}>{value}</span>
-    </div>
-  );
-}
-
-function renderFastTrack({ codeType, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  return (
-    <QRCard dark={dark}>
-      <CardHeader
-        leftChevron={b['Chevron Left'] ? <ChevronIcon dir="left" dark={dark} /> : null}
-        counter={b['Counter'] ? <Counter text={t['Counter Text']} dark={dark} /> : null}
-        rightChevron={b['Chevron Right'] ? <ChevronIcon dir="right" dark={dark} /> : null}
-      />
-      {b['Special Brand Logo'] && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <BrandLogoBadge dark={dark} />
-        </div>
-      )}
-      {b['Title'] && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: dark ? '#ffffff' : 'var(--atom-foreground-core-fg-primary, #4b4a4a)' }}>
-            {t['Title Text']}
-          </span>
-          <span style={{ fontSize: 18, fontWeight: 700, color: dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' }}>
-            {t['Location Text']}
-          </span>
-        </div>
-      )}
-      {b['QR Code'] && <GlyphFrame><CodeGlyph codeType={codeType} dark={dark} size={140} /></GlyphFrame>}
-      {b['Description'] && <Paragraph dark={dark}>{t['Description Text 1']}</Paragraph>}
-      <div>
-        {b['Show Name'] && <LabelRow label={t['Name Label']} value={t['Name']} dark={dark} />}
-        {b['Show Activity'] && <LabelRow label={t['Activity Label']} value={t['Activity']} dark={dark} />}
-        {b['Show Date and Time'] && <LabelRow label={t['Check in Label'].trim()} value={t['Date and Time']} dark={dark} />}
-      </div>
-      {b['Footer'] && (
-        <div style={{
-          paddingTop: 8,
-          borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'var(--atom-border-default-border-divider, #cdcbcb)'}`,
-          fontSize: 10, letterSpacing: '0.04em', textAlign: 'center',
-          color: dark ? 'rgba(255,255,255,0.55)' : 'var(--atom-foreground-core-fg-tertiary, #afaead)',
-        }}>{t['Powered by Text']} DragonPass</div>
-      )}
-    </QRCard>
-  );
-}
-
-function renderESIM({ codeType, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  return (
-    <QRCard dark={dark}>
-      <CardHeader
-        leftChevron={b['Chevron Left'] ? <ChevronIcon dir="left" dark={dark} /> : null}
-        counter={b['Counter'] ? <Counter text={t['Counter Text']} dark={dark} /> : null}
-        rightChevron={b['Chevron Right'] ? <ChevronIcon dir="right" dark={dark} /> : null}
-      />
-      {b['Special Brand Logo'] && <div style={{ display: 'flex', justifyContent: 'center' }}><BrandLogoBadge dark={dark} /></div>}
-      {b['QR Code'] && <GlyphFrame><CodeGlyph codeType={codeType} dark={dark} size={140} /></GlyphFrame>}
-      <NameBlock name={t['Name']} card={t['Card Number']} dark={dark} />
-      {b['Description'] && <Paragraph dark={dark}>{t['Description Text']}</Paragraph>}
-      {b['Add to Wallet'] && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}><WalletCTA dark={dark} /></div>
-      )}
-    </QRCard>
-  );
-}
-
-function renderLounge({ codeType, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  return (
-    <QRCard dark={dark}>
-      <CardHeader
-        leftChevron={b['Chevron Left'] ? <ChevronIcon dir="left" dark={dark} /> : null}
-        counter={b['Counter'] ? <Counter text={t['Counter Text']} dark={dark} /> : null}
-        rightChevron={b['Chevron Right'] ? <ChevronIcon dir="right" dark={dark} /> : null}
-      />
-      {b['Special Brand Logo'] && <div style={{ display: 'flex', justifyContent: 'center' }}><BrandLogoBadge dark={dark} /></div>}
-      {b['Title'] && (
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' }}>
-            {t['Airport Name']}
-          </span>
-          <span style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--atom-foreground-core-fg-secondary, #737272)' }}>
-            {t['Terminal']}
-          </span>
-        </div>
-      )}
-      {b['QR Code'] && <GlyphFrame><CodeGlyph codeType={codeType} dark={dark} size={140} /></GlyphFrame>}
-      <NameBlock name={t['Name']} card={t['Card Number']} dark={dark} />
-      {b['Validity'] && (
-        <div style={{
-          textAlign: 'center', fontSize: 11, fontWeight: 500,
-          color: dark ? 'rgba(255,255,255,0.7)' : 'var(--atom-foreground-core-fg-secondary, #737272)',
-        }}>{t['Validity Text']}</div>
-      )}
-      {b['Add to Wallet'] && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}><WalletCTA dark={dark} /></div>
-      )}
-    </QRCard>
-  );
-}
-
-function renderDining({ codeType, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  return (
-    <QRCard dark={dark}>
-      <CardHeader
-        leftChevron={b['Chevron Left'] ? <ChevronIcon dir="left" dark={dark} /> : null}
-        counter={b['Counter'] ? <Counter text={t['Counter Text']} dark={dark} /> : null}
-        rightChevron={b['Chevron Right'] ? <ChevronIcon dir="right" dark={dark} /> : null}
-      />
-      {b['Special Brand Logo'] && <div style={{ display: 'flex', justifyContent: 'center' }}><BrandLogoBadge dark={dark} /></div>}
-      {b['Offer'] && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <OfferRibbon text={t['Percentage Off']} dark={dark} />
-        </div>
-      )}
-      {b['QR Code'] && <GlyphFrame><CodeGlyph codeType={codeType} dark={dark} size={140} /></GlyphFrame>}
-      {b['Dining Location'] && (
-        <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' }}>
-          {t['Location Text']}
-        </div>
-      )}
-      <div style={{ textAlign: 'center', fontSize: 12, color: dark ? 'rgba(255,255,255,0.75)' : 'var(--atom-foreground-core-fg-secondary, #737272)' }}>
-        {t['Offer Text']}
-      </div>
-      <NameBlock name={t['Name']} card={t['Card Number']} dark={dark} />
-      {b['Validity'] && (
-        <div style={{
-          textAlign: 'center', fontSize: 11, fontWeight: 500,
-          color: dark ? 'rgba(255,255,255,0.7)' : 'var(--atom-foreground-core-fg-secondary, #737272)',
-        }}>{t['Validity Text']}</div>
-      )}
-    </QRCard>
-  );
-}
-
-function renderAllState({ codeType, state, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  const isGenerating = state === 'Generating';
-  const isFailed     = state === 'Failed';
-  const isInactive   = isGenerating || isFailed;
-  return (
-    <QRCard dark={dark}>
-      <CardHeader
-        leftChevron={b['Chevron Left'] ? <ChevronIcon dir="left" dark={dark} /> : null}
-        counter={b['Counter'] ? <Counter text={t['Counter Text']} dark={dark} /> : null}
-        rightChevron={b['Chevron Right'] ? <ChevronIcon dir="right" dark={dark} /> : null}
-      />
-      <GlyphFrame>
-        <div style={{ position: 'relative', display: 'inline-flex' }}>
-          {b['QR Code'] && (
-            <div style={{ filter: isInactive ? 'blur(3px) opacity(0.4)' : 'none' }}>
-              <CodeGlyph codeType={codeType} dark={dark} size={140} />
-            </div>
-          )}
-          {isGenerating && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Spinner />
-            </div>
-          )}
-          {isFailed && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FailedIcon dark={dark} />
-            </div>
-          )}
-        </div>
-      </GlyphFrame>
-      <NameBlock name={t['Name']} card={t['Card Number']} dark={dark} />
-      {isInactive && (
-        <div style={{
-          textAlign: 'center', fontSize: 12, fontWeight: 500,
-          color: dark
-            ? 'rgba(255,255,255,0.75)'
-            : (isFailed ? 'var(--atom-foreground-feedback-fg-error, #e02d3c)' : 'var(--atom-foreground-core-fg-secondary, #737272)'),
-        }}>
-          {isGenerating ? `${t['Status Text']} — generating…` : `${t['Status Text']} — failed`}
-        </div>
-      )}
-      {b['Description'] && <Paragraph dark={dark}>{t['Description Text']}</Paragraph>}
-      {b['Refresh Button'] && isInactive && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}><RefreshButton dark={dark} /></div>
-      )}
-    </QRCard>
-  );
-}
-
-function renderHealth({ codeType, type, b, t }: PreviewState) {
-  const dark = type === 'Dark';
-  return (
-    <QRCard dark={dark}>
-      {b['Icon'] && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'var(--atom-background-alert-bg-success-lightest, #ecfdf3)',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none">
-              <path d="M10 17s-7-4.2-7-9.5A3.5 3.5 0 0 1 10 6a3.5 3.5 0 0 1 7 1.5C17 12.8 10 17 10 17Z"
-                stroke={dark ? '#ffffff' : 'var(--atom-foreground-feedback-fg-success, #067647)'} strokeWidth="1.5" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-      )}
-      {b['Title'] && (
-        <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: dark ? '#ffffff' : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)' }}>
-          {t['Location Text']}
-        </div>
-      )}
-      {b['QR Code'] && <GlyphFrame><CodeGlyph codeType={codeType} dark={dark} size={140} /></GlyphFrame>}
-      <NameBlock name={t['Name']} card={t['Card Number']} dark={dark} />
-      {b['Description'] && <Paragraph dark={dark}>{t['Description Text 1']}</Paragraph>}
-    </QRCard>
+    />
   );
 }
 
 function renderPreview(p: PreviewState) {
-  switch (p.productModule) {
-    case 'Fast Track':          return renderFastTrack(p);
-    case 'eSIM':                return renderESIM(p);
-    case 'Lounge':              return renderLounge(p);
-    case 'Dining':              return renderDining(p);
-    case 'All':                 return renderAllState(p);
-    case 'Health and Wellness': return renderHealth(p);
-    default:                    return renderESIM(p);
-  }
+  return (
+    <FigmaVariantImage
+      codeType={p.codeType}
+      productModule={p.productModule}
+      state={p.state}
+      type={p.type}
+    />
+  );
 }
 
 const DEFAULT_BOOLEANS = Object.fromEntries(BOOLEAN_PROPS.map(p => [p.name, p.default])) as Record<string, boolean>;
 const DEFAULT_TEXTS    = Object.fromEntries(TEXT_PROPS.map(p => [p.name, p.defaultValue]))   as Record<string, string>;
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Shipped-variant lookup — Figma publishes only 25 of the 4×6×4×2 = 288
+ * theoretical combinations. This set lets the preview rail warn the designer
+ * when the current tuple has no Figma counterpart.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const SHIPPED_VARIANTS: ReadonlySet<string> = new Set([
+  'QR|Fast Track|Success|Dark',
+  'QR|Fast Track|Success|Light',
+  'QR|eSIM|Success|Dark',
+  'QR|eSIM|Success|Light',
+  'QR|Lounge|Success|Dark',
+  'QR|Lounge|Success|Light',
+  'QR|Dining|Success|Dark',
+  'QR|Dining|Success|Light',
+  'QR|All|Generating|Dark',
+  'QR|All|Generating|Light',
+  'QR|All|Failed|Dark',
+  'QR|All|Failed|Light',
+  'Barcode|All|Success|Dark',
+  'Barcode|All|Success|Light',
+  'Barcode|All|Generating|Dark',
+  'Barcode|All|Generating|Light',
+  'Barcode|All|Failed|Dark',
+  'Barcode|All|Failed|Light',
+  'Membership ID|All|Default|Dark',
+  'Membership ID|All|Default|Light',
+  'Membership ID|All|Generating|Dark',
+  'Membership ID|All|Generating|Light',
+  'Membership ID|All|Failed|Dark',
+  'Membership ID|All|Failed|Light',
+  'Health|Health and Wellness|Default|Light',
+]);
+
+function isShippedVariant(c: CodeType, p: ProductModule, s: QRState, t: QRCodeType): boolean {
+  return SHIPPED_VARIANTS.has(`${c}|${p}|${s}|${t}`);
+}
+
+function FigmaMatchBadge({ codeType, productModule, state, type }: {
+  codeType: CodeType;
+  productModule: ProductModule;
+  state: QRState;
+  type: QRCodeType;
+}) {
+  const shipped = isShippedVariant(codeType, productModule, state, type);
+  return (
+    <span
+      className={[
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold',
+        shipped
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : 'bg-amber-50 text-amber-700 border-amber-200',
+      ].join(' ')}
+      title={
+        shipped
+          ? 'This combination matches a shipped Figma variant.'
+          : 'This combination does not match any of the 25 variants Figma publishes.'
+      }
+    >
+      <span aria-hidden="true">{shipped ? '✓' : '⚠'}</span>
+      {shipped ? 'Matches Figma variant' : 'Not a shipped variant'}
+    </span>
+  );
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Preview-rail helpers
@@ -751,6 +459,10 @@ export function QRCodePage({ brand }: QRCodePageProps) {
       {/* ── 1. INTERACTIVE PREVIEW ───────────────────────────────────────────── */}
       <section>
         <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm bg-white">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-slate-50">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Interactive Preview</span>
+            <FigmaMatchBadge codeType={codeType} productModule={productModule} state={state} type={type} />
+          </div>
           <div className="flex flex-col md:flex-row" style={{ minHeight: 520 }}>
 
             {/* Canvas */}
@@ -885,7 +597,13 @@ export function QRCodePage({ brand }: QRCodePageProps) {
 
       {/* ── 4. VARIANTS ──────────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">Variants</h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Figma ships <strong>25 concrete variants</strong>, not every cross-product of the four properties.{' '}
+          <strong>QR</strong> appears in Fast Track, eSIM, Lounge, Dining, and All (Generating / Failed only for All).{' '}
+          <strong>Barcode</strong> and <strong>Membership ID</strong> ship only in the <strong>All</strong> module.{' '}
+          <strong>Health</strong> ships only in Health and Wellness, and only as <strong>Type = Light</strong>.
+        </p>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
@@ -895,11 +613,11 @@ export function QRCodePage({ brand }: QRCodePageProps) {
               </tr>
             </thead>
             <tbody>
-              {[
+              {([
                 {
                   label: 'Code Type',
                   chips: [
-                    { text: 'QR',            note: '21×21 modules' },
+                    { text: 'QR',            note: '21×21 modules', isDefault: true },
                     { text: 'Barcode',       note: 'linear' },
                     { text: 'Membership ID', note: 'alphanumeric' },
                     { text: 'Health',        note: 'wellness glyph' },
@@ -907,16 +625,16 @@ export function QRCodePage({ brand }: QRCodePageProps) {
                 },
                 {
                   label: 'Product Module',
-                  chips: PRODUCT_MODULES.map(m => ({ text: m, note: '' })),
+                  chips: PRODUCT_MODULES.map(m => ({ text: m, note: '', isDefault: m === 'Fast Track' })),
                 },
                 {
                   label: 'State',
-                  chips: QR_STATES.map(s => ({ text: s, note: '' })),
+                  chips: QR_STATES.map(s => ({ text: s, note: '', isDefault: s === 'Success' })),
                 },
                 {
                   label: 'Type',
                   chips: [
-                    { text: 'Dark',  note: 'brand-primary bg' },
+                    { text: 'Dark',  note: 'brand-primary bg', isDefault: true },
                     { text: 'Light', note: 'white bg + border' },
                   ],
                 },
@@ -938,14 +656,27 @@ export function QRCodePage({ brand }: QRCodePageProps) {
                     { text: 'Lato',     note: 'Assurant' },
                   ],
                 },
-              ].map((row, i, arr) => (
+              ] as { label: string; chips: { text: string; note?: string; isDefault?: boolean }[] }[]).map((row, i, arr) => (
                 <tr key={row.label} className={i < arr.length - 1 ? 'border-b border-slate-100' : ''}>
                   <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">{row.label}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex flex-wrap gap-1.5">
-                      {row.chips.map(({ text, note }) => (
-                        <span key={text} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-xs font-medium">
-                          {text}{note && <span className="text-slate-400 font-normal">· {note}</span>}
+                      {row.chips.map(({ text, note, isDefault }) => (
+                        <span
+                          key={text}
+                          className={[
+                            'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium',
+                            isDefault
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'border-slate-200 bg-slate-50 text-slate-600',
+                          ].join(' ')}
+                        >
+                          {text}
+                          {note && (
+                            <span className={isDefault ? 'text-slate-300 font-normal' : 'text-slate-400 font-normal'}>
+                              · {note}
+                            </span>
+                          )}
                         </span>
                       ))}
                     </div>
@@ -956,27 +687,36 @@ export function QRCodePage({ brand }: QRCodePageProps) {
           </table>
         </div>
 
-        {/* Visual preview of Product Modules */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {/* Visual preview — 10 cards covering every Figma variant axis */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {([
-            { module: 'Fast Track',          codeType: 'QR'            as CodeType, state: 'Success' as QRState },
-            { module: 'eSIM',                codeType: 'QR'            as CodeType, state: 'Success' as QRState },
-            { module: 'Lounge',              codeType: 'QR'            as CodeType, state: 'Success' as QRState },
-            { module: 'Dining',              codeType: 'QR'            as CodeType, state: 'Success' as QRState, bOverride: { Offer: true } },
-            { module: 'All',                 codeType: 'QR'            as CodeType, state: 'Generating' as QRState, bOverride: { 'Refresh Button': true } },
-            { module: 'Health and Wellness', codeType: 'Health'        as CodeType, state: 'Default' as QRState },
+            { id: 'ft-dark',    module: 'Fast Track',          codeType: 'QR'            as CodeType, state: 'Success'    as QRState, type: 'Dark'  as QRCodeType },
+            { id: 'esim-light', module: 'eSIM',                codeType: 'QR'            as CodeType, state: 'Success'    as QRState, type: 'Light' as QRCodeType },
+            { id: 'lng-dark',   module: 'Lounge',              codeType: 'QR'            as CodeType, state: 'Success'    as QRState, type: 'Dark'  as QRCodeType },
+            { id: 'dn-light',   module: 'Dining',              codeType: 'QR'            as CodeType, state: 'Success'    as QRState, type: 'Light' as QRCodeType, bOverride: { Offer: true } },
+            { id: 'all-bc',     module: 'All',                 codeType: 'Barcode'       as CodeType, state: 'Success'    as QRState, type: 'Dark'  as QRCodeType },
+            { id: 'all-mid',    module: 'All',                 codeType: 'Membership ID' as CodeType, state: 'Default'    as QRState, type: 'Light' as QRCodeType },
+            { id: 'all-gen',    module: 'All',                 codeType: 'QR'            as CodeType, state: 'Generating' as QRState, type: 'Dark'  as QRCodeType, bOverride: { 'Refresh Button': true } },
+            { id: 'all-fail',   module: 'All',                 codeType: 'QR'            as CodeType, state: 'Failed'     as QRState, type: 'Light' as QRCodeType, bOverride: { 'Refresh Button': true } },
+            { id: 'hw',         module: 'Health and Wellness', codeType: 'Health'        as CodeType, state: 'Default'    as QRState, type: 'Light' as QRCodeType },
+            { id: 'dn-brand',   module: 'Dining',              codeType: 'QR'            as CodeType, state: 'Success'    as QRState, type: 'Dark'  as QRCodeType, bOverride: { Offer: true, 'Special Brand Logo': true } },
           ] as const).map(v => (
-            <div key={v.module} style={{
+            <div key={v.id} style={{
               padding: '20px 16px', borderRadius: 10,
               border: '1px solid #f3f4f6', backgroundColor: '#fafafa',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
             }}>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#6b7280' }}>{v.module}</p>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#6b7280' }}>{v.module}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>
+                  {v.codeType} · {v.state} · {v.type}
+                </p>
+              </div>
               {renderPreview({
                 codeType: v.codeType,
                 productModule: v.module as ProductModule,
                 state: v.state,
-                type: 'Light',
+                type: v.type,
                 b: { ...DEFAULT_BOOLEANS, ...('bOverride' in v ? v.bOverride : {}) },
                 t: DEFAULT_TEXTS,
               })}
