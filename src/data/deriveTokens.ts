@@ -1,10 +1,16 @@
 import type { BrandTokens, SemanticTokenKey } from './tokens';
 
 // ─── Primitives the user fills in the portal ─────────────────────────────────
+// 14 primitives total. The fidelity audit (RGB diff vs the 6 built-in brands)
+// showed `bg-accent` as the worst-fitting derived token (avg error ~212) when
+// derived from `brandPrimary`, because brands like DragonPass (#d53f34) and
+// Investec (#c1803d) ship a totally different decorative accent. Promoted to
+// its own primitive so designers can dial it independently.
 export type CorePrimitives = {
   brandPrimary: string;        // dominant brand color
   brandHover: string;          // lighter brand shade for hover
   brandPressed: string;        // darker brand shade for pressed
+  accent: string;              // decorative accent (DragonPass uses red, Investec gold)
   textPrimary: string;         // body text
   textSecondary: string;       // supporting text
   textTertiary: string;        // placeholders, dividers
@@ -22,10 +28,22 @@ export type CustomBrandMode = 'simple' | 'full';
 export type CustomBrand = {
   name: string;                 // e.g. "Acme"
   logo: string;                 // URL or data: URL — maps to Brand Switcher brand-logo
-  mode: CustomBrandMode;        // 'simple' = 13 primitives drive tokens; 'full' = 67 explicit tokens
+  font?: string;                // CSS font-family stack — maps to Brand Switcher type/body/family
+  mode: CustomBrandMode;        // 'simple' = 14 primitives drive tokens; 'full' = 67 explicit tokens
   primitives: CorePrimitives;   // always present (simple source + full-mode seed)
   tokens?: BrandTokens;         // only populated in 'full' mode
 };
+
+// Common brand-aware font stacks the portal exposes as a dropdown. Mirrors the
+// fonts each built-in brand ships in src/index.css.
+export const FONT_PRESETS: { label: string; value: string }[] = [
+  { label: 'System default', value: 'system-ui, -apple-system, sans-serif' },
+  { label: 'Poppins (DragonPass)', value: "'Poppins', sans-serif" },
+  { label: 'Inter (Investec)', value: "'Inter', sans-serif" },
+  { label: 'Manrope (Visa, Greyscale)', value: "'Manrope', sans-serif" },
+  { label: 'Lato (Assurant)', value: "'Lato', sans-serif" },
+  { label: 'Arial (Mastercard)', value: 'Arial, sans-serif' },
+];
 
 // Resolve the final tokens a custom brand should render, regardless of mode.
 export function resolveCustomBrandTokens(cb: CustomBrand): BrandTokens {
@@ -37,6 +55,7 @@ export const DEFAULT_PRIMITIVES: CorePrimitives = {
   brandPrimary: '#0a2333',
   brandHover: '#045477',
   brandPressed: '#063e56',
+  accent: '#d53f34',           // DragonPass decorative accent (red)
   textPrimary: '#4b4a4a',
   textSecondary: '#737272',
   textTertiary: '#afaead',
@@ -72,6 +91,12 @@ export const PRIMITIVE_DESCRIPTORS: Record<
     group: 'Core brand',
     drives: 'bg-primary-pressed, fg-pressed, border-pressed',
     seenOn: 'Button primary pressed, Breadcrumb pressed',
+  },
+  accent: {
+    label: 'Decorative accent',
+    group: 'Core brand',
+    drives: 'bg-accent',
+    seenOn: 'Brand Foundations decorative blocks, marketing surfaces (DragonPass red, Investec gold)',
   },
   textPrimary: {
     label: 'Text primary',
@@ -138,6 +163,12 @@ export const PRIMITIVE_DESCRIPTORS: Record<
 
 // ─── Color math ───────────────────────────────────────────────────────────────
 // All inputs must be 6-digit #rrggbb. 8-digit alpha hex is produced only by `alpha`.
+//
+// `lighten` and `darken` operate in HSL: they bias the L (lightness) channel
+// while keeping H (hue) constant. This preserves vibrance — mixing #067647
+// (saturated green) with white at 75% in pure RGB gives a muddy mint #c1ddd1,
+// but raising HSL lightness from 24% to ~80% keeps the green saturation and
+// produces #b6f0ce — closer to DragonPass's actual #dcfae6.
 
 function parseHex(hex: string): { r: number; g: number; b: number } {
   const clean = hex.replace('#', '').slice(0, 6).padEnd(6, '0');
@@ -153,16 +184,56 @@ function toHex(r: number, g: number, b: number): string {
   return `#${c(r)}${c(g)}${c(b)}`;
 }
 
-// Mix `hex` with white by `amount` (0-1). amount=0 → hex; amount=1 → white.
-export function lighten(hex: string, amount: number): string {
-  const { r, g, b } = parseHex(hex);
-  return toHex(r + (255 - r) * amount, g + (255 - g) * amount, b + (255 - b) * amount);
+function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  switch (max) {
+    case rn: h = (gn - bn) / d + (gn < bn ? 6 : 0); break;
+    case gn: h = (bn - rn) / d + 2; break;
+    case bn: h = (rn - gn) / d + 4; break;
+  }
+  return { h: h * 60, s, l };
 }
 
-// Mix `hex` with black by `amount` (0-1). amount=0 → hex; amount=1 → black.
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  if (s === 0) {
+    const v = l * 255;
+    return { r: v, g: v, b: v };
+  }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const hk = ((h % 360) + 360) % 360 / 360;
+  const t = (n: number) => {
+    let x = n;
+    if (x < 0) x += 1;
+    if (x > 1) x -= 1;
+    if (x < 1 / 6) return p + (q - p) * 6 * x;
+    if (x < 1 / 2) return q;
+    if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
+    return p;
+  };
+  return { r: t(hk + 1 / 3) * 255, g: t(hk) * 255, b: t(hk - 1 / 3) * 255 };
+}
+
+// Lighten by raising HSL L toward 1. amount 0 → unchanged; 1 → pure white.
+export function lighten(hex: string, amount: number): string {
+  const { r, g, b } = parseHex(hex);
+  const { h, s, l } = rgbToHsl(r, g, b);
+  const next = hslToRgb(h, s, l + (1 - l) * amount);
+  return toHex(next.r, next.g, next.b);
+}
+
+// Darken by lowering HSL L toward 0. amount 0 → unchanged; 1 → pure black.
 export function darken(hex: string, amount: number): string {
   const { r, g, b } = parseHex(hex);
-  return toHex(r * (1 - amount), g * (1 - amount), b * (1 - amount));
+  const { h, s, l } = rgbToHsl(r, g, b);
+  const next = hslToRgb(h, s, l * (1 - amount));
+  return toHex(next.r, next.g, next.b);
 }
 
 // Returns 8-digit hex with alpha. opacity is 0-1.
@@ -233,7 +304,7 @@ export const TOKEN_DERIVATION: Record<SemanticTokenKey, TokenRule> = {
   'atom.background.core.bg-secondary-hover': { kind: 'alpha', from: 'brandPrimary', a: 0.04 },
   'atom.background.core.bg-muted': { kind: 'alpha', from: 'brandPrimary', a: 0.04 },
   'atom.background.core.bg-secondary': { kind: 'direct', from: 'backgroundSecondary' },
-  'atom.background.core.bg-accent': { kind: 'direct', from: 'brandPrimary' },
+  'atom.background.core.bg-accent': { kind: 'direct', from: 'accent' },
 
   // background/alert — 4 feedback × 3 tints
   'atom.background.alert.bg-success-full': { kind: 'direct', from: 'feedbackSuccess' },
@@ -745,10 +816,16 @@ export function generateCss(
   tokens: BrandTokens,
   selector = '[data-brand="custom"]',
   primitives?: CorePrimitives,
+  font?: string,
 ): string {
   const lines = (Object.keys(TOKEN_KEY_TO_CSS_VAR) as SemanticTokenKey[]).map(
     (key) => `  ${TOKEN_KEY_TO_CSS_VAR[key]}: ${tokens[key]};`,
   );
+  // Brand-aware font stack — 42 components read `var(--atom-font-body)`. Without
+  // this the custom brand silently inherits DragonPass Poppins.
+  if (font) {
+    lines.push(`  --atom-font-body: ${font};`);
+  }
   // Legacy `--color-*` aliases, used by the hero header strip on Brand Foundations
   // and the sidebar logo background. Keep them in sync with primitives.
   if (primitives) {

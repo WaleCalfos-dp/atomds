@@ -7,6 +7,7 @@ import {
   type CustomBrand,
   type CustomBrandMode,
   DEFAULT_PRIMITIVES,
+  FONT_PRESETS,
   PRIMITIVE_DESCRIPTORS,
   TOKEN_DERIVATION,
   TOKEN_GROUP_ORDER,
@@ -36,7 +37,7 @@ interface PortalPageProps {
 type PrimitiveKey = keyof CorePrimitives;
 
 const SIMPLE_GROUPS: { title: string; keys: PrimitiveKey[] }[] = [
-  { title: 'Core brand', keys: ['brandPrimary', 'brandHover', 'brandPressed'] },
+  { title: 'Core brand', keys: ['brandPrimary', 'brandHover', 'brandPressed', 'accent'] },
   { title: 'Text', keys: ['textPrimary', 'textSecondary', 'textTertiary'] },
   { title: 'Neutral & link', keys: ['link', 'backgroundSecondary', 'borderDefault'] },
   { title: 'Feedback', keys: ['feedbackSuccess', 'feedbackWarning', 'feedbackError', 'feedbackInfo'] },
@@ -115,6 +116,7 @@ export function PortalPage({
   const [mode, setMode] = useState<CustomBrandMode>(customBrand?.mode ?? 'simple');
   const [name, setName] = useState(customBrand?.name ?? 'Acme');
   const [logo, setLogo] = useState(customBrand?.logo ?? '');
+  const [font, setFont] = useState(customBrand?.font ?? FONT_PRESETS[0].value);
   const [primitives, setPrimitives] = useState<CorePrimitives>(
     customBrand?.primitives ?? DEFAULT_PRIMITIVES,
   );
@@ -184,6 +186,7 @@ export function PortalPage({
     const next: CustomBrand = {
       name: name.trim() || 'Custom',
       logo,
+      font,
       mode,
       primitives,
       tokens: mode === 'full' ? fullTokens : undefined,
@@ -197,13 +200,14 @@ export function PortalPage({
     setBrand('dragonpass');
     setName('Acme');
     setLogo('');
+    setFont(FONT_PRESETS[0].value);
     setPrimitives(DEFAULT_PRIMITIVES);
     setFullTokens(deriveTokens(DEFAULT_PRIMITIVES));
     setMode('simple');
   };
 
   const handleCopyCss = async () => {
-    const css = generateCss(effectiveTokens, '[data-brand="custom"]', primitives);
+    const css = generateCss(effectiveTokens, '[data-brand="custom"]', primitives, font);
     try {
       await navigator.clipboard.writeText(css);
       setCopied(true);
@@ -233,7 +237,7 @@ export function PortalPage({
             <h1 className="text-2xl font-bold text-slate-900">White-label Portal</h1>
             <p className="text-sm text-slate-600 mt-1">
               Define a brand that mirrors Brand Switcher's token structure. Switch between
-              Simple (13 primitives, auto-derived) and Full (all 67 tokens, explicit) based on
+              Simple (14 primitives, auto-derived) and Full (all 67 tokens, explicit) based on
               how much control you need.
             </p>
           </div>
@@ -246,8 +250,8 @@ export function PortalPage({
               {
                 id: 'simple' as const,
                 label: 'Simple',
-                count: '13 primitives',
-                hint: 'Edit 13 brand colors; the portal derives the other 54 via lighten/darken/alpha rules.',
+                count: '14 primitives',
+                hint: 'Edit 14 brand colors; the portal derives the rest via HSL lighten/darken/alpha rules.',
               },
               {
                 id: 'full' as const,
@@ -429,6 +433,25 @@ export function PortalPage({
                   placeholder="e.g. Acme"
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Font family</label>
+                <select
+                  value={font}
+                  onChange={(e) => setFont(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: font }}
+                >
+                  {FONT_PRESETS.map((f) => (
+                    <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Maps to Brand Switcher's <code className="font-mono">type/body/family</code>. Drives{' '}
+                  <code className="font-mono">--atom-font-body</code> across all 42+ components that read it.
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Logo URL</label>
@@ -651,7 +674,7 @@ export function PortalPage({
                 Generated CSS block (all 67 tokens)
               </summary>
               <pre className="px-4 py-3 text-[11px] leading-relaxed text-slate-300 font-mono overflow-auto max-h-80">
-                {generateCss(effectiveTokens, '[data-brand="custom"]', primitives)}
+                {generateCss(effectiveTokens, '[data-brand="custom"]', primitives, font)}
               </pre>
             </details>
           </div>

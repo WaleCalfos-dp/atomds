@@ -51,8 +51,8 @@ export function ToastLive({
 
   const iconColor =
     variant === 'Success'
-      ? 'var(--atom-foreground-alert-fg-success, #067647)'
-      : 'var(--atom-foreground-alert-fg-error, #e02d3c)';
+      ? 'var(--atom-foreground-feedback-fg-success, #067647)'
+      : 'var(--atom-foreground-feedback-fg-error, #e02d3c)';
 
   const IconEl = variant === 'Success' ? SuccessIcon : ErrorIcon;
 

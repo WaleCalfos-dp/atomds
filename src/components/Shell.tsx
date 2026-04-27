@@ -18,6 +18,7 @@ export function Shell({ brand, setBrand, customBrand, children }: ShellProps) {
           resolveCustomBrandTokens(customBrand),
           '[data-brand="custom"]',
           customBrand.primitives,
+          customBrand.font,
         )
       : null;
 

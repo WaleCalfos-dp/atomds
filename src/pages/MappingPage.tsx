@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type Brand, type SemanticTokenKey, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { type Brand, type SemanticTokenKey, RESOLVED_SEMANTIC_TOKENS, BRANDS } from '../data/tokens';
 import {
   type CorePrimitives,
   type TokenRule,
@@ -75,7 +75,6 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
       'atom.background.primary.bg-primary-focus',
       'atom.background.primary.bg-primary-pressed-brand',
       'atom.background.primary.accent',
-      'atom.background.core.bg-accent',
       'atom.border.default.border-default-brand',
       'atom.border.selection-and-focus.border-primary-focus',
       'atom.border.selection-and-focus.border-selected',
@@ -85,16 +84,51 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
     note:
       'In Assurant, fg-brand-primary (#01194d) differs from bg-primary-default (#103265) — the darker shade is used for text, the mid shade for surfaces. The portal compresses both to brandPrimary. Assurant’s distinction is lost; re-introduce by editing the exported CSS for the two tokens.',
   },
+  accent: {
+    tokens: ['atom.background.core.bg-accent'],
+    safeInAll: false,
+    note:
+      'Promoted to its own primitive in v2 — DragonPass uses #d53f34 (red), Investec #c1803d (gold), and Assurant #fcc166 (gold) as decorative accents that are deliberately distinct from brandPrimary. Earlier the portal collapsed bg-accent into brandPrimary, which gave the worst fidelity gap (avg RGB error ~212 across the 6 brands).',
+  },
 };
 
-// ─── Fixed values (the 7 tokens that aren't driven by any primitive) ────────
+// ─── Fixed values ────────────────────────────────────────────────────────────
+// TOKEN_DERIVATION flags 9 tokens as { kind: 'fixed' }, but a Brand Switcher
+// audit (April 2026) confirmed only 5 actually resolve to the same hex in
+// every built-in brand. The other 4 ship per-mode overrides in Figma — the
+// portal still uses a single sensible default, but we surface the per-brand
+// overrides below so the trade-off is explicit.
 type FixedNote = { token: SemanticTokenKey; value: string; note: string };
+
 const FIXED_VALUES: FixedNote[] = (Object.keys(TOKEN_DERIVATION) as SemanticTokenKey[])
   .filter((k) => TOKEN_DERIVATION[k].kind === 'fixed')
   .map((token) => {
     const rule = TOKEN_DERIVATION[token] as Extract<TokenRule, { kind: 'fixed' }>;
     return { token, value: rule.value, note: rule.note };
   });
+
+// Tokens that genuinely resolve to the same hex in every built-in brand.
+const UNIVERSAL_FIXED: SemanticTokenKey[] = [
+  'atom.foreground.primary.fg-brand-primary-inverse',
+  'atom.foreground.states.fg-disabled-inverse',
+  'atom.foreground.states.fg-pressed-inverse',
+  'atom.background.primary.bg-primary-inverse',
+  'atom.progress-indicator.active-color',
+];
+
+// Tokens the portal treats as fixed, but Brand Switcher actually varies per mode.
+const VARIES_PER_BRAND: SemanticTokenKey[] = [
+  'atom.background.primary.bg-primary-hover-inverse',
+  'atom.background.core.bg-overlay',
+  'atom.border.default.border-muted',
+  'atom.border.states.no-interaction',
+];
+
+const UNIVERSAL_FIXED_VALUES = FIXED_VALUES.filter((f) => UNIVERSAL_FIXED.includes(f.token));
+const VARIES_PER_BRAND_VALUES = FIXED_VALUES.filter((f) => VARIES_PER_BRAND.includes(f.token));
+
+// Only built-in brands — 'custom' shadows DragonPass, so skip it.
+const BUILTIN_BRANDS = BRANDS.filter((b) => b.id !== 'custom');
 
 // ─── MappingPage ─────────────────────────────────────────────────────────────
 export function MappingPage({ brand }: MappingPageProps) {
@@ -121,7 +155,7 @@ export function MappingPage({ brand }: MappingPageProps) {
   // Build inverted index: primitive → list of tokens that depend on it
   const tokensByPrimitive = useMemo(() => {
     const map: Record<PrimitiveKey, SemanticTokenKey[]> = {
-      brandPrimary: [], brandHover: [], brandPressed: [],
+      brandPrimary: [], brandHover: [], brandPressed: [], accent: [],
       textPrimary: [], textSecondary: [], textTertiary: [],
       link: [], backgroundSecondary: [], borderDefault: [],
       feedbackSuccess: [], feedbackWarning: [], feedbackError: [], feedbackInfo: [],
@@ -136,7 +170,7 @@ export function MappingPage({ brand }: MappingPageProps) {
   }, []);
 
   const primitiveOrder: PrimitiveKey[] = [
-    'brandPrimary', 'brandHover', 'brandPressed',
+    'brandPrimary', 'brandHover', 'brandPressed', 'accent',
     'textPrimary', 'textSecondary', 'textTertiary',
     'link', 'backgroundSecondary', 'borderDefault',
     'feedbackSuccess', 'feedbackWarning', 'feedbackError', 'feedbackInfo',
@@ -156,7 +190,7 @@ export function MappingPage({ brand }: MappingPageProps) {
           Tools · Token Mapping
         </div>
         <h1 className="text-[32px] leading-[1.15] font-bold text-slate-900 tracking-tight mb-3">
-          From 67 tokens to 13 primitives
+          From 67 tokens to 14 primitives
         </h1>
         <p className="text-slate-600 leading-relaxed max-w-3xl">
           Brand Switcher's "Brands" variable collection publishes <strong>67 semantic
@@ -164,7 +198,7 @@ export function MappingPage({ brand }: MappingPageProps) {
           <code className="text-xs font-mono">atom/background/*</code>,{' '}
           <code className="text-xs font-mono">atom/border/*</code>,{' '}
           <code className="text-xs font-mono">atom/progress-indicator/*</code>). For the
-          White-label Portal we compressed that surface to 13 inputs by applying three rules,
+          White-label Portal we compressed that surface to 14 inputs by applying three rules,
           in order: (1) keep one primitive where Brand Switcher already assigns the same hex
           to a group of variables, (2) derive lightened/darkened variants algorithmically,
           (3) hard-code the handful of values that are universally white, black, or
@@ -173,7 +207,7 @@ export function MappingPage({ brand }: MappingPageProps) {
 
         <div className="mt-5 grid grid-cols-3 gap-3 max-w-xl">
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <div className="text-2xl font-bold text-slate-900">13</div>
+            <div className="text-2xl font-bold text-slate-900">14</div>
             <div className="text-xs text-slate-500 mt-1">primitive inputs</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -217,7 +251,7 @@ export function MappingPage({ brand }: MappingPageProps) {
       {/* The 13 primitives, each with their driven tokens */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-          The 13 primitives
+          The 14 primitives
         </h2>
         {primitiveOrder.map((pk) => {
           const descriptor = PRIMITIVE_DESCRIPTORS[pk];
@@ -307,31 +341,99 @@ export function MappingPage({ brand }: MappingPageProps) {
       </section>
 
       {/* Fixed values */}
-      <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">
-          Fixed values — not user-editable
-        </h2>
-        <p className="text-sm text-slate-600 mb-4 max-w-3xl">
-          These 7 tokens resolve to the same hex in every Brand Switcher mode (all whites, or
-          black with fixed alpha for overlays). They're not exposed in the portal because there's
-          nothing to customise.
-        </p>
-        <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
-          {FIXED_VALUES.map((f) => (
-            <div key={f.token} className="px-5 py-3 flex items-center gap-3 text-sm">
-              <div
-                className="w-5 h-5 rounded border border-slate-200 flex-shrink-0"
-                style={{ backgroundColor: f.value }}
-              />
-              <code className="text-xs font-mono text-slate-800 flex-shrink-0 w-[320px] truncate">
-                {f.token.replace('atom.', '')}
-              </code>
-              <code className="text-[11px] font-mono text-slate-500 flex-shrink-0 w-[84px]">
-                {f.value}
-              </code>
-              <span className="text-xs text-slate-600 flex-1 min-w-0">{f.note}</span>
-            </div>
-          ))}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">
+            Fixed values — not user-editable
+          </h2>
+          <p className="text-sm text-slate-600 mb-4 max-w-3xl">
+            9 tokens aren't driven by any primitive. <strong>5</strong> are genuinely
+            universal — every brand resolves them to the same hex. The other{' '}
+            <strong>4</strong> are "mostly fixed": the portal uses a single sensible
+            default, but Brand Switcher ships per-mode overrides you'll see in the live
+            Atom library. If the defaults don't match a custom brand, override them in
+            the exported CSS.
+          </p>
+        </div>
+
+        {/* Universally fixed */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+            Universal across all 6 brands ({UNIVERSAL_FIXED_VALUES.length})
+          </h3>
+          <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+            {UNIVERSAL_FIXED_VALUES.map((f) => (
+              <div key={f.token} className="px-5 py-3 flex items-center gap-3 text-sm">
+                <div
+                  className="w-5 h-5 rounded border border-slate-200 flex-shrink-0"
+                  style={{ backgroundColor: f.value }}
+                />
+                <code className="text-xs font-mono text-slate-800 flex-shrink-0 w-[320px] truncate">
+                  {f.token.replace('atom.', '')}
+                </code>
+                <code className="text-[11px] font-mono text-slate-500 flex-shrink-0 w-[84px]">
+                  {f.value}
+                </code>
+                <span className="text-xs text-slate-600 flex-1 min-w-0">{f.note}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mostly fixed — varies per brand */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+            Mostly fixed — varies per brand ({VARIES_PER_BRAND_VALUES.length})
+          </h3>
+          <p className="text-xs text-slate-500 mb-3 max-w-3xl">
+            The portal ships the default hex shown on the left. The 6 swatches below
+            each row show what Brand Switcher actually resolves the token to for each
+            built-in brand — swatches with a dashed amber border are brand-specific
+            overrides that differ from the portal default.
+          </p>
+          <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+            {VARIES_PER_BRAND_VALUES.map((f) => (
+              <div key={f.token} className="px-5 py-4 space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <div
+                    className="w-5 h-5 rounded border border-slate-200 flex-shrink-0"
+                    style={{ backgroundColor: f.value }}
+                  />
+                  <code className="text-xs font-mono text-slate-800 flex-shrink-0 w-[320px] truncate">
+                    {f.token.replace('atom.', '')}
+                  </code>
+                  <code className="text-[11px] font-mono text-slate-500 flex-shrink-0 w-[84px]">
+                    {f.value}
+                  </code>
+                  <span className="text-xs text-slate-600 flex-1 min-w-0">Portal default</span>
+                </div>
+                <div className="pl-8 grid grid-cols-6 gap-2">
+                  {BUILTIN_BRANDS.map((b) => {
+                    const resolved = RESOLVED_SEMANTIC_TOKENS[b.id][f.token];
+                    const differs = resolved.toLowerCase() !== f.value.toLowerCase();
+                    return (
+                      <div key={b.id} className="flex flex-col gap-1">
+                        <div
+                          className={[
+                            'h-8 rounded flex-shrink-0',
+                            differs
+                              ? 'border-2 border-dashed border-amber-400'
+                              : 'border border-slate-200',
+                          ].join(' ')}
+                          style={{ backgroundColor: resolved }}
+                          title={`${b.label}: ${resolved}`}
+                        />
+                        <div className="text-[10px] text-slate-500 truncate">{b.label}</div>
+                        <code className="text-[10px] font-mono text-slate-400 truncate">
+                          {resolved}
+                        </code>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

@@ -59,7 +59,7 @@ export function SelectLive({
       : 'var(--atom-background-primary-bg-primary-inverse, #ffffff)';
   const helperColor =
     state === 'Error'
-      ? 'var(--atom-foreground-alert-fg-error, #e02d3c)'
+      ? 'var(--atom-foreground-feedback-fg-error, #e02d3c)'
       : 'var(--atom-foreground-core-fg-secondary, #737272)';
   const menuBg = 'var(--atom-background-primary-bg-primary-inverse, #ffffff)';
   const menuHover = 'var(--atom-background-core-bg-muted, #f5f5f4)';

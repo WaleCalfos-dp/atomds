@@ -14,12 +14,15 @@ function readFromStorage(): CustomBrand | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<CustomBrand>;
     if (!parsed?.primitives) return null;
-    // Backward compat: older saves (before Full mode existed) have no `mode` key.
+    // Backward compat:
+    // - older saves (before Full mode existed) have no `mode` key — assume simple
+    // - older saves (before v2 added `accent`) lack accent — fill with default
     return {
       name: parsed.name ?? 'Custom',
       logo: parsed.logo ?? '',
+      font: parsed.font,
       mode: parsed.mode ?? 'simple',
-      primitives: parsed.primitives,
+      primitives: { ...DEFAULT_PRIMITIVES, ...parsed.primitives },
       tokens: parsed.tokens,
     } as CustomBrand;
   } catch {

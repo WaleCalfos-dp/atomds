@@ -103,8 +103,8 @@ export function DataRowLive({
   const valueColor      = 'var(--atom-foreground-primary-fg-brand-primary, #0A2333)';
   const bodyColor       = 'var(--atom-foreground-core-fg-primary, #4B4A4A)';
   const borderColor     = 'var(--atom-border-default-border-divider, #CDCBCB)';
-  const badgeBg         = 'var(--atom-background-alert-bg-success-subtle, #ECFDF3)';
-  const badgeFg         = 'var(--atom-foreground-alert-fg-success, #067647)';
+  const badgeBg         = 'var(--atom-background-alert-bg-success-lightest, #ECFDF3)';
+  const badgeFg         = 'var(--atom-foreground-feedback-fg-success, #067647)';
   const actionColor     = 'var(--atom-foreground-primary-fg-brand-primary, #0A2333)';
   const iconColor       = 'var(--atom-foreground-core-fg-secondary, #737272)';
   const mutedBg         = 'var(--atom-background-core-bg-muted, #F5F5F4)';
