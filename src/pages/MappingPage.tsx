@@ -224,18 +224,18 @@ export function MappingPage({ brand }: MappingPageProps) {
       {/* Legend */}
       <section className="rounded-xl border border-slate-200 bg-slate-50 p-5">
         <h2 className="text-sm font-semibold text-slate-800 mb-3">Derivation rules</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
           <div className="bg-white rounded-md p-3 border border-slate-200">
             <code className="font-mono text-slate-700 font-semibold">= primitive</code>
             <p className="text-slate-500 mt-1">Direct use — token value equals the primitive.</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">lighten(p, X%)</code>
-            <p className="text-slate-500 mt-1">Mix with white by X%. Used for alert surfaces.</p>
+            <code className="font-mono text-slate-700 font-semibold">p @ OKLCH L=N</code>
+            <p className="text-slate-500 mt-1">Set perceptual lightness to N (0..1) preserving hue + chroma. Used for alert tints so all 4 feedback families look balanced.</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">darken(p, X%)</code>
-            <p className="text-slate-500 mt-1">Mix with black by X%. Used for error hover/pressed.</p>
+            <code className="font-mono text-slate-700 font-semibold">lighten(p, X%) / darken(p, X%)</code>
+            <p className="text-slate-500 mt-1">HSL mix toward white / black. Used for hover &amp; pressed states.</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
             <code className="font-mono text-slate-700 font-semibold">p @ X%</code>
@@ -245,6 +245,105 @@ export function MappingPage({ brand }: MappingPageProps) {
             <code className="font-mono text-slate-700 font-semibold">fixed</code>
             <p className="text-slate-500 mt-1">Hard-coded (white / black-alpha). Not user-editable.</p>
           </div>
+        </div>
+      </section>
+
+      {/* Rules of application — when component authors should reach for which token */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Rules of application
+        </h2>
+        <p className="text-sm text-slate-600 max-w-3xl">
+          Most "weird-looking" custom-brand renders trace back to a token used in
+          the wrong tier — e.g. a Badge built on <code className="text-xs font-mono">bg-success-lightest</code>{' '}
+          instead of <code className="text-xs font-mono">bg-success-light</code> reads as a faint blob
+          on white surfaces. These rules document where each token belongs.
+        </p>
+
+        {/* Tier guidance */}
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <div className="px-5 py-3 border-b border-slate-100">
+            <h3 className="text-sm font-semibold text-slate-800">Tier guidance — when to use which background</h3>
+            <p className="text-xs text-slate-500 mt-0.5">The 4 feedback families each ship 3 tiers. Pick by visual weight, not by hue.</p>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[20%]">Tier</th>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">Use for</th>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">Don't use for</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100">
+                <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-full</code></td>
+                <td className="px-4 py-3 text-slate-700">Solid feedback fills — Toast solid bg, success Badge with white text, Destructive button.</td>
+                <td className="px-4 py-3 text-slate-500">Body text — contrast varies across brands; pair with white only.</td>
+              </tr>
+              <tr className="border-b border-slate-100">
+                <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-light / bg-*-default</code></td>
+                <td className="px-4 py-3 text-slate-700">Alert containers with title + body text. Calibrated to OKLCH L=0.92 — always readable for body copy.</td>
+                <td className="px-4 py-3 text-slate-500">Compact UI like Badge — too prominent at small sizes.</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-lightest</code></td>
+                <td className="px-4 py-3 text-slate-700">Subtle row tinting, callout backgrounds, hover overlays on coloured rows. OKLCH L=0.96 — very subtle wash.</td>
+                <td className="px-4 py-3 text-slate-500">Standalone Badge backgrounds — too faint to read as a chip.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Surface pairings */}
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <div className="px-5 py-3 border-b border-slate-100">
+            <h3 className="text-sm font-semibold text-slate-800">Surface pairings — which fg goes with which bg</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Mismatched fg/bg pairs are the #1 cause of low-contrast rendering. Use these defaults.</p>
+          </div>
+          <ul className="divide-y divide-slate-100 text-sm">
+            <li className="px-5 py-2.5 flex items-baseline gap-3">
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-primary-default</code>
+              <span className="text-slate-400">⇄</span>
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-brand-primary-inverse</code>
+              <span className="text-slate-500 text-xs">white text on solid brand surface</span>
+            </li>
+            <li className="px-5 py-2.5 flex items-baseline gap-3">
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-primary-inverse</code>
+              <span className="text-slate-400">⇄</span>
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
+              <span className="text-slate-500 text-xs">body text — or fg-brand-primary for emphasis</span>
+            </li>
+            <li className="px-5 py-2.5 flex items-baseline gap-3 flex-wrap">
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-{'{success,warning,error,info}'}-{'{light,lightest}'}</code>
+              <span className="text-slate-400">⇄</span>
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
+              <span className="text-slate-500 text-xs">body copy — pair with fg-{'{success/warning/...}'} only for icons + accents</span>
+            </li>
+            <li className="px-5 py-2.5 flex items-baseline gap-3">
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-muted</code>
+              <span className="text-slate-400">⇄</span>
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
+              <span className="text-slate-500 text-xs">subtle hover/pressed wash — only over white surfaces</span>
+            </li>
+            <li className="px-5 py-2.5 flex items-baseline gap-3">
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-overlay</code>
+              <span className="text-slate-400">⇄</span>
+              <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-brand-primary-inverse</code>
+              <span className="text-slate-500 text-xs">modal scrim only — never put body copy on the overlay itself</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Fidelity warning */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 leading-relaxed">
+          <strong className="block text-sm mb-1">⚠ Fidelity warning</strong>
+          Simple-mode derivation approximates Brand Switcher's hand-curated tints. For brand
+          primaries with very high chroma (vibrant pinks, purples, oranges &gt; ~70% saturation),
+          the OKLCH-derived <code className="font-mono">bg-*-lightest</code> tints stay perceptually balanced
+          but may not exactly match the values a designer would pick. <strong>Switch to Full mode
+          and override per-token</strong> if you need exact alignment with a real Foundations library
+          (e.g. matching Mastercard's specific shade of warning yellow). Full mode bypasses
+          derivation entirely — what you type is what ships.
         </div>
       </section>
 

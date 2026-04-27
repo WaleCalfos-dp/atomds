@@ -245,6 +245,57 @@ export function alpha(hex: string, opacity: number): string {
   return `#${clean}${a}`;
 }
 
+// ─── OKLCH math (perceptually-uniform lightness) ──────────────────────────────
+// Used for alert tints so that the 4 feedback families (success/warning/error/info)
+// produce backgrounds with visually-equal lightness, regardless of starting hue
+// or saturation. HSL lighten doesn't do this — its L axis is gamma-distorted, so
+// `lighten(green, 0.85)` and `lighten(blue, 0.85)` end up with different perceived
+// brightness. OKLCH normalises the lightness axis and keeps chroma + hue intact.
+
+function srgbToLinear(v: number): number {
+  const x = v / 255;
+  return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+}
+function linearToSrgb(v: number): number {
+  const x = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+  return Math.max(0, Math.min(255, x * 255));
+}
+
+// Linear sRGB → OKLab (Björn Ottosson, https://bottosson.github.io/posts/oklab/)
+function linRgbToOklab(r: number, g: number, b: number) {
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+  const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
+  return {
+    L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+    a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+  };
+}
+function oklabToLinRgb(L: number, a: number, b: number) {
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+  const l = l_ * l_ * l_, m = m_ * m_ * m_, s = s_ * s_ * s_;
+  return {
+    r: 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    g: -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    b: -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+  };
+}
+
+// Set OKLab L to `targetL` (0..1) while keeping hue + chroma. Used for alert tints.
+export function lightenToL(hex: string, targetL: number): string {
+  const { r, g, b } = parseHex(hex);
+  const lab = linRgbToOklab(srgbToLinear(r), srgbToLinear(g), srgbToLinear(b));
+  // Reduce chroma slightly when pushing to very high lightness so out-of-gamut
+  // colors don't clip ugly. At L≥0.95 we attenuate chroma proportionally.
+  const chromaScale = targetL >= 0.95 ? 0.7 : targetL >= 0.9 ? 0.85 : 1;
+  const linOut = oklabToLinRgb(targetL, lab.a * chromaScale, lab.b * chromaScale);
+  return toHex(linearToSrgb(linOut.r), linearToSrgb(linOut.g), linearToSrgb(linOut.b));
+}
+
 // ─── Derivation rules ─────────────────────────────────────────────────────────
 // Single source of truth for both `deriveTokens()` (runtime evaluation) and the
 // Token Mapping page (human-readable documentation of the 67 → 13 compression).
@@ -253,6 +304,7 @@ export type TokenRule =
   | { kind: 'direct'; from: keyof CorePrimitives }
   | { kind: 'lighten'; from: keyof CorePrimitives; by: number }
   | { kind: 'darken'; from: keyof CorePrimitives; by: number }
+  | { kind: 'lightenToL'; from: keyof CorePrimitives; L: number }
   | { kind: 'alpha'; from: keyof CorePrimitives; a: number }
   | { kind: 'fixed'; value: string; note: string };
 
@@ -301,24 +353,31 @@ export const TOKEN_DERIVATION: Record<SemanticTokenKey, TokenRule> = {
 
   // background/core
   'atom.background.core.bg-overlay': { kind: 'fixed', value: '#000000cc', note: 'Black at 80% opacity — modal scrim' },
-  'atom.background.core.bg-secondary-hover': { kind: 'alpha', from: 'brandPrimary', a: 0.04 },
-  'atom.background.core.bg-muted': { kind: 'alpha', from: 'brandPrimary', a: 0.04 },
+  // Bumped 0.04 → 0.06 in v3: the original 4% alpha was tuned for DragonPass navy
+  // (#0a2333) and disappeared completely on vibrant brands like a saturated purple.
+  // 6% stays subtle on dark brands but becomes visible on high-saturation primaries.
+  'atom.background.core.bg-secondary-hover': { kind: 'alpha', from: 'brandPrimary', a: 0.06 },
+  'atom.background.core.bg-muted': { kind: 'alpha', from: 'brandPrimary', a: 0.06 },
   'atom.background.core.bg-secondary': { kind: 'direct', from: 'backgroundSecondary' },
   'atom.background.core.bg-accent': { kind: 'direct', from: 'accent' },
 
-  // background/alert — 4 feedback × 3 tints
+  // background/alert — 4 feedback × 3 tints. The 8 tinted backgrounds (`*-light`,
+  // `*-default`, `*-lightest`) use OKLCH `lightenToL` so all 4 feedback families
+  // produce visually-equivalent backgrounds regardless of starting hue/saturation.
+  // Two perceptual targets: 0.92 for the "alert container" tier, 0.96 for the
+  // "subtle row tint" tier.
   'atom.background.alert.bg-success-full': { kind: 'direct', from: 'feedbackSuccess' },
-  'atom.background.alert.bg-success-light': { kind: 'lighten', from: 'feedbackSuccess', by: 0.75 },
-  'atom.background.alert.bg-success-lightest': { kind: 'lighten', from: 'feedbackSuccess', by: 0.85 },
-  'atom.background.alert.bg-warning-default': { kind: 'lighten', from: 'feedbackWarning', by: 0.7 },
-  'atom.background.alert.bg-warning-lightest': { kind: 'lighten', from: 'feedbackWarning', by: 0.85 },
+  'atom.background.alert.bg-success-light': { kind: 'lightenToL', from: 'feedbackSuccess', L: 0.92 },
+  'atom.background.alert.bg-success-lightest': { kind: 'lightenToL', from: 'feedbackSuccess', L: 0.96 },
+  'atom.background.alert.bg-warning-default': { kind: 'lightenToL', from: 'feedbackWarning', L: 0.92 },
+  'atom.background.alert.bg-warning-lightest': { kind: 'lightenToL', from: 'feedbackWarning', L: 0.96 },
   'atom.background.alert.bg-error-full': { kind: 'direct', from: 'feedbackError' },
-  'atom.background.alert.bg-error-light': { kind: 'lighten', from: 'feedbackError', by: 0.75 },
-  'atom.background.alert.bg-error-lightest': { kind: 'lighten', from: 'feedbackError', by: 0.85 },
+  'atom.background.alert.bg-error-light': { kind: 'lightenToL', from: 'feedbackError', L: 0.92 },
+  'atom.background.alert.bg-error-lightest': { kind: 'lightenToL', from: 'feedbackError', L: 0.96 },
   'atom.background.alert.bg-error-hover': { kind: 'darken', from: 'feedbackError', by: 0.4 },
   'atom.background.alert.bg-error-pressed': { kind: 'darken', from: 'feedbackError', by: 0.2 },
-  'atom.background.alert.bg-info-default': { kind: 'lighten', from: 'feedbackInfo', by: 0.85 },
-  'atom.background.alert.bg-info-lightest': { kind: 'lighten', from: 'feedbackInfo', by: 0.92 },
+  'atom.background.alert.bg-info-default': { kind: 'lightenToL', from: 'feedbackInfo', L: 0.92 },
+  'atom.background.alert.bg-info-lightest': { kind: 'lightenToL', from: 'feedbackInfo', L: 0.96 },
 
   // border/default
   'atom.border.default.border-default': { kind: 'direct', from: 'borderDefault' },
@@ -472,22 +531,24 @@ export function tokensInGroup(group: string): SemanticTokenKey[] {
 
 function evaluateRule(rule: TokenRule, p: CorePrimitives): string {
   switch (rule.kind) {
-    case 'direct':  return p[rule.from];
-    case 'lighten': return lighten(p[rule.from], rule.by);
-    case 'darken':  return darken(p[rule.from], rule.by);
-    case 'alpha':   return alpha(p[rule.from], rule.a);
-    case 'fixed':   return rule.value;
+    case 'direct':     return p[rule.from];
+    case 'lighten':    return lighten(p[rule.from], rule.by);
+    case 'darken':     return darken(p[rule.from], rule.by);
+    case 'lightenToL': return lightenToL(p[rule.from], rule.L);
+    case 'alpha':      return alpha(p[rule.from], rule.a);
+    case 'fixed':      return rule.value;
   }
 }
 
 // Human-readable rule summary used by the Token Mapping page.
 export function describeRule(rule: TokenRule): string {
   switch (rule.kind) {
-    case 'direct':  return `= ${rule.from}`;
-    case 'lighten': return `lighten(${rule.from}, ${Math.round(rule.by * 100)}%)`;
-    case 'darken':  return `darken(${rule.from}, ${Math.round(rule.by * 100)}%)`;
-    case 'alpha':   return `${rule.from} @ ${Math.round(rule.a * 100)}%`;
-    case 'fixed':   return `fixed (${rule.note})`;
+    case 'direct':     return `= ${rule.from}`;
+    case 'lighten':    return `lighten(${rule.from}, ${Math.round(rule.by * 100)}%)`;
+    case 'darken':     return `darken(${rule.from}, ${Math.round(rule.by * 100)}%)`;
+    case 'lightenToL': return `${rule.from} @ OKLCH L=${rule.L}`;
+    case 'alpha':      return `${rule.from} @ ${Math.round(rule.a * 100)}%`;
+    case 'fixed':      return `fixed (${rule.note})`;
   }
 }
 
