@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TimePickerLive, type TimePickerStyle } from '../components/time-picker/TimePickerLive';
+import {
+  TimePickerLive,
+  type TimePickerStyle,
+  type TimePickerColumn,
+  SHIPPED_COUNTS,
+  SHIPPED_GRID_COLUMNS,
+} from '../components/time-picker/TimePickerLive';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
 
 interface TimePickerPageProps {
@@ -55,11 +61,51 @@ function isLightColor(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 }
 
+/** Sensible first-render count per Style. Mirrors TimePickerLive's prop default. */
+const DEFAULT_COUNT: Record<TimePickerStyle, number> = {
+  Vertical: 3,
+  Scrollable: 1,
+  Grid: 4,
+};
+
 export function TimePickerPage({ brand }: TimePickerPageProps) {
   const [pickerStyle, setPickerStyle] = useState<TimePickerStyle>('Vertical');
+  const [count,       setCount]       = useState<number>(DEFAULT_COUNT.Vertical);
+  const [column,      setColumn]      = useState<TimePickerColumn>(2);
   const [showButton,  setShowButton]  = useState(true);
 
-  const previewKey = `${pickerStyle}-${showButton}`;
+  const validCounts  = SHIPPED_COUNTS[pickerStyle];
+  const validColumns =
+    pickerStyle === 'Grid' ? (SHIPPED_GRID_COLUMNS[count] ?? []) : [];
+
+  // Switch Style → snap Count into the new Style's valid set.
+  const handleStyleChange = (next: TimePickerStyle) => {
+    setPickerStyle(next);
+    const counts = SHIPPED_COUNTS[next];
+    const fallback = DEFAULT_COUNT[next];
+    const nextCount = counts.includes(count)
+      ? count
+      : counts.includes(fallback)
+      ? fallback
+      : counts[0];
+    setCount(nextCount);
+
+    if (next === 'Grid') {
+      const cols = SHIPPED_GRID_COLUMNS[nextCount] ?? [2];
+      if (!cols.includes(column)) setColumn(cols[0]);
+    }
+  };
+
+  // Switch Count (within Grid) → snap Column if current value is no longer valid.
+  const handleCountChange = (nextCount: number) => {
+    setCount(nextCount);
+    if (pickerStyle === 'Grid') {
+      const cols = SHIPPED_GRID_COLUMNS[nextCount] ?? [2];
+      if (!cols.includes(column)) setColumn(cols[0]);
+    }
+  };
+
+  const previewKey = `${pickerStyle}-${count}-${column}-${showButton}`;
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
 
   return (
@@ -80,7 +126,13 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
                   exit={{ opacity: 0, scale: 0.92 }}
                   transition={{ duration: 0.14, ease: 'easeOut' }}
                 >
-                  <TimePickerLive style={pickerStyle} showButton={showButton} brand={brand} />
+                  <TimePickerLive
+                    style={pickerStyle}
+                    count={count}
+                    column={column}
+                    showButton={showButton}
+                    brand={brand}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -95,7 +147,7 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
                   {ALL_STYLES.map((s) => (
                     <button
                       key={s}
-                      onClick={() => setPickerStyle(s)}
+                      onClick={() => handleStyleChange(s)}
                       className={[
                         'px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-100',
                         pickerStyle === s
@@ -109,6 +161,55 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
                 </div>
               </div>
 
+              {/* Count */}
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Count</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {validCounts.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => handleCountChange(c)}
+                      className={[
+                        'px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-100 min-w-[2rem]',
+                        count === c
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                          : 'text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50',
+                      ].join(' ')}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column — Grid only */}
+              {pickerStyle === 'Grid' && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Column</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {validColumns.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setColumn(c)}
+                        className={[
+                          'px-2.5 py-1 rounded-md text-xs font-medium border transition-all duration-100',
+                          column === c
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                            : 'text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50',
+                        ].join(' ')}
+                      >
+                        {c} Columns
+                      </button>
+                    ))}
+                  </div>
+                  {validColumns.length === 1 && (
+                    <p className="mt-1.5 text-[11px] text-slate-400">
+                      Count {count} is only authored for {validColumns[0]} Column in Figma.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Button */}
               <div>
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Button</p>
@@ -121,12 +222,14 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
                   />
                   <span className="text-xs text-slate-600">{showButton ? 'Visible' : 'Hidden'}</span>
                 </label>
+                <p className="mt-1.5 text-[11px] text-slate-400">
+                  Informational — SVG exports do not bake in a Confirm button.
+                </p>
               </div>
 
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Count and the <em>Primary Button</em>, <em>Secondary Button</em>,
-                <em> Before Time</em>, <em>Current Time</em>, <em>After Time</em> booleans are
-                documented below — the preview renders representative layouts per Style.
+                The <em>Primary Button</em>, <em>Secondary Button</em>, <em>Before Time</em>,
+                <em> Current Time</em>, and <em>After Time</em> booleans are documented below.
               </p>
 
             </div>
@@ -162,7 +265,7 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
 
           {/* Diagram */}
           <div className="flex items-center justify-center p-6 rounded-lg border border-slate-100 bg-slate-50">
-            <TimePickerLive style="Vertical" showButton brand={brand} />
+            <TimePickerLive style="Vertical" count={3} showButton brand={brand} />
           </div>
 
           {/* Numbered parts */}
@@ -270,16 +373,21 @@ export function TimePickerPage({ brand }: TimePickerPageProps) {
           </table>
         </div>
 
-        {/* Visual preview grid — one card per Style */}
+        {/* Visual preview grid — one card per Style, rendering a representative shipped variant. */}
         <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-          {ALL_STYLES.map((s) => (
-            <div key={s} style={{
+          {[
+            { style: 'Vertical'   as TimePickerStyle, count: 3, column: 2 as TimePickerColumn, label: 'Vertical · 3'  },
+            { style: 'Grid'       as TimePickerStyle, count: 8, column: 4 as TimePickerColumn, label: 'Grid · 8 · 4-col' },
+            { style: 'Scrollable' as TimePickerStyle, count: 1, column: 2 as TimePickerColumn, label: 'Scrollable'    },
+          ].map((v) => (
+            <div key={v.label} style={{
               padding: '20px 24px', borderRadius: '10px',
               border: '1px solid #f3f4f6', backgroundColor: '#fafafa',
               display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px',
+              overflowX: 'auto',
             }}>
-              <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{s}</p>
-              <TimePickerLive style={s} showButton brand={brand} />
+              <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{v.label}</p>
+              <TimePickerLive style={v.style} count={v.count} column={v.column} showButton brand={brand} />
             </div>
           ))}
         </div>

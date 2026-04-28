@@ -1,32 +1,30 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { StepperLive, type StepperSize, type StepperStyle } from '../components/stepper/StepperLive';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Figma source of truth
-//   Component: Stepper (componentKey 9fea97c51ccf2a01ae708771db9a7ee7a9a1eb2c)
-//   File:      Atom  (nKc4ep7mNdD5IqFRhNRNlW)
+//   Component: Stepper (componentSet 1702:72060 in Atom file nKc4ep7mNdD5IqFRhNRNlW)
 //   Purpose:   Allows users to increment or decrement numeric values.
-//   Property surface (from componentPropertyDefinitions):
-//     VARIANT  Stepper → Default · Large · Small · Card   (default Small)
+//   Property surface:
+//     VARIANT  Stepper → Small · Default · Large · Card   (default Small)
 //     VARIANT  Style   → 1 · 2                             (default 1)
 //     TEXT     Label   → default "0"
-//   Concrete variants (4): Small/1 · Default/1 · Large/1 · Card/2
+//   Concrete variants (4 shipped): Small/1 · Default/1 · Large/1 · Card/2
 //   Dimensions (from Figma):
-//     Small/1   81 × 20   horizontal · 16px gap
-//     Default/1 105 × 32  horizontal · 16px gap
-//     Large/1   121 × 40  horizontal · 16px gap
-//     Card/2    245 × 114.5  vertical · 24px padding · 8px radius
+//     Small/1   81 × 20   inline · 16px gap · 20px icons
+//     Default/1 105 × 32  inline · 16px gap · 32px icons
+//     Large/1   121 × 40  inline · 16px gap · 40px icons
+//     Card/2    245 × 114.5  card · 24px padding · 8px radius · 24px icons
+//                 · 90×66.5 framed value display (28px heading/h1, top+bottom rule)
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface StepperPageProps {
   brand: Brand;
 }
 
-type StepperSize = 'Default' | 'Large' | 'Small' | 'Card';
-type StepperStyle = '1' | '2';
-
-const ALL_SIZES: StepperSize[] = ['Default', 'Large', 'Small', 'Card'];
+const ALL_SIZES: StepperSize[] = ['Small', 'Default', 'Large', 'Card'];
 const ALL_STYLES: StepperStyle[] = ['1', '2'];
 
 const DOTTED_BG: React.CSSProperties = {
@@ -34,146 +32,6 @@ const DOTTED_BG: React.CSSProperties = {
   backgroundImage: 'radial-gradient(circle, #c8c8c8 1px, transparent 1px)',
   backgroundSize: '20px 20px',
 };
-
-// Size → measurements from Figma
-const SIZE_DIMS: Record<StepperSize, {
-  btn: number; labelWidth: number; gap: number; font: number; strokeW: number;
-}> = {
-  Small:   { btn: 20, labelWidth: 24, gap: 10, font: 12, strokeW: 1.5 },
-  Default: { btn: 32, labelWidth: 28, gap: 13, font: 14, strokeW: 1.75 },
-  Large:   { btn: 40, labelWidth: 32, gap: 16, font: 16, strokeW: 2 },
-  Card:    { btn: 40, labelWidth: 32, gap: 16, font: 16, strokeW: 2 },
-};
-
-// ─── Glyphs ───────────────────────────────────────────────────────────────────
-function MinusGlyph({ size, color, strokeW }: { size: number; color: string; strokeW: number }) {
-  const half = size / 2;
-  const len = size * 0.35;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-      <line x1={half - len} y1={half} x2={half + len} y2={half}
-        stroke={color} strokeWidth={strokeW} strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function PlusGlyph({ size, color, strokeW }: { size: number; color: string; strokeW: number }) {
-  const half = size / 2;
-  const len = size * 0.35;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-      <line x1={half - len} y1={half} x2={half + len} y2={half}
-        stroke={color} strokeWidth={strokeW} strokeLinecap="round" />
-      <line x1={half} y1={half - len} x2={half} y2={half + len}
-        stroke={color} strokeWidth={strokeW} strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// StepperPreview — inline, Figma-accurate preview that renders every variant.
-// ─────────────────────────────────────────────────────────────────────────────
-interface StepperPreviewProps {
-  size: StepperSize;
-  style: StepperStyle;
-  label: string;
-  cardTitle?: string;
-  cardSubtitle?: string;
-}
-
-function StepperPreview({
-  size, style, label,
-  cardTitle = 'Select Ticket',
-  cardSubtitle = 'Adult · General Admission',
-}: StepperPreviewProps) {
-  const fontFamily = 'var(--atom-font-body, Poppins, sans-serif)';
-  const brandColor = 'var(--atom-background-primary-bg-primary-default, #0a2333)';
-  const brandFg = 'var(--atom-foreground-primary-fg-brand-primary-inverse, #ffffff)';
-  const borderColor = 'var(--atom-border-default-border-default, #cdcbcb)';
-  const textColor = 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-  const subtitleColor = 'var(--atom-foreground-core-fg-secondary, #737272)';
-  const cardBg = 'var(--atom-background-primary-bg-primary-inverse, #ffffff)';
-
-  const dims = SIZE_DIMS[size];
-
-  // Style 1: unfilled buttons with brand-coloured stroke + glyph.
-  // Style 2: solid-filled brand-coloured buttons with white glyph (Card variant).
-  const filled = style === '2';
-  const btnBg = filled ? brandColor : cardBg;
-  const btnBorder = filled ? brandColor : borderColor;
-  const glyphColor = filled ? brandFg : textColor;
-
-  const stepperRow = (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: `${dims.gap}px`,
-      fontFamily,
-    }}>
-      <button
-        type="button"
-        aria-label="Decrease"
-        style={{
-          width: dims.btn, height: dims.btn, borderRadius: '50%',
-          backgroundColor: btnBg, border: `1.5px solid ${btnBorder}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', padding: 0, flexShrink: 0,
-        }}
-      >
-        <MinusGlyph size={dims.btn} color={glyphColor} strokeW={dims.strokeW} />
-      </button>
-
-      <span style={{
-        minWidth: dims.labelWidth, textAlign: 'center',
-        fontSize: dims.font, fontWeight: 500, color: textColor,
-        fontVariantNumeric: 'tabular-nums',
-      }}>{label}</span>
-
-      <button
-        type="button"
-        aria-label="Increase"
-        style={{
-          width: dims.btn, height: dims.btn, borderRadius: '50%',
-          backgroundColor: btnBg, border: `1.5px solid ${btnBorder}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', padding: 0, flexShrink: 0,
-        }}
-      >
-        <PlusGlyph size={dims.btn} color={glyphColor} strokeW={dims.strokeW} />
-      </button>
-    </div>
-  );
-
-  if (size === 'Card') {
-    // Card/Style 2: 245×114.5 card wrapper, 24px padding, 8px radius, vertical layout.
-    return (
-      <div style={{
-        fontFamily,
-        width: '245px',
-        backgroundColor: cardBg,
-        border: `1px solid ${borderColor}`,
-        borderRadius: '8px',
-        padding: '24px',
-        boxShadow: '0 1px 2px rgba(10,35,51,0.06)',
-      }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '16px',
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: textColor, lineHeight: 1.3 }}>
-              {cardTitle}
-            </span>
-            <span style={{ fontSize: '12px', color: subtitleColor, lineHeight: 1.4 }}>
-              {cardSubtitle}
-            </span>
-          </div>
-          {stepperRow}
-        </div>
-      </div>
-    );
-  }
-
-  return stepperRow;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controls rail helpers
@@ -228,15 +86,14 @@ function TextField({
 
 // ─── Design tokens table rows ────────────────────────────────────────────────
 const TOKEN_TABLE_ROWS = [
-  { label: 'Button bg (Style 2)',  cssVar: '--atom-background-primary-bg-primary-default',        tokenKey: 'atom.background.primary.bg-primary-default',        fallback: '#0a2333' },
-  { label: 'Button fg (Style 2)',  cssVar: '--atom-foreground-primary-fg-brand-primary-inverse',  tokenKey: 'atom.foreground.primary.fg-brand-primary-inverse',  fallback: '#ffffff' },
-  { label: 'Button stroke (Style 1)', cssVar: '--atom-foreground-primary-fg-brand-primary',       tokenKey: 'atom.foreground.primary.fg-brand-primary',          fallback: '#0a2333' },
-  { label: 'Button border',        cssVar: '--atom-border-default-border-default',                tokenKey: 'atom.border.default.border-default',                fallback: '#cdcbcb' },
-  { label: 'Card bg (Card only)',  cssVar: '--atom-background-primary-bg-primary-inverse',        tokenKey: 'atom.background.primary.bg-primary-inverse',        fallback: '#ffffff' },
-  { label: 'Card border',          cssVar: '--atom-border-default-border-default',                tokenKey: 'atom.border.default.border-default',                fallback: '#cdcbcb' },
-  { label: 'Value label fg',       cssVar: '--atom-foreground-primary-fg-brand-primary',          tokenKey: 'atom.foreground.primary.fg-brand-primary',          fallback: '#0a2333' },
-  { label: 'Card title fg',        cssVar: '--atom-foreground-primary-fg-brand-primary',          tokenKey: 'atom.foreground.primary.fg-brand-primary',          fallback: '#0a2333' },
-  { label: 'Card subtitle fg',     cssVar: '--atom-foreground-core-fg-secondary',                 tokenKey: 'atom.foreground.core.fg-secondary',                 fallback: '#737272' },
+  { label: 'Button border',            cssVar: '--atom-border-default-border-default',          tokenKey: 'atom.border.default.border-default',           fallback: '#cdcbcb' },
+  { label: 'Button surface',           cssVar: '--atom-background-primary-bg-primary-inverse',  tokenKey: 'atom.background.primary.bg-primary-inverse',   fallback: '#ffffff' },
+  { label: 'Button glyph (± fill)',    cssVar: '--atom-foreground-primary-fg-brand-primary',    tokenKey: 'atom.foreground.primary.fg-brand-primary',     fallback: '#0a2333' },
+  { label: 'Value label',              cssVar: '--atom-foreground-primary-fg-brand-primary',    tokenKey: 'atom.foreground.primary.fg-brand-primary',     fallback: '#0a2333' },
+  { label: 'Card surface (Style 2)',   cssVar: '--atom-background-primary-bg-primary-inverse',  tokenKey: 'atom.background.primary.bg-primary-inverse',   fallback: '#ffffff' },
+  { label: 'Card border (Style 2)',    cssVar: '--atom-border-default-border-default',          tokenKey: 'atom.border.default.border-default',           fallback: '#cdcbcb' },
+  { label: 'Value frame rule (Card)',  cssVar: '--atom-border-default-border-default',          tokenKey: 'atom.border.default.border-default',           fallback: '#cdcbcb' },
+  { label: 'Inline gap (16px)',        cssVar: '--atom-space-tight',                            tokenKey: 'atom.border.default.border-default',           fallback: '16px' },
 ] as const;
 
 const A11Y_ROWS = [
@@ -277,7 +134,7 @@ export function StepperPage({ brand }: StepperPageProps) {
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.14 }}
                 >
-                  <StepperPreview size={size} style={style} label={label} />
+                  <StepperLive size={size} stepperStyle={style} label={label} />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -298,12 +155,12 @@ export function StepperPage({ brand }: StepperPageProps) {
 
               {size === 'Card' && style === '1' && (
                 <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 leading-relaxed">
-                  In Figma, Card pairs with Style 2 (solid brand-coloured buttons). Switch Style to <strong>2</strong> to match the authored variant.
+                  In Figma, <strong>Card</strong> pairs with <strong>Style 2</strong>. Style 1 is authored only on Small / Default / Large.
                 </p>
               )}
               {size !== 'Card' && style === '2' && (
                 <p className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 leading-relaxed">
-                  Style 2 is authored only on the Card size in Figma. Preview still renders to show the treatment applied at this size.
+                  Style 2 is authored only on the Card size. The preview falls back to the Card treatment so you can see it.
                 </p>
               )}
             </div>
@@ -317,9 +174,10 @@ export function StepperPage({ brand }: StepperPageProps) {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Stepper</h1>
             <p className="text-slate-500 text-sm max-w-xl">
-              A compact numeric increment / decrement control. Three inline sizes (Small, Default, Large) in Style 1 —
-              an unfilled circular button on each side of the value — and a Card presentation (Style 2) that wraps the
-              same control in a product-row layout with title and subtitle.
+              A compact numeric increment / decrement control. Three inline sizes (Small, Default, Large) in
+              Style&nbsp;1 — an unfilled circular button on each side of the value — and a Card presentation
+              (Style&nbsp;2) that frames a larger value between top + bottom rules inside a 245&nbsp;×&nbsp;114.5
+              surface.
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 mt-1">
@@ -344,21 +202,21 @@ export function StepperPage({ brand }: StepperPageProps) {
       <section>
         <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
         <p className="text-sm text-slate-500 mb-5">
-          Three slots in Style 1; Card adds a wrapping surface with title and subtitle.
+          Three slots in Style&nbsp;1. Style&nbsp;2 adds two more: the outer card surface and a framed value
+          display between top + bottom rules.
         </p>
 
         <div className="relative flex items-center justify-center py-20 px-8 rounded-xl" style={DOTTED_BG}>
-          <StepperPreview size="Large" style="1" label="2" />
+          <StepperLive size="Large" stepperStyle="1" label="2" />
         </div>
 
         <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
           {[
-            { num: '1', name: 'Decrement button', desc: 'Circular button on the left. Fires a −1 step. Disabled at min. Style 1 = stroked glyph, Style 2 = solid brand-coloured fill with white glyph.' },
-            { num: '2', name: 'Value label',      desc: 'Numeric label between the two buttons. Tabular-nums so the width stays stable as digits change. Inherits atom.foreground.primary.fg-brand-primary.' },
-            { num: '3', name: 'Increment button', desc: 'Circular button on the right. Fires a +1 step. Disabled at max. Same styling rules as the decrement button.' },
-            { num: '4', name: 'Card wrapper',     desc: 'Only on size=Card. 245×114.5px container, 24px padding, 8px radius, 1px subtle border. Holds a title and subtitle alongside the stepper control on the right.' },
-            { num: '5', name: 'Card title',       desc: 'Used only in Card layout. 14px / weight 600. Describes what the stepper is incrementing (e.g. "Select Ticket").' },
-            { num: '6', name: 'Card subtitle',    desc: 'Used only in Card layout. 12px / fg-secondary. Adds ticket tier, size, or any meta detail.' },
+            { num: '1', name: 'Decrement button', desc: 'Circular stroked button on the left. Fires a −1 step. Disabled at min. 20 / 32 / 40px for Small / Default / Large; 24px inside Card.' },
+            { num: '2', name: 'Value label',      desc: 'Numeric label between the two buttons. Tabular-nums so the width stays stable as digits change. 14px Medium body token; 28px heading/h1 inside Card.' },
+            { num: '3', name: 'Increment button', desc: 'Circular stroked button on the right. Fires a +1 step. Disabled at max. Mirrors the decrement button for size and stroke weight.' },
+            { num: '4', name: 'Card surface',     desc: 'Style 2 only. 245 × 114.5 container, 24px padding all around, 8px radius, 1px border-default outline. Wraps the stepper row.' },
+            { num: '5', name: 'Value frame',      desc: 'Style 2 only. 90 × 66.5 frame between the two buttons with 1px top + bottom rules (no left / right borders). Hosts the 28px heading-weight digit.' },
           ].map((row) => (
             <div key={row.num} style={{ display: 'flex', gap: '10px', padding: '12px', borderRadius: '8px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827', flexShrink: 0, marginTop: '1px', minWidth: '12px' }}>{row.num}</span>
@@ -450,7 +308,7 @@ export function StepperPage({ brand }: StepperPageProps) {
               minHeight: card.size === 'Card' ? '180px' : '120px',
             }}>
               <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#6b7280' }}>{card.title}</p>
-              <StepperPreview size={card.size} style={card.style} label="0" />
+              <StepperLive size={card.size} stepperStyle={card.style} label="0" />
             </div>
           ))}
         </div>

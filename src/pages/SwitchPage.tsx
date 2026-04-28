@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { SwitchLive } from '../components/switch/SwitchLive';
 
 interface SwitchPageProps {
   brand: Brand;
@@ -90,101 +91,14 @@ function SegBtn({
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Inline Switch preview — mirrors Figma 1:1                                 */
+/*  Preview renderer                                                          */
+/*                                                                            */
+/*  Every preview in this page — interactive rail, anatomy illustration, and  */
+/*  the Variants matrix — is driven by <SwitchLive>, which renders one of the */
+/*  six Figma-exported SVGs for the current State × On combination. Track     */
+/*  geometry, thumb position, focus ring, and the inline "On" / "Off" glyphs  */
+/*  are baked into the SVG, so the documentation stays on Figma truth.        */
 /* -------------------------------------------------------------------------- */
-
-const FONT = 'var(--atom-font-body, Poppins, sans-serif)';
-
-function SwitchPreview({
-  state,
-  on,
-  actionText,
-}: {
-  state: SwitchState;
-  on: boolean;
-  actionText: boolean;
-}) {
-  const isDisabled = state === 'Disabled';
-  const isFocused = state === 'Focused';
-
-  const trackBg = isDisabled
-    ? 'var(--atom-background-primary-bg-primary-disabled, #ebe9e8)'
-    : on
-    ? 'var(--atom-background-primary-bg-primary-pressed, #063e56)'
-    : 'var(--atom-background-core-bg-muted, rgba(10,35,51,0.06))';
-
-  const thumbBg = isDisabled
-    ? 'var(--atom-foreground-states-fg-disabled-inverse, #ffffff)'
-    : on
-    ? 'var(--atom-foreground-primary-fg-brand-primary-inverse, #ffffff)'
-    : 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)';
-
-  const labelColor = isDisabled
-    ? 'var(--atom-foreground-states-fg-disabled, #91908f)'
-    : on
-    ? 'var(--atom-foreground-primary-fg-brand-primary, #0a2333)'
-    : 'var(--atom-foreground-core-fg-primary, #4b4a4a)';
-
-  const focusRing = isFocused
-    ? '0 0 0 2px var(--atom-border-selection-and-focus-border-selected, #0a2333)'
-    : 'none';
-
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontFamily: FONT,
-      }}
-    >
-      <div
-        role="switch"
-        aria-checked={on}
-        aria-disabled={isDisabled || undefined}
-        style={{
-          position: 'relative',
-          width: '48px',
-          height: '24px',
-          borderRadius: '999px',
-          padding: '2px',
-          backgroundColor: trackBg,
-          boxShadow: focusRing,
-          flexShrink: 0,
-          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: '2px',
-            left: on ? '26px' : '2px',
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            backgroundColor: thumbBg,
-            transition: 'left 0.2s ease, background-color 0.2s ease',
-          }}
-        />
-      </div>
-
-      {actionText && (
-        <span
-          style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            color: labelColor,
-            fontFamily: FONT,
-            userSelect: 'none',
-            minWidth: '18px',
-          }}
-        >
-          {on ? 'On' : 'Off'}
-        </span>
-      )}
-    </div>
-  );
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Reference data                                                            */
@@ -299,7 +213,7 @@ export function SwitchPage({ brand }: SwitchPageProps) {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <SwitchPreview state={state} on={on} actionText={actionText} />
+                  <SwitchLive state={state} on={on} actionText={actionText} />
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -473,7 +387,7 @@ export function SwitchPage({ brand }: SwitchPageProps) {
             minHeight: '200px',
           }}
         >
-          <SwitchPreview state="Default" on={true} actionText={true} />
+          <SwitchLive state="Default" on={true} actionText={true} />
 
           {/* 1 — Track (bottom) */}
           <div
@@ -705,7 +619,7 @@ export function SwitchPage({ brand }: SwitchPageProps) {
                 >
                   {s} · On={isOn ? 'True' : 'False'}
                 </p>
-                <SwitchPreview state={s} on={isOn} actionText={true} />
+                <SwitchLive state={s} on={isOn} actionText={true} />
               </div>
             )),
           )}
