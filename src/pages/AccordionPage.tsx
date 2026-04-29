@@ -2,10 +2,239 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AccordionLive, type AccordionStyle, type AccordionState } from '../components/accordion/AccordionLive';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { type Language } from '../data/languages';
 
 interface AccordionPageProps {
   brand: Brand;
+  lang?: Language;
 }
+
+const COPY = {
+  en: {
+    stateLabel: 'State',
+    styleLabel: 'Style',
+    openedLabel: 'Opened',
+    backgroundFillLabel: 'Background Fill',
+    optionsLabel: 'Options',
+    yes: 'Yes',
+    no: 'No',
+    optIconLeft: 'Icon Left',
+    optCountryFlag: 'Country Flag',
+    optSubtitle: 'Subtitle',
+    optBadge: 'Badge',
+    optContent: 'Content',
+    title: 'Accordion',
+    description:
+      'Allows users to expand and collapse sections of related content for progressive disclosure. Supports five styles (Full Border, Bottom Border, GPay, ApplePay, PayPal) with optional icon, subtitle, and badge slots.',
+    pillFeedback: 'Feedback',
+    pillStable: 'Stable',
+    anatomyHeading: 'Anatomy',
+    anatomyIntro:
+      'The Accordion is composed of five main parts. Icon Left, Subtitle, and Badge slots are optional.',
+    variantsHeading: 'Variants',
+    propertyHeader: 'Property',
+    valuesHeader: 'Values',
+    designTokensHeading: 'Design Tokens',
+    designTokensIntro:
+      'Active tokens for the selected state are highlighted. Switch State or Brand to see values update.',
+    tokenHeader: 'Token',
+    cssVarHeader: 'CSS Variable',
+    valueHeader: 'Value',
+    a11yHeading: 'Accessibility',
+    a11yIntro: 'Guidelines for implementing Accordion in an inclusive way.',
+    usageHeading: 'Usage',
+    usageIntro: 'When and how to use the Accordion component.',
+    whenToUse: 'When to use',
+    whenNotToUse: 'When not to use',
+    open: '(Open)',
+    closed: '(Closed)',
+    variantRows: [
+      { label: 'State',           chips: ['Default', 'Hover', 'Focus', 'Disabled'] },
+      { label: 'Style',           chips: ['Full Border', 'Bottom Border', 'GPay', 'ApplePay', 'PayPal'] },
+      { label: 'Opened',          chips: ['Yes', 'No'] },
+      { label: 'Background Fill', chips: ['Yes', 'No'] },
+      { label: 'Icon Left',       chips: ['True', 'False'] },
+      { label: 'Country Flag',    chips: ['True', 'False'] },
+      { label: 'Title Text',      chips: ['Editable text'] },
+      { label: 'Subtitle',        chips: ['True', 'False'] },
+      { label: 'Subtitle Text',   chips: ['Editable text'] },
+      { label: 'Badge',           chips: ['True', 'False'] },
+      { label: 'Content',         chips: ['True', 'False'] },
+      { label: 'Content Text',    chips: ['Editable text'] },
+      { label: 'Slot 1',          chips: ['True', 'False'] },
+      { label: 'Slot 2',          chips: ['True', 'False'] },
+    ],
+    anatomyParts: [
+      { num: '1', name: 'Container',  desc: 'Outer wrapper with 8px radius. Full Border: 1px border all sides (2px on Hover/Focus). Bottom Border: divider line under header only. GPay/ApplePay/PayPal: taller header (72px) with payment logo.' },
+      { num: '2', name: 'Icon Left',   desc: 'Optional 20x20px icon slot. Displays a leading icon or country flag emoji. Inherits brand primary foreground color. Hidden when disabled.' },
+      { num: '3', name: 'Title',       desc: '14px / weight 500 text with 20px line-height. Foreground color from brand primary token. Required. Changes color on Hover, Focus, and Disabled states.' },
+      { num: '4', name: 'Chevron',     desc: '20x20px expand/collapse indicator. Rotates 180 degrees when opened. Inherits the same foreground color as the title for each state.' },
+      { num: '5', name: 'Content',     desc: 'Body region visible when Opened=Yes. 14px / weight 400 text with 20px line-height. Uses primary foreground color. Hidden entirely when Opened=No.' },
+    ],
+    tokenRows: [
+      { label: 'Border divider',   key: 'atom.border.default.border-divider',                       cssVar: '--atom-border-default-border-divider',                       states: ['Default'] as AccordionState[] },
+      { label: 'Border hover',     key: 'atom.border.states.border-hover',                          cssVar: '--atom-border-states-border-hover',                          states: ['Hover'] as AccordionState[] },
+      { label: 'Focus border',     key: 'atom.border.selection-and-focus.border-primary-focus',     cssVar: '--atom-border-selection-and-focus-border-primary-focus',     states: ['Focus'] as AccordionState[] },
+      { label: 'Border disabled',  key: 'atom.border.states.border-disabled',                       cssVar: '--atom-border-states-border-disabled',                       states: ['Disabled'] as AccordionState[] },
+      { label: 'Brand primary fg', key: 'atom.foreground.primary.fg-brand-primary',                 cssVar: '--atom-foreground-primary-fg-brand-primary',                 states: ['Default'] as AccordionState[] },
+      { label: 'Hover fg',         key: 'atom.foreground.states.fg-hover',                          cssVar: '--atom-foreground-states-fg-hover',                          states: ['Hover'] as AccordionState[] },
+      { label: 'Disabled fg',      key: 'atom.foreground.states.fg-disabled',                       cssVar: '--atom-foreground-states-fg-disabled',                       states: ['Disabled'] as AccordionState[] },
+      { label: 'Body text fg',     key: 'atom.foreground.core.fg-primary',                          cssVar: '--atom-foreground-core-fg-primary',                          states: ['Default'] as AccordionState[] },
+      { label: 'Background fill',  key: 'atom.background.primary.bg-primary-inverse',               cssVar: '--atom-background-primary-bg-primary-inverse',               states: ['Default'] as AccordionState[] },
+    ],
+    a11yRows: [
+      {
+        icon: '\u2328\uFE0F',
+        title: 'Keyboard interaction',
+        body: 'Each accordion header is a <button> and receives focus in tab order. Press Enter or Space to toggle the expanded/collapsed state. Arrow keys are optional but may be added for enhanced navigation between headers.',
+      },
+      {
+        icon: '\uD83C\uDFF7\uFE0F',
+        title: 'ARIA attributes',
+        body: 'Each header button uses aria-expanded="true|false" and aria-controls pointing to its content region ID. The content panel uses role="region" and aria-hidden to match the expanded state.',
+      },
+      {
+        icon: '\uD83C\uDFA8',
+        title: 'Color contrast',
+        body: 'Title text (brand primary fg on white bg) meets WCAG AA 4.5:1 minimum contrast across all 6 brands. Body text and subtitle also meet AA requirements.',
+      },
+      {
+        icon: '\uD83D\uDD24',
+        title: 'Content structure',
+        body: "Don't rely solely on the expanded/collapsed visual state to convey hierarchy. Use descriptive titles so users understand each section's content before expanding.",
+      },
+      {
+        icon: '\u2728',
+        title: 'Motion',
+        body: 'The expand/collapse animation uses max-height and opacity transitions (0.25s). For users who prefer reduced motion, consider disabling animation and toggling content visibility instantly.',
+      },
+    ],
+    whenToUseItems: [
+      'Progressive disclosure of related content (FAQ, terms, settings)',
+      'Reducing cognitive load on long pages with many sections',
+      'Payment flows where each step is a collapsible section',
+      'Grouping secondary details that users may not always need',
+    ],
+    whenNotToUseItems: [
+      "Don't hide critical content that users must see -- show it inline",
+      "Don't use a single accordion for primary navigation -- use tabs instead",
+      "Don't nest accordions inside accordions -- flatten the hierarchy",
+      "Don't use for very short content that adds no value when collapsed",
+    ],
+  },
+  zh: {
+    stateLabel: '状态',
+    styleLabel: '样式',
+    openedLabel: '展开',
+    backgroundFillLabel: '背景填充',
+    optionsLabel: '选项',
+    yes: '是',
+    no: '否',
+    optIconLeft: '左侧图标',
+    optCountryFlag: '国家旗帜',
+    optSubtitle: '副标题',
+    optBadge: '徽章',
+    optContent: '内容',
+    title: '手风琴',
+    description:
+      '允许用户展开和折叠相关内容的部分,以渐进显示信息。支持五种样式(Full Border、Bottom Border、GPay、ApplePay、PayPal),可选图标、副标题和徽章插槽。',
+    pillFeedback: '反馈',
+    pillStable: '稳定',
+    anatomyHeading: '结构',
+    anatomyIntro:
+      '手风琴由五个主要部分组成。左侧图标、副标题和徽章插槽是可选的。',
+    variantsHeading: '变体',
+    propertyHeader: '属性',
+    valuesHeader: '值',
+    designTokensHeading: '设计令牌',
+    designTokensIntro:
+      '所选状态的活动令牌将高亮显示。切换状态或品牌以查看值的变化。',
+    tokenHeader: '令牌',
+    cssVarHeader: 'CSS 变量',
+    valueHeader: '值',
+    a11yHeading: '无障碍',
+    a11yIntro: '以包容性方式实现手风琴的指南。',
+    usageHeading: '用法',
+    usageIntro: '何时以及如何使用手风琴组件。',
+    whenToUse: '适用场景',
+    whenNotToUse: '不适用场景',
+    open: '(展开)',
+    closed: '(折叠)',
+    variantRows: [
+      { label: '状态',         chips: ['Default', 'Hover', 'Focus', 'Disabled'] },
+      { label: '样式',         chips: ['Full Border', 'Bottom Border', 'GPay', 'ApplePay', 'PayPal'] },
+      { label: '展开',         chips: ['是', '否'] },
+      { label: '背景填充',     chips: ['是', '否'] },
+      { label: '左侧图标',     chips: ['真', '假'] },
+      { label: '国家旗帜',     chips: ['真', '假'] },
+      { label: '标题文本',     chips: ['可编辑文本'] },
+      { label: '副标题',       chips: ['真', '假'] },
+      { label: '副标题文本',   chips: ['可编辑文本'] },
+      { label: '徽章',         chips: ['真', '假'] },
+      { label: '内容',         chips: ['真', '假'] },
+      { label: '内容文本',     chips: ['可编辑文本'] },
+      { label: '插槽 1',       chips: ['真', '假'] },
+      { label: '插槽 2',       chips: ['真', '假'] },
+    ],
+    anatomyParts: [
+      { num: '1', name: '容器',     desc: '8px 圆角的外层包装。Full Border:四边各有 1px 边框(Hover/Focus 时为 2px)。Bottom Border:仅在标头下方有分隔线。GPay/ApplePay/PayPal:更高的标头(72px),带支付徽标。' },
+      { num: '2', name: '左侧图标',  desc: '可选 20×20px 图标插槽。显示前置图标或国家旗帜表情。继承品牌主前景色。禁用时隐藏。' },
+      { num: '3', name: '标题',     desc: '14px / 字重 500 文本,行高 20px。前景色取自品牌主要令牌。必填。Hover、Focus 和 Disabled 状态下颜色会变化。' },
+      { num: '4', name: '雪佛龙',    desc: '20×20px 展开/折叠指示器。展开时旋转 180 度。继承每种状态下与标题相同的前景色。' },
+      { num: '5', name: '内容',     desc: '展开=是时可见的主体区域。14px / 字重 400 文本,行高 20px。使用主前景色。展开=否时完全隐藏。' },
+    ],
+    tokenRows: [
+      { label: '边框分隔线',   key: 'atom.border.default.border-divider',                       cssVar: '--atom-border-default-border-divider',                       states: ['Default'] as AccordionState[] },
+      { label: '悬停边框',     key: 'atom.border.states.border-hover',                          cssVar: '--atom-border-states-border-hover',                          states: ['Hover'] as AccordionState[] },
+      { label: '焦点边框',     key: 'atom.border.selection-and-focus.border-primary-focus',     cssVar: '--atom-border-selection-and-focus-border-primary-focus',     states: ['Focus'] as AccordionState[] },
+      { label: '禁用边框',     key: 'atom.border.states.border-disabled',                       cssVar: '--atom-border-states-border-disabled',                       states: ['Disabled'] as AccordionState[] },
+      { label: '品牌主前景',   key: 'atom.foreground.primary.fg-brand-primary',                 cssVar: '--atom-foreground-primary-fg-brand-primary',                 states: ['Default'] as AccordionState[] },
+      { label: '悬停前景',     key: 'atom.foreground.states.fg-hover',                          cssVar: '--atom-foreground-states-fg-hover',                          states: ['Hover'] as AccordionState[] },
+      { label: '禁用前景',     key: 'atom.foreground.states.fg-disabled',                       cssVar: '--atom-foreground-states-fg-disabled',                       states: ['Disabled'] as AccordionState[] },
+      { label: '正文文本前景', key: 'atom.foreground.core.fg-primary',                          cssVar: '--atom-foreground-core-fg-primary',                          states: ['Default'] as AccordionState[] },
+      { label: '背景填充',     key: 'atom.background.primary.bg-primary-inverse',               cssVar: '--atom-background-primary-bg-primary-inverse',               states: ['Default'] as AccordionState[] },
+    ],
+    a11yRows: [
+      {
+        icon: '\u2328\uFE0F',
+        title: '键盘交互',
+        body: '每个手风琴标头都是一个 <button>,按 Tab 顺序获得焦点。按 Enter 或 Space 切换展开/折叠状态。方向键是可选的,但可以添加以增强标头之间的导航。',
+      },
+      {
+        icon: '\uD83C\uDFF7\uFE0F',
+        title: 'ARIA 属性',
+        body: '每个标头按钮使用 aria-expanded="true|false" 和指向其内容区域 ID 的 aria-controls。内容面板使用 role="region" 和 aria-hidden 来匹配展开状态。',
+      },
+      {
+        icon: '\uD83C\uDFA8',
+        title: '颜色对比度',
+        body: '标题文本(白色背景上的品牌主前景色)在所有 6 个品牌中均符合 WCAG AA 4.5:1 最低对比度。正文文本和副标题也符合 AA 要求。',
+      },
+      {
+        icon: '\uD83D\uDD24',
+        title: '内容结构',
+        body: '不要仅依赖展开/折叠的视觉状态来传达层级结构。使用描述性标题,以便用户在展开之前了解每个部分的内容。',
+      },
+      {
+        icon: '\u2728',
+        title: '动效',
+        body: '展开/折叠动画使用 max-height 和 opacity 过渡(0.25 秒)。对于偏好减少动效的用户,可考虑禁用动画并立即切换内容可见性。',
+      },
+    ],
+    whenToUseItems: [
+      '相关内容的渐进显示(FAQ、条款、设置)',
+      '减少长页面中多个部分的认知负荷',
+      '每一步都是可折叠部分的支付流程',
+      '对用户可能不需要的次要详情进行分组',
+    ],
+    whenNotToUseItems: [
+      '不要隐藏用户必须看到的关键内容 — 在线显示',
+      '不要将单个手风琴用于主要导航 — 改用标签页',
+      '不要在手风琴内嵌套手风琴 — 扁平化层级',
+      '不要用于内容很短、折叠后无附加价值的情况',
+    ],
+  },
+} as const;
 
 const DOTTED_BG: React.CSSProperties = {
   backgroundColor: '#f2f2f2',
@@ -37,66 +266,6 @@ const STATE_DOT_BORDER: Record<AccordionState, string> = {
   Disabled: '#cdcbcb',
 };
 
-// ─── Token table rows with state-based highlighting ─────────────────────────
-const TOKEN_TABLE_ROWS: { label: string; key: string; cssVar: string; states: AccordionState[] }[] = [
-  { label: 'Border divider',   key: 'atom.border.default.border-divider',                       cssVar: '--atom-border-default-border-divider',                       states: ['Default'] },
-  { label: 'Border hover',     key: 'atom.border.states.border-hover',                          cssVar: '--atom-border-states-border-hover',                          states: ['Hover'] },
-  { label: 'Focus border',     key: 'atom.border.selection-and-focus.border-primary-focus',     cssVar: '--atom-border-selection-and-focus-border-primary-focus',     states: ['Focus'] },
-  { label: 'Border disabled',  key: 'atom.border.states.border-disabled',                       cssVar: '--atom-border-states-border-disabled',                       states: ['Disabled'] },
-  { label: 'Brand primary fg', key: 'atom.foreground.primary.fg-brand-primary',                 cssVar: '--atom-foreground-primary-fg-brand-primary',                 states: ['Default'] },
-  { label: 'Hover fg',         key: 'atom.foreground.states.fg-hover',                          cssVar: '--atom-foreground-states-fg-hover',                          states: ['Hover'] },
-  { label: 'Disabled fg',      key: 'atom.foreground.states.fg-disabled',                       cssVar: '--atom-foreground-states-fg-disabled',                       states: ['Disabled'] },
-  { label: 'Body text fg',     key: 'atom.foreground.core.fg-primary',                          cssVar: '--atom-foreground-core-fg-primary',                          states: ['Default'] },
-  { label: 'Background fill',  key: 'atom.background.primary.bg-primary-inverse',               cssVar: '--atom-background-primary-bg-primary-inverse',               states: ['Default'] },
-];
-
-// ─── Variant table rows ─────────────────────────────────────────────────────
-const VARIANT_ROWS: { label: string; chips: { text: string; dot?: string }[] }[] = [
-  { label: 'State',           chips: [{ text: 'Default' }, { text: 'Hover' }, { text: 'Focus' }, { text: 'Disabled' }] },
-  { label: 'Style',           chips: [{ text: 'Full Border', dot: STYLE_DOT_COLORS['Full Border'] }, { text: 'Bottom Border', dot: STYLE_DOT_COLORS['Bottom Border'] }, { text: 'GPay', dot: STYLE_DOT_COLORS['GPay'] }, { text: 'ApplePay', dot: STYLE_DOT_COLORS['ApplePay'] }, { text: 'PayPal', dot: STYLE_DOT_COLORS['PayPal'] }] },
-  { label: 'Opened',          chips: [{ text: 'Yes' }, { text: 'No' }] },
-  { label: 'Background Fill', chips: [{ text: 'Yes' }, { text: 'No' }] },
-  { label: 'Icon Left',       chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Country Flag',    chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Title Text',      chips: [{ text: 'Editable text' }] },
-  { label: 'Subtitle',        chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Subtitle Text',   chips: [{ text: 'Editable text' }] },
-  { label: 'Badge',           chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Content',         chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Content Text',    chips: [{ text: 'Editable text' }] },
-  { label: 'Slot 1',          chips: [{ text: 'True' }, { text: 'False' }] },
-  { label: 'Slot 2',          chips: [{ text: 'True' }, { text: 'False' }] },
-];
-
-// ─── Accessibility rows ─────────────────────────────────────────────────────
-const A11Y_ROWS = [
-  {
-    icon: '\u2328\uFE0F',
-    title: 'Keyboard interaction',
-    body: 'Each accordion header is a <button> and receives focus in tab order. Press Enter or Space to toggle the expanded/collapsed state. Arrow keys are optional but may be added for enhanced navigation between headers.',
-  },
-  {
-    icon: '\uD83C\uDFF7\uFE0F',
-    title: 'ARIA attributes',
-    body: 'Each header button uses aria-expanded="true|false" and aria-controls pointing to its content region ID. The content panel uses role="region" and aria-hidden to match the expanded state.',
-  },
-  {
-    icon: '\uD83C\uDFA8',
-    title: 'Color contrast',
-    body: 'Title text (brand primary fg on white bg) meets WCAG AA 4.5:1 minimum contrast across all 6 brands. Body text and subtitle also meet AA requirements.',
-  },
-  {
-    icon: '\uD83D\uDD24',
-    title: 'Content structure',
-    body: 'Don\'t rely solely on the expanded/collapsed visual state to convey hierarchy. Use descriptive titles so users understand each section\'s content before expanding.',
-  },
-  {
-    icon: '\u2728',
-    title: 'Motion',
-    body: 'The expand/collapse animation uses max-height and opacity transitions (0.25s). For users who prefer reduced motion, consider disabling animation and toggling content visibility instantly.',
-  },
-];
-
 function isLightColor(hex: string): boolean {
   const raw = hex.replace('#', '').slice(0, 6);
   if (raw.length < 6) return true;
@@ -106,7 +275,8 @@ function isLightColor(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 }
 
-export function AccordionPage({ brand }: AccordionPageProps) {
+export function AccordionPage({ brand, lang = 'en' }: AccordionPageProps) {
+  const t = COPY[lang];
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
 
   // Interactive preview state
@@ -165,7 +335,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
               {/* State */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">State</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.stateLabel}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(['Default', 'Hover', 'Focus', 'Disabled'] as AccordionState[]).map((s) => (
                     <button
@@ -193,7 +363,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
               {/* Style */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Style</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.styleLabel}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(['Full Border', 'Bottom Border', 'GPay', 'ApplePay', 'PayPal'] as AccordionStyle[]).map((s) => (
                     <button
@@ -221,14 +391,14 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
               {/* Opened */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Opened</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.openedLabel}</p>
                 <div className="flex rounded-lg border border-slate-200 overflow-hidden w-fit">
-                  {(['Yes', 'No'] as const).map((opt) => {
-                    const isActive = opt === 'Yes' ? opened : !opened;
+                  {([{ key: 'Yes', label: t.yes }, { key: 'No', label: t.no }] as const).map((opt) => {
+                    const isActive = opt.key === 'Yes' ? opened : !opened;
                     return (
                       <button
-                        key={opt}
-                        onClick={() => setOpened(opt === 'Yes')}
+                        key={opt.key}
+                        onClick={() => setOpened(opt.key === 'Yes')}
                         className={[
                           'px-3 py-1.5 text-xs font-medium transition-all duration-100',
                           isActive
@@ -236,7 +406,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
                             : 'text-slate-600 hover:bg-slate-50',
                         ].join(' ')}
                       >
-                        {opt}
+                        {opt.label}
                       </button>
                     );
                   })}
@@ -245,14 +415,14 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
               {/* Background Fill */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Background Fill</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.backgroundFillLabel}</p>
                 <div className="flex rounded-lg border border-slate-200 overflow-hidden w-fit">
-                  {(['Yes', 'No'] as const).map((opt) => {
-                    const isActive = opt === 'Yes' ? backgroundFill : !backgroundFill;
+                  {([{ key: 'Yes', label: t.yes }, { key: 'No', label: t.no }] as const).map((opt) => {
+                    const isActive = opt.key === 'Yes' ? backgroundFill : !backgroundFill;
                     return (
                       <button
-                        key={opt}
-                        onClick={() => setBackgroundFill(opt === 'Yes')}
+                        key={opt.key}
+                        onClick={() => setBackgroundFill(opt.key === 'Yes')}
                         className={[
                           'px-3 py-1.5 text-xs font-medium transition-all duration-100',
                           isActive
@@ -260,7 +430,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
                             : 'text-slate-600 hover:bg-slate-50',
                         ].join(' ')}
                       >
-                        {opt}
+                        {opt.label}
                       </button>
                     );
                   })}
@@ -269,14 +439,14 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
               {/* Options */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Options</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.optionsLabel}</p>
                 <div className="flex flex-col gap-2">
                   {[
-                    { label: 'Icon Left',    value: showIconLeft,    set: setShowIconLeft },
-                    { label: 'Country Flag', value: showCountryFlag, set: setShowCountryFlag },
-                    { label: 'Subtitle',     value: showSubtitle,    set: setShowSubtitle },
-                    { label: 'Badge',        value: showBadge,       set: setShowBadge },
-                    { label: 'Content',      value: showContent,     set: setShowContent },
+                    { label: t.optIconLeft,    value: showIconLeft,    set: setShowIconLeft },
+                    { label: t.optCountryFlag, value: showCountryFlag, set: setShowCountryFlag },
+                    { label: t.optSubtitle,    value: showSubtitle,    set: setShowSubtitle },
+                    { label: t.optBadge,       value: showBadge,       set: setShowBadge },
+                    { label: t.optContent,     value: showContent,     set: setShowContent },
                   ].map(({ label: lbl, value, set }) => (
                     <label key={lbl} className="flex items-center gap-2.5 cursor-pointer select-none group">
                       <button
@@ -311,10 +481,9 @@ export function AccordionPage({ brand }: AccordionPageProps) {
       <section>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Accordion</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">{t.title}</h1>
             <p className="text-slate-500 text-sm max-w-xl">
-              Allows users to expand and collapse sections of related content for progressive disclosure.
-              Supports five styles (Full Border, Bottom Border, GPay, ApplePay, PayPal) with optional icon, subtitle, and badge slots.
+              {t.description}
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 mt-1">
@@ -323,11 +492,11 @@ export function AccordionPage({ brand }: AccordionPageProps) {
                 <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.25" />
                 <path d="M5 3v3M5 7.5v.25" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
               </svg>
-              Feedback
+              {t.pillFeedback}
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Stable
+              {t.pillStable}
             </span>
           </div>
         </div>
@@ -337,9 +506,9 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
       {/* -- 3. ANATOMY ------------------------------------------------------------ */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.anatomyHeading}</h2>
         <p className="text-sm text-slate-500 mb-5">
-          The Accordion is composed of five main parts. Icon Left, Subtitle, and Badge slots are optional.
+          {t.anatomyIntro}
         </p>
 
         <div className="flex items-center justify-center rounded-xl" style={{ ...DOTTED_BG, padding: '80px 32px' }}>
@@ -412,13 +581,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
         {/* Anatomy legend */}
         <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-          {[
-            { num: '1', name: 'Container',  desc: 'Outer wrapper with 8px radius. Full Border: 1px border all sides (2px on Hover/Focus). Bottom Border: divider line under header only. GPay/ApplePay/PayPal: taller header (72px) with payment logo.' },
-            { num: '2', name: 'Icon Left',   desc: 'Optional 20×20px icon slot. Displays a leading icon or country flag emoji. Inherits brand primary foreground color. Hidden when disabled.' },
-            { num: '3', name: 'Title',       desc: '14px / weight 500 text with 20px line-height. Foreground color from brand primary token. Required. Changes color on Hover, Focus, and Disabled states.' },
-            { num: '4', name: 'Chevron',     desc: '20×20px expand/collapse indicator. Rotates 180 degrees when opened. Inherits the same foreground color as the title for each state.' },
-            { num: '5', name: 'Content',     desc: 'Body region visible when Opened=Yes. 14px / weight 400 text with 20px line-height. Uses primary foreground color. Hidden entirely when Opened=No.' },
-          ].map((row) => (
+          {t.anatomyParts.map((row) => (
             <div key={row.num} style={{ display: 'flex', gap: '10px', padding: '12px', borderRadius: '8px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827', flexShrink: 0, marginTop: '1px', minWidth: '12px' }}>{row.num}</span>
               <div>
@@ -432,31 +595,42 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
       {/* -- 4. VARIANTS ----------------------------------------------------------- */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">{t.variantsHeading}</h2>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">Property</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Values</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">{t.propertyHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.valuesHeader}</th>
               </tr>
             </thead>
             <tbody>
-              {VARIANT_ROWS.map((row, i) => (
-                <tr key={row.label} className={i < VARIANT_ROWS.length - 1 ? 'border-b border-slate-100' : ''}>
-                  <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{row.label}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {row.chips.map((chip) => (
-                        <span key={chip.text} className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-xs font-medium">
-                          {chip.dot && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: chip.dot }} />}
-                          {chip.text}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {t.variantRows.map((row, i) => {
+                // Get dot colors for Style row
+                const isStyleRow = i === 1;
+                return (
+                  <tr key={row.label} className={i < t.variantRows.length - 1 ? 'border-b border-slate-100' : ''}>
+                    <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{row.label}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {row.chips.map((chipText, cidx) => {
+                          let dot: string | undefined;
+                          if (isStyleRow) {
+                            const styleKeys: AccordionStyle[] = ['Full Border', 'Bottom Border', 'GPay', 'ApplePay', 'PayPal'];
+                            dot = STYLE_DOT_COLORS[styleKeys[cidx]];
+                          }
+                          return (
+                            <span key={chipText} className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-xs font-medium">
+                              {dot && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: dot }} />}
+                              {chipText}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -467,7 +641,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
             ([false, true] as const).map((isOpen) => (
               <div key={`${s}-${isOpen}`} style={{ padding: '20px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
-                  {s} {isOpen ? '(Open)' : '(Closed)'}
+                  {s} {isOpen ? t.open : t.closed}
                 </p>
                 <AccordionLive style={s} state="Default" opened={isOpen} showIconLeft={true} backgroundFill={true} showContent={true} brand={brand} />
               </div>
@@ -478,21 +652,21 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
       {/* -- 5. DESIGN TOKENS ------------------------------------------------------ */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.designTokensHeading}</h2>
         <p className="text-sm text-slate-500 mb-4">
-          Active tokens for the selected state are highlighted. Switch State or Brand to see values update.
+          {t.designTokensIntro}
         </p>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">Token</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">CSS Variable</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">Value ({brand})</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">{t.tokenHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.cssVarHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">{t.valueHeader} ({brand})</th>
               </tr>
             </thead>
             <tbody>
-              {TOKEN_TABLE_ROWS.map((row, i) => {
+              {t.tokenRows.map((row, i) => {
                 const isActive = row.states.includes(state);
                 const rawValue = tokens[row.key as keyof typeof tokens] ?? '\u2014';
                 const swatchHex = rawValue.length > 7 ? rawValue.slice(0, 7) : rawValue;
@@ -501,7 +675,7 @@ export function AccordionPage({ brand }: AccordionPageProps) {
                   <tr
                     key={row.cssVar}
                     className={[
-                      i < TOKEN_TABLE_ROWS.length - 1 ? 'border-b border-slate-100' : '',
+                      i < t.tokenRows.length - 1 ? 'border-b border-slate-100' : '',
                       isActive ? 'bg-blue-50/60' : 'opacity-50',
                       'transition-all duration-150',
                     ].join(' ')}
@@ -541,12 +715,12 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
       {/* -- 6. ACCESSIBILITY ------------------------------------------------------ */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.a11yHeading}</h2>
         <p className="text-sm text-slate-500 mb-4">
-          Guidelines for implementing Accordion in an inclusive way.
+          {t.a11yIntro}
         </p>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm divide-y divide-slate-100">
-          {A11Y_ROWS.map((row, i) => (
+          {t.a11yRows.map((row, i) => (
             <div
               key={row.title}
               className={['flex items-start gap-4 px-5 py-4', i % 2 === 1 ? 'bg-slate-50/50' : ''].join(' ')}
@@ -563,27 +737,25 @@ export function AccordionPage({ brand }: AccordionPageProps) {
 
       {/* -- 7. USAGE -------------------------------------------------------------- */}
       <section>
-        <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', margin: '0 0 4px' }}>Usage</h2>
+        <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', margin: '0 0 4px' }}>{t.usageHeading}</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
-          When and how to use the Accordion component.
+          {t.usageIntro}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           <div style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4' }}>
-            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#166534' }}>When to use</p>
+            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#166534' }}>{t.whenToUse}</p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '12.5px', color: '#15803d', lineHeight: 1.4 }}>
-              <li style={{ marginBottom: '6px' }}>Progressive disclosure of related content (FAQ, terms, settings)</li>
-              <li style={{ marginBottom: '6px' }}>Reducing cognitive load on long pages with many sections</li>
-              <li style={{ marginBottom: '6px' }}>Payment flows where each step is a collapsible section</li>
-              <li>Grouping secondary details that users may not always need</li>
+              {t.whenToUseItems.map((item, i) => (
+                <li key={i} style={{ marginBottom: i < t.whenToUseItems.length - 1 ? '6px' : 0 }}>{item}</li>
+              ))}
             </ul>
           </div>
           <div style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}>
-            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#991b1b' }}>When not to use</p>
+            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#991b1b' }}>{t.whenNotToUse}</p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '12.5px', color: '#b91c1c', lineHeight: 1.4 }}>
-              <li style={{ marginBottom: '6px' }}>Don't hide critical content that users must see -- show it inline</li>
-              <li style={{ marginBottom: '6px' }}>Don't use a single accordion for primary navigation -- use tabs instead</li>
-              <li style={{ marginBottom: '6px' }}>Don't nest accordions inside accordions -- flatten the hierarchy</li>
-              <li>Don't use for very short content that adds no value when collapsed</li>
+              {t.whenNotToUseItems.map((item, i) => (
+                <li key={i} style={{ marginBottom: i < t.whenNotToUseItems.length - 1 ? '6px' : 0 }}>{item}</li>
+              ))}
             </ul>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type Brand, type BrandTokens, type SemanticTokenKey } from '../data/tokens';
+import { type Language } from '../data/languages';
 import {
   type AccessibilityCheck,
   type CorePrimitives,
@@ -31,17 +32,247 @@ interface PortalPageProps {
   setCustomBrand: (brand: CustomBrand) => void;
   clearCustomBrand: () => void;
   setBrand: (brand: Brand) => void;
+  lang?: Language;
 }
+
+// ─── Bilingual copy block ─────────────────────────────────────────────────
+const COPY = {
+  en: {
+    title: 'White-label Portal',
+    leadDesc:
+      "Define a brand that mirrors Brand Switcher's token structure. Switch between Simple (14 primitives, auto-derived) and Full (all 67 tokens, explicit) based on how much control you need.",
+    modeSimpleLabel: 'Simple',
+    modeSimpleCount: '14 primitives',
+    modeSimpleHint:
+      'Edit 14 brand colors; the portal derives the rest via HSL lighten/darken/alpha rules.',
+    modeFullLabel: 'Full',
+    modeFullCount: '67 tokens',
+    modeFullHint:
+      'Edit every Brand Switcher variable individually. No derivation — what you see is what ships.',
+    applySave: 'Apply & Save',
+    copied: 'Copied!',
+    copyCss: 'Copy CSS block',
+    clearCustom: 'Clear custom brand',
+    viewComponents: 'View components with active brand →',
+    savedAs: 'Saved as',
+    savedSuffix: ' — active in TopBar, persists across reloads.',
+    confirmModeSwitch:
+      'Switching to Simple will discard your per-token edits and re-derive all 67 tokens from the 13 primitives. Continue?',
+    auditAllPassPart1: 'Accessibility — all ',
+    auditAllPassPart2: ' pairings meet WCAG AA (4.5:1)',
+    auditFailPart1: 'Accessibility — ',
+    auditFailPart2: ' of ',
+    auditFailPart3: ' pairings fail WCAG AA',
+    auditChecksRun:
+      'Checks run on every change against component pairings that paint text on white or brand surfaces.',
+    needsPrefix: 'needs ≥ ',
+    needsSuffix: ' : 1',
+    suggestionLabel: 'Suggestion:',
+    applyToPrefix: 'Apply to ',
+    noNearbyAccessible:
+      'Could not find a nearby accessible color. Consider a completely different shade.',
+    identitySection: 'Identity',
+    brandName: 'Brand name',
+    brandNamePlaceholder: 'e.g. Acme',
+    fontFamily: 'Font family',
+    fontFamilyHintPart1: "Maps to Brand Switcher's ",
+    fontFamilyHintPart2: '. Drives ',
+    fontFamilyHintPart3: ' across all 42+ components that read it.',
+    logoUrl: 'Logo URL',
+    logoUrlPlaceholder: 'https://… or leave blank to upload',
+    uploadFile: 'Upload file',
+    logoAlt: 'logo preview',
+    remove: 'Remove',
+    fullModeBannerLabel: 'Full mode.',
+    fullModeBannerLeadPart1: " You're editing all 67 tokens directly. No derivation — changes here do not cascade. The ",
+    fullModeBannerLeadPart2: ' and ',
+    fullModeBannerLeadPart3:
+      " descriptions below come from Brand Switcher's variable catalogue so you know where each token gets painted.",
+    tokenSuffix: ' token',
+    tokenPlural: 's',
+    drives: 'Drives: ',
+    seenOn: 'Seen on: ',
+    simpleRule: 'Simple rule: ',
+    livePreview: 'Live preview',
+    reactsToFormChanges: 'Reacts to form changes in real time · ',
+    modeWord: ' mode',
+    previewButton: 'Button',
+    previewAlert: 'Alert (feedback colors)',
+    previewBadge: 'Badge',
+    previewInput: 'Input',
+    previewCard: 'Card',
+    previewProgress: 'Progress indicator',
+    previewBreadcrumbs: 'Breadcrumbs',
+    btnPrimary: 'Primary',
+    btnSecondary: 'Secondary',
+    btnDelete: 'Delete',
+    btnDisabled: 'Disabled',
+    alertSuccessTitle: 'Payment received',
+    alertSuccessDesc: 'Your order is on its way.',
+    alertWarningTitle: 'Session expiring',
+    alertWarningDesc: "You'll be signed out in 2 minutes.",
+    alertErrorTitle: 'Could not save',
+    alertErrorDesc: 'Check your connection and try again.',
+    alertInfoTitle: 'New feature',
+    alertInfoDesc: 'We updated the dashboard layout.',
+    badgeBrand: 'Brand',
+    badgeSuccess: 'Success',
+    badgeWarning: 'Warning',
+    badgeError: 'Error',
+    badgeInfo: 'Info',
+    badgeMuted: 'Muted',
+    inputDefaultLabel: 'Default',
+    inputTypePlaceholder: 'Type something…',
+    inputHelperText: 'Helper text in secondary color',
+    inputFocusedLabel: 'Focused',
+    inputFocusedPlaceholder: 'Focused state',
+    inputErrorLabel: 'Error',
+    inputErrorPlaceholder: 'Invalid value',
+    inputErrorHelper: 'Something went wrong',
+    cardTitle: 'Welcome to your dashboard',
+    cardBody:
+      'Track orders, redeem offers, and manage benefits — all in one place.',
+    cardAction: 'Learn more',
+    progressUploading: 'Uploading',
+    progressStep: 'Step 2 of 4',
+    crumbHome: 'Home',
+    crumbAccount: 'Account',
+    crumbPreferences: 'Preferences',
+    cssBlockTitle: 'Generated CSS block (all 67 tokens)',
+  },
+  zh: {
+    title: '白标门户',
+    leadDesc:
+      '定义一个镜像 Brand Switcher 令牌结构的品牌。根据所需的控制程度，在简单模式（14 个原语，自动派生）和完整模式（全部 67 个令牌，显式设置）之间切换。',
+    modeSimpleLabel: '简单',
+    modeSimpleCount: '14 个原语',
+    modeSimpleHint:
+      '编辑 14 个品牌颜色；门户通过 HSL 变浅/变深/透明度规则派生其余令牌。',
+    modeFullLabel: '完整',
+    modeFullCount: '67 个令牌',
+    modeFullHint:
+      '逐个编辑每个 Brand Switcher 变量。不派生——所见即所发。',
+    applySave: '应用并保存',
+    copied: '已复制！',
+    copyCss: '复制 CSS 块',
+    clearCustom: '清除自定义品牌',
+    viewComponents: '使用活跃品牌查看组件 →',
+    savedAs: '已保存为',
+    savedSuffix: ' —— 在顶栏中活跃，跨重载持久保存。',
+    confirmModeSwitch:
+      '切换到简单模式将丢弃你对单个令牌的编辑，并从 13 个原语重新派生全部 67 个令牌。继续？',
+    auditAllPassPart1: '可访问性 —— 全部 ',
+    auditAllPassPart2: ' 个搭配满足 WCAG AA（4.5:1）',
+    auditFailPart1: '可访问性 —— ',
+    auditFailPart2: ' / ',
+    auditFailPart3: ' 个搭配未通过 WCAG AA',
+    auditChecksRun:
+      '每次变更都会针对在白色或品牌表面上绘制文字的组件搭配进行检查。',
+    needsPrefix: '需要 ≥ ',
+    needsSuffix: ' : 1',
+    suggestionLabel: '建议：',
+    applyToPrefix: '应用到 ',
+    noNearbyAccessible:
+      '找不到附近的可访问颜色。请考虑使用完全不同的色调。',
+    identitySection: '身份',
+    brandName: '品牌名称',
+    brandNamePlaceholder: '例如 Acme',
+    fontFamily: '字体',
+    fontFamilyHintPart1: '映射到 Brand Switcher 的 ',
+    fontFamilyHintPart2: '。驱动所有读取它的 42+ 个组件中的 ',
+    fontFamilyHintPart3: '。',
+    logoUrl: '标志 URL',
+    logoUrlPlaceholder: 'https://… 或留空以上传',
+    uploadFile: '上传文件',
+    logoAlt: '标志预览',
+    remove: '移除',
+    fullModeBannerLabel: '完整模式。',
+    fullModeBannerLeadPart1: ' 你正在直接编辑全部 67 个令牌。不派生 —— 这里的变更不会级联。下方的 ',
+    fullModeBannerLeadPart2: ' 和 ',
+    fullModeBannerLeadPart3:
+      ' 描述来自 Brand Switcher 的变量目录，便于你了解每个令牌的绘制位置。',
+    tokenSuffix: ' 个令牌',
+    tokenPlural: '',
+    drives: '驱动：',
+    seenOn: '出现在：',
+    simpleRule: '简单规则：',
+    livePreview: '实时预览',
+    reactsToFormChanges: '实时响应表单变更 · ',
+    modeWord: ' 模式',
+    previewButton: '按钮',
+    previewAlert: 'Alert（反馈颜色）',
+    previewBadge: '徽章',
+    previewInput: '输入框',
+    previewCard: '卡片',
+    previewProgress: '进度指示器',
+    previewBreadcrumbs: '面包屑',
+    btnPrimary: '主要',
+    btnSecondary: '次要',
+    btnDelete: '删除',
+    btnDisabled: '禁用',
+    alertSuccessTitle: '付款已收到',
+    alertSuccessDesc: '你的订单正在送出。',
+    alertWarningTitle: '会话即将过期',
+    alertWarningDesc: '你将在 2 分钟内被登出。',
+    alertErrorTitle: '无法保存',
+    alertErrorDesc: '请检查你的连接并重试。',
+    alertInfoTitle: '新功能',
+    alertInfoDesc: '我们更新了仪表盘布局。',
+    badgeBrand: '品牌',
+    badgeSuccess: '成功',
+    badgeWarning: '警告',
+    badgeError: '错误',
+    badgeInfo: '信息',
+    badgeMuted: '柔和',
+    inputDefaultLabel: '默认',
+    inputTypePlaceholder: '输入内容……',
+    inputHelperText: '次要颜色的辅助文本',
+    inputFocusedLabel: '聚焦',
+    inputFocusedPlaceholder: '聚焦状态',
+    inputErrorLabel: '错误',
+    inputErrorPlaceholder: '无效值',
+    inputErrorHelper: '发生错误',
+    cardTitle: '欢迎来到你的仪表盘',
+    cardBody: '追踪订单、兑换优惠、管理权益——一站式完成。',
+    cardAction: '了解更多',
+    progressUploading: '上传中',
+    progressStep: '第 2 步，共 4 步',
+    crumbHome: '首页',
+    crumbAccount: '账户',
+    crumbPreferences: '偏好设置',
+    cssBlockTitle: '生成的 CSS 块（全部 67 个令牌）',
+  },
+} as const;
 
 // ─── Form grouping for Simple mode ────────────────────────────────────────────
 type PrimitiveKey = keyof CorePrimitives;
 
-const SIMPLE_GROUPS: { title: string; keys: PrimitiveKey[] }[] = [
-  { title: 'Core brand', keys: ['brandPrimary', 'brandHover', 'brandPressed', 'accent'] },
-  { title: 'Text', keys: ['textPrimary', 'textSecondary', 'textTertiary'] },
-  { title: 'Neutral & link', keys: ['link', 'backgroundSecondary', 'borderDefault'] },
-  { title: 'Feedback', keys: ['feedbackSuccess', 'feedbackWarning', 'feedbackError', 'feedbackInfo'] },
+type SimpleGroup = {
+  titleKey: 'coreBrand' | 'text' | 'neutralLink' | 'feedback';
+  keys: PrimitiveKey[];
+};
+
+const SIMPLE_GROUPS: SimpleGroup[] = [
+  { titleKey: 'coreBrand', keys: ['brandPrimary', 'brandHover', 'brandPressed', 'accent'] },
+  { titleKey: 'text', keys: ['textPrimary', 'textSecondary', 'textTertiary'] },
+  { titleKey: 'neutralLink', keys: ['link', 'backgroundSecondary', 'borderDefault'] },
+  { titleKey: 'feedback', keys: ['feedbackSuccess', 'feedbackWarning', 'feedbackError', 'feedbackInfo'] },
 ];
+
+const SIMPLE_GROUP_LABELS = {
+  en: {
+    coreBrand: 'Core brand',
+    text: 'Text',
+    neutralLink: 'Neutral & link',
+    feedback: 'Feedback',
+  },
+  zh: {
+    coreBrand: '核心品牌',
+    text: '文本',
+    neutralLink: '中性与链接',
+    feedback: '反馈',
+  },
+} as const;
 
 // Token → CSS var (same table generateCss uses; duplicated here so preview
 // inline style doesn't have to import from tokens.ts).
@@ -109,7 +340,10 @@ export function PortalPage({
   setCustomBrand,
   clearCustomBrand,
   setBrand,
+  lang = 'en',
 }: PortalPageProps) {
+  const t = COPY[lang];
+  const groupLabels = SIMPLE_GROUP_LABELS[lang];
   const navigate = useNavigate();
 
   // Seed form state from saved custom brand (if any), else defaults.
@@ -173,9 +407,7 @@ export function PortalPage({
         (k) => derivedFromPrims[k].toLowerCase() !== fullTokens[k]?.toLowerCase(),
       );
       if (hasOverrides) {
-        const ok = window.confirm(
-          'Switching to Simple will discard your per-token edits and re-derive all 67 tokens from the 13 primitives. Continue?',
-        );
+        const ok = window.confirm(t.confirmModeSwitch);
         if (!ok) return;
       }
       setMode('simple');
@@ -234,12 +466,8 @@ export function PortalPage({
       <header className="mb-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">White-label Portal</h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Define a brand that mirrors Brand Switcher's token structure. Switch between
-              Simple (14 primitives, auto-derived) and Full (all 67 tokens, explicit) based on
-              how much control you need.
-            </p>
+            <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
+            <p className="text-sm text-slate-600 mt-1">{t.leadDesc}</p>
           </div>
         </div>
 
@@ -249,15 +477,15 @@ export function PortalPage({
             [
               {
                 id: 'simple' as const,
-                label: 'Simple',
-                count: '14 primitives',
-                hint: 'Edit 14 brand colors; the portal derives the rest via HSL lighten/darken/alpha rules.',
+                label: t.modeSimpleLabel,
+                count: t.modeSimpleCount,
+                hint: t.modeSimpleHint,
               },
               {
                 id: 'full' as const,
-                label: 'Full',
-                count: '67 tokens',
-                hint: 'Edit every Brand Switcher variable individually. No derivation — what you see is what ships.',
+                label: t.modeFullLabel,
+                count: t.modeFullCount,
+                hint: t.modeFullHint,
               },
             ] as const
           ).map((opt) => {
@@ -289,27 +517,27 @@ export function PortalPage({
             onClick={handleApply}
             className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors"
           >
-            Apply &amp; Save
+            {t.applySave}
           </button>
           <button
             onClick={handleCopyCss}
             className="px-4 py-2 text-sm font-medium rounded-lg bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors"
           >
-            {copied ? 'Copied!' : 'Copy CSS block'}
+            {copied ? t.copied : t.copyCss}
           </button>
           {isSaved && (
             <button
               onClick={handleClear}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
             >
-              Clear custom brand
+              {t.clearCustom}
             </button>
           )}
           <button
             onClick={() => navigate('/components/button')}
             className="ml-auto px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
           >
-            View components with active brand →
+            {t.viewComponents}
           </button>
         </div>
 
@@ -317,9 +545,9 @@ export function PortalPage({
           <p className="mt-3 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              Saved as "{customBrand?.name}" ({customBrand?.mode})
+              {t.savedAs} "{customBrand?.name}" ({customBrand?.mode})
             </span>{' '}
-            — active in TopBar, persists across reloads.
+            {t.savedSuffix}
           </p>
         )}
       </header>
@@ -351,8 +579,8 @@ export function PortalPage({
               ].join(' ')}
             >
               {failing.length === 0
-                ? `Accessibility — all ${audit.length} pairings meet WCAG AA (4.5:1)`
-                : `Accessibility — ${failing.length} of ${audit.length} pairings fail WCAG AA`}
+                ? `${t.auditAllPassPart1}${audit.length}${t.auditAllPassPart2}`
+                : `${t.auditFailPart1}${failing.length}${t.auditFailPart2}${audit.length}${t.auditFailPart3}`}
             </h2>
             <p
               className={[
@@ -360,8 +588,7 @@ export function PortalPage({
                 failing.length === 0 ? 'text-green-700' : 'text-amber-800',
               ].join(' ')}
             >
-              Checks run on every change against component pairings that paint text on
-              white or brand surfaces.
+              {t.auditChecksRun}
             </p>
           </div>
         </div>
@@ -383,12 +610,12 @@ export function PortalPage({
                       <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-100">
                         {check.actual.toFixed(2)} : 1
                       </code>
-                      <span className="text-xs text-slate-500">needs ≥ {check.target} : 1</span>
+                      <span className="text-xs text-slate-500">{t.needsPrefix}{check.target}{t.needsSuffix}</span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">{check.description}</p>
                     {check.suggestion && targetLabel && (
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-slate-600">Suggestion:</span>
+                        <span className="text-xs text-slate-600">{t.suggestionLabel}</span>
                         <span className="inline-flex items-center gap-1.5 text-xs font-mono bg-slate-100 text-slate-800 px-2 py-0.5 rounded">
                           <span className="w-3 h-3 rounded border border-slate-300 flex-shrink-0" style={{ backgroundColor: check.suggestion }} />
                           {check.suggestion}
@@ -397,13 +624,13 @@ export function PortalPage({
                           onClick={() => applySuggestion(check)}
                           className="text-xs font-medium px-2 py-0.5 rounded bg-slate-900 text-white hover:bg-slate-700"
                         >
-                          Apply to {targetLabel}
+                          {t.applyToPrefix}{targetLabel}
                         </button>
                       </div>
                     )}
                     {!check.suggestion && (
                       <div className="mt-2 text-xs text-slate-600">
-                        Could not find a nearby accessible color. Consider a completely different shade.
+                        {t.noNearbyAccessible}
                       </div>
                     )}
                   </div>
@@ -421,21 +648,21 @@ export function PortalPage({
           {/* Identity card — shared */}
           <section className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-3">
-              Identity
+              {t.identitySection}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Brand name</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t.brandName}</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Acme"
+                  placeholder={t.brandNamePlaceholder}
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Font family</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t.fontFamily}</label>
                 <select
                   value={font}
                   onChange={(e) => setFont(e.target.value)}
@@ -449,36 +676,36 @@ export function PortalPage({
                   ))}
                 </select>
                 <p className="mt-1 text-[11px] text-slate-500">
-                  Maps to Brand Switcher's <code className="font-mono">type/body/family</code>. Drives{' '}
-                  <code className="font-mono">--atom-font-body</code> across all 42+ components that read it.
+                  {t.fontFamilyHintPart1}<code className="font-mono">type/body/family</code>{t.fontFamilyHintPart2}
+                  <code className="font-mono">--atom-font-body</code>{t.fontFamilyHintPart3}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Logo URL</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t.logoUrl}</label>
                 <input
                   type="text"
                   value={logo}
                   onChange={(e) => setLogo(e.target.value)}
-                  placeholder="https://… or leave blank to upload"
+                  placeholder={t.logoUrlPlaceholder}
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <div className="flex items-center gap-3 mt-2">
                   <label className="text-xs text-slate-600 cursor-pointer hover:text-slate-900">
                     <input type="file" accept="image/*" onChange={onLogoFileChange} className="hidden" />
                     <span className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-md text-slate-700 font-medium inline-block transition-colors">
-                      Upload file
+                      {t.uploadFile}
                     </span>
                   </label>
                   {logo && (
                     <div className="flex items-center gap-2">
                       <img
                         src={logo}
-                        alt="logo preview"
+                        alt={t.logoAlt}
                         className="w-8 h-8 rounded bg-slate-100 object-contain"
                         onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
                       />
                       <button onClick={() => setLogo('')} className="text-xs text-slate-500 hover:text-red-600">
-                        Remove
+                        {t.remove}
                       </button>
                     </div>
                   )}
@@ -491,11 +718,11 @@ export function PortalPage({
           {mode === 'simple' &&
             SIMPLE_GROUPS.map((group) => (
               <section
-                key={group.title}
+                key={group.titleKey}
                 className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"
               >
                 <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-2">
-                  {group.title}
+                  {groupLabels[group.titleKey]}
                 </h2>
                 <div>
                   {group.keys.map((k) => {
@@ -509,11 +736,11 @@ export function PortalPage({
                         extra={
                           <div className="mt-2 pl-[48px] space-y-1">
                             <p className="text-[11px] leading-tight text-slate-500">
-                              <span className="font-medium text-slate-600">Drives: </span>
+                              <span className="font-medium text-slate-600">{t.drives}</span>
                               <span className="font-mono">{d.drives}</span>
                             </p>
                             <p className="text-[11px] leading-tight text-slate-500">
-                              <span className="font-medium text-slate-600">Seen on: </span>
+                              <span className="font-medium text-slate-600">{t.seenOn}</span>
                               {d.seenOn}
                             </p>
                           </div>
@@ -529,10 +756,10 @@ export function PortalPage({
           {mode === 'full' && (
             <>
               <div className="rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900 px-4 py-3">
-                <strong>Full mode.</strong> You're editing all 67 tokens directly. No derivation —
-                changes here do not cascade. The <code className="font-mono">Drives:</code> and{' '}
-                <code className="font-mono">Seen on:</code> descriptions below come from Brand
-                Switcher's variable catalogue so you know where each token gets painted.
+                <strong>{t.fullModeBannerLabel}</strong>{t.fullModeBannerLeadPart1}
+                <code className="font-mono">{t.drives}</code>{t.fullModeBannerLeadPart2}
+                <code className="font-mono">{t.seenOn}</code>
+                {t.fullModeBannerLeadPart3}
               </div>
               {TOKEN_GROUP_ORDER.map((group) => {
                 const keys = tokensInGroup(group);
@@ -546,7 +773,7 @@ export function PortalPage({
                         {group}
                       </h2>
                       <span className="text-[11px] text-slate-400">
-                        {keys.length} token{keys.length === 1 ? '' : 's'}
+                        {keys.length}{t.tokenSuffix}{keys.length === 1 ? '' : t.tokenPlural}
                       </span>
                     </div>
                     <div>
@@ -564,7 +791,7 @@ export function PortalPage({
                             subtitle={info.purpose}
                             extra={
                               <p className="mt-1 pl-[48px] text-[10px] text-slate-400 font-mono">
-                                Simple rule: {describeRule(rule)}
+                                {t.simpleRule}{describeRule(rule)}
                               </p>
                             }
                           />
@@ -583,10 +810,10 @@ export function PortalPage({
           <div className="lg:sticky lg:top-20 space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
-                Live preview
+                {t.livePreview}
               </h2>
               <span className="text-[11px] text-slate-500">
-                Reacts to form changes in real time · {mode} mode
+                {t.reactsToFormChanges}{mode}{t.modeWord}
               </span>
             </div>
 
@@ -596,73 +823,73 @@ export function PortalPage({
               className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6"
             >
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Button</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewButton}</p>
                 <div className="flex flex-wrap items-center gap-3">
-                  <ButtonLive variant="Primary" size="Small" label="Primary" brand="custom" />
-                  <ButtonLive variant="Secondary" size="Small" label="Secondary" brand="custom" />
-                  <ButtonLive variant="Destructive" size="Small" label="Delete" brand="custom" />
-                  <ButtonLive variant="Primary" size="Small" label="Disabled" state="Disabled" brand="custom" />
+                  <ButtonLive variant="Primary" size="Small" label={t.btnPrimary} brand="custom" />
+                  <ButtonLive variant="Secondary" size="Small" label={t.btnSecondary} brand="custom" />
+                  <ButtonLive variant="Destructive" size="Small" label={t.btnDelete} brand="custom" />
+                  <ButtonLive variant="Primary" size="Small" label={t.btnDisabled} state="Disabled" brand="custom" />
                 </div>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Alert (feedback colors)</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewAlert}</p>
                 <div className="space-y-2">
-                  <AlertLive type="Success" option="Full Border" title="Payment received" description="Your order is on its way." brand="custom" showDismiss={false} />
-                  <AlertLive type="Warning" option="Full Border" title="Session expiring" description="You'll be signed out in 2 minutes." brand="custom" showDismiss={false} />
-                  <AlertLive type="Error" option="Full Border" title="Could not save" description="Check your connection and try again." brand="custom" showDismiss={false} />
-                  <AlertLive type="Information" option="Full Border" title="New feature" description="We updated the dashboard layout." brand="custom" showDismiss={false} />
+                  <AlertLive type="Success" option="Full Border" title={t.alertSuccessTitle} description={t.alertSuccessDesc} brand="custom" showDismiss={false} />
+                  <AlertLive type="Warning" option="Full Border" title={t.alertWarningTitle} description={t.alertWarningDesc} brand="custom" showDismiss={false} />
+                  <AlertLive type="Error" option="Full Border" title={t.alertErrorTitle} description={t.alertErrorDesc} brand="custom" showDismiss={false} />
+                  <AlertLive type="Information" option="Full Border" title={t.alertInfoTitle} description={t.alertInfoDesc} brand="custom" showDismiss={false} />
                 </div>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Badge</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewBadge}</p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <BadgeLive state="Brand" label="Brand" brand="custom" />
-                  <BadgeLive state="Success" label="Success" brand="custom" />
-                  <BadgeLive state="Warning" label="Warning" brand="custom" />
-                  <BadgeLive state="Error" label="Error" brand="custom" />
-                  <BadgeLive state="Information" label="Info" brand="custom" />
-                  <BadgeLive state="Muted" label="Muted" brand="custom" />
+                  <BadgeLive state="Brand" label={t.badgeBrand} brand="custom" />
+                  <BadgeLive state="Success" label={t.badgeSuccess} brand="custom" />
+                  <BadgeLive state="Warning" label={t.badgeWarning} brand="custom" />
+                  <BadgeLive state="Error" label={t.badgeError} brand="custom" />
+                  <BadgeLive state="Information" label={t.badgeInfo} brand="custom" />
+                  <BadgeLive state="Muted" label={t.badgeMuted} brand="custom" />
                 </div>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Input</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewInput}</p>
                 <div className="space-y-3">
-                  <InputLive type="Basic" label="Default" placeholder="Type something…" helperText="Helper text in secondary color" brand="custom" />
-                  <InputLive type="Basic" label="Focused" state="Focus" placeholder="Focused state" brand="custom" />
-                  <InputLive type="Basic" label="Error" state="Error" placeholder="Invalid value" helperText="Something went wrong" brand="custom" />
+                  <InputLive type="Basic" label={t.inputDefaultLabel} placeholder={t.inputTypePlaceholder} helperText={t.inputHelperText} brand="custom" />
+                  <InputLive type="Basic" label={t.inputFocusedLabel} state="Focus" placeholder={t.inputFocusedPlaceholder} brand="custom" />
+                  <InputLive type="Basic" label={t.inputErrorLabel} state="Error" placeholder={t.inputErrorPlaceholder} helperText={t.inputErrorHelper} brand="custom" />
                 </div>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Card</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewCard}</p>
                 <CardLive
                   imagePosition="None"
                   textLine="Single"
-                  titleText="Welcome to your dashboard"
-                  bodyText="Track orders, redeem offers, and manage benefits — all in one place."
-                  actionLabel="Learn more"
+                  titleText={t.cardTitle}
+                  bodyText={t.cardBody}
+                  actionLabel={t.cardAction}
                   brand="custom"
                 />
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Progress indicator</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewProgress}</p>
                 <div className="space-y-3 max-w-md">
-                  <ProgressIndicatorLive variant="Percentage Bar" value={60} showTitle titleText="Uploading" brand="custom" />
-                  <ProgressIndicatorLive variant="Multiple Bars" segments={4} activeSegments={2} showTitle titleText="Step 2 of 4" brand="custom" />
+                  <ProgressIndicatorLive variant="Percentage Bar" value={60} showTitle titleText={t.progressUploading} brand="custom" />
+                  <ProgressIndicatorLive variant="Multiple Bars" segments={4} activeSegments={2} showTitle titleText={t.progressStep} brand="custom" />
                 </div>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Breadcrumbs</p>
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-3">{t.previewBreadcrumbs}</p>
                 <BreadcrumbsLive
                   items={[
-                    { label: 'Home', href: '#' },
-                    { label: 'Account', href: '#' },
-                    { label: 'Preferences' },
+                    { label: t.crumbHome, href: '#' },
+                    { label: t.crumbAccount, href: '#' },
+                    { label: t.crumbPreferences },
                   ]}
                   brand="custom"
                 />
@@ -671,7 +898,7 @@ export function PortalPage({
 
             <details className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
               <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wider hover:bg-slate-800">
-                Generated CSS block (all 67 tokens)
+                {t.cssBlockTitle}
               </summary>
               <pre className="px-4 py-3 text-[11px] leading-relaxed text-slate-300 font-mono overflow-auto max-h-80">
                 {generateCss(effectiveTokens, '[data-brand="custom"]', primitives, font)}

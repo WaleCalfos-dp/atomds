@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { type Brand, type SemanticTokenKey, RESOLVED_SEMANTIC_TOKENS, BRANDS } from '../data/tokens';
+import { type Language } from '../data/languages';
 import {
   type CorePrimitives,
   type TokenRule,
@@ -13,9 +14,174 @@ import { getCustomBrandSnapshot } from '../hooks/useCustomBrand';
 
 interface MappingPageProps {
   brand: Brand;
+  lang?: Language;
 }
 
 type PrimitiveKey = keyof CorePrimitives;
+
+// ─── Bilingual copy block ─────────────────────────────────────────────────
+const COPY = {
+  en: {
+    chip: 'Tools · Token Mapping',
+    title: 'From 67 tokens to 14 primitives',
+    leadPart1: 'Brand Switcher\'s "Brands" variable collection publishes ',
+    leadPart2: '67 semantic tokens',
+    leadPart3: ' (',
+    leadPart4: ', ',
+    leadPart5:
+      '). For the White-label Portal we compressed that surface to 14 inputs by applying three rules, in order: (1) keep one primitive where Brand Switcher already assigns the same hex to a group of variables, (2) derive lightened/darkened variants algorithmically, (3) hard-code the handful of values that are universally white, black, or alpha-black across every Foundations library.',
+    statPrimitives: 'primitive inputs',
+    statDerived: 'derived tokens',
+    statFixed: 'fixed values',
+    rulesTitle: 'Derivation rules',
+    rulePrimitiveLabel: '= primitive',
+    rulePrimitiveDesc: 'Direct use — token value equals the primitive.',
+    ruleOklchDesc:
+      'Set perceptual lightness to N (0..1) preserving hue + chroma. Used for alert tints so all 4 feedback families look balanced.',
+    ruleHslDesc: 'HSL mix toward white / black. Used for hover & pressed states.',
+    ruleAlphaDesc: 'Apply alpha at X%. Used for focus rings + muted surfaces.',
+    ruleFixedLabel: 'fixed',
+    ruleFixedDesc: 'Hard-coded (white / black-alpha). Not user-editable.',
+    rulesAppLabel: 'Rules of application',
+    rulesAppLeadPart1:
+      'Most "weird-looking" custom-brand renders trace back to a token used in the wrong tier — e.g. a Badge built on ',
+    rulesAppLeadPart2: ' instead of ',
+    rulesAppLeadPart3:
+      ' reads as a faint blob on white surfaces. These rules document where each token belongs.',
+    tierTitle: 'Tier guidance — when to use which background',
+    tierLead: 'The 4 feedback families each ship 3 tiers. Pick by visual weight, not by hue.',
+    colTier: 'Tier',
+    colUseFor: 'Use for',
+    colDontUseFor: "Don't use for",
+    tierFullUse:
+      'Solid feedback fills — Toast solid bg, success Badge with white text, Destructive button.',
+    tierFullAvoid: 'Body text — contrast varies across brands; pair with white only.',
+    tierLightUse:
+      'Alert containers with title + body text. Calibrated to OKLCH L=0.92 — always readable for body copy.',
+    tierLightAvoid: 'Compact UI like Badge — too prominent at small sizes.',
+    tierLightestUse:
+      'Subtle row tinting, callout backgrounds, hover overlays on coloured rows. OKLCH L=0.96 — very subtle wash.',
+    tierLightestAvoid: 'Standalone Badge backgrounds — too faint to read as a chip.',
+    pairingsTitle: 'Surface pairings — which fg goes with which bg',
+    pairingsLead:
+      'Mismatched fg/bg pairs are the #1 cause of low-contrast rendering. Use these defaults.',
+    pairing1: 'white text on solid brand surface',
+    pairing2: 'body text — or fg-brand-primary for emphasis',
+    pairing3: 'body copy — pair with fg-{success/warning/...} only for icons + accents',
+    pairing4: 'subtle hover/pressed wash — only over white surfaces',
+    pairing5: 'modal scrim only — never put body copy on the overlay itself',
+    fidelityTitle: '⚠ Fidelity warning',
+    fidelityLeadPart1:
+      'Simple-mode derivation approximates Brand Switcher\'s hand-curated tints. For brand primaries with very high chroma (vibrant pinks, purples, oranges > ~70% saturation), the OKLCH-derived ',
+    fidelityLeadPart2:
+      ' tints stay perceptually balanced but may not exactly match the values a designer would pick. ',
+    fidelityLeadPart3: 'Switch to Full mode and override per-token',
+    fidelityLeadPart4:
+      ' if you need exact alignment with a real Foundations library (e.g. matching Mastercard\'s specific shade of warning yellow). Full mode bypasses derivation entirely — what you type is what ships.',
+    primitivesSection: 'The 14 primitives',
+    drivesPrefix: 'drives ',
+    tokenSuffix: ' token',
+    tokenPlural: 's',
+    seenOn: 'Seen on: ',
+    compressionSafePart1: 'Brand Switcher compresses ',
+    compressionMidPart1: ' distinct variables',
+    compressionSafePart2: ' (identical in every brand — safe)',
+    compressionLossyPart2: ' (values diverge in some brands — lossy)',
+    fixedTitle: 'Fixed values — not user-editable',
+    fixedLeadPart1: '9 tokens aren\'t driven by any primitive. ',
+    fixedLeadPart2: '5',
+    fixedLeadPart3: ' are genuinely universal — every brand resolves them to the same hex. The other ',
+    fixedLeadPart4: '4',
+    fixedLeadPart5:
+      ' are "mostly fixed": the portal uses a single sensible default, but Brand Switcher ships per-mode overrides you\'ll see in the live Atom library. If the defaults don\'t match a custom brand, override them in the exported CSS.',
+    universalTitle: 'Universal across all 6 brands (',
+    variesTitle: 'Mostly fixed — varies per brand (',
+    closeParen: ')',
+    variesLead:
+      'The portal ships the default hex shown on the left. The 6 swatches below each row show what Brand Switcher actually resolves the token to for each built-in brand — swatches with a dashed amber border are brand-specific overrides that differ from the portal default.',
+    portalDefault: 'Portal default',
+  },
+  zh: {
+    chip: '工具 · 令牌映射',
+    title: '从 67 个设计令牌到 14 个原语',
+    leadPart1: 'Brand Switcher 的"Brands"变量集合发布了',
+    leadPart2: '67 个语义化设计令牌',
+    leadPart3: '（',
+    leadPart4: '、',
+    leadPart5:
+      '）。在白标门户中，我们按以下三条规则依次将该表面压缩为 14 个输入：（1）当 Brand Switcher 已将同一十六进制值分配给一组变量时，保留一个原语；（2）用算法派生出变浅/变深的变体；（3）对于在每个基础库中都为白色、黑色或 alpha 黑色的少数值进行硬编码。',
+    statPrimitives: '个原语输入',
+    statDerived: '个派生令牌',
+    statFixed: '个固定值',
+    rulesTitle: '派生规则',
+    rulePrimitiveLabel: '= 原语',
+    rulePrimitiveDesc: '直接使用——令牌值等于原语。',
+    ruleOklchDesc:
+      '将感知亮度设置为 N（0..1），同时保留色相和色度。用于 alert 色调，使 4 个反馈家族看起来平衡。',
+    ruleHslDesc: 'HSL 向白色/黑色混合。用于悬停和按下状态。',
+    ruleAlphaDesc: '应用 X% 透明度。用于焦点环和柔和表面。',
+    ruleFixedLabel: '固定',
+    ruleFixedDesc: '硬编码（白色/黑色透明）。不可由用户编辑。',
+    rulesAppLabel: '应用规则',
+    rulesAppLeadPart1:
+      '大多数"看起来奇怪"的自定义品牌渲染都可以追溯到令牌被用在错误的层级——例如使用 ',
+    rulesAppLeadPart2: ' 而非 ',
+    rulesAppLeadPart3:
+      ' 构建的徽章在白色表面上显得很模糊。这些规则记录了每个令牌的归属位置。',
+    tierTitle: '层级指南——何时使用哪种背景',
+    tierLead: '4 个反馈家族每个都有 3 个层级。按视觉重量而非色相选择。',
+    colTier: '层级',
+    colUseFor: '用于',
+    colDontUseFor: '不要用于',
+    tierFullUse:
+      '实色反馈填充——Toast 实色背景、带白色文字的成功徽章、破坏性按钮。',
+    tierFullAvoid: '正文文本——各品牌对比度差异大；仅与白色搭配。',
+    tierLightUse:
+      '带标题和正文的 Alert 容器。校准到 OKLCH L=0.92——正文始终可读。',
+    tierLightAvoid: '紧凑 UI 如徽章——在小尺寸下过于显眼。',
+    tierLightestUse:
+      '细微的行着色、提示框背景、彩色行上的悬停叠加。OKLCH L=0.96——非常细微的渲染。',
+    tierLightestAvoid: '独立徽章背景——太淡而无法识别为 chip。',
+    pairingsTitle: '表面搭配——哪个前景搭配哪个背景',
+    pairingsLead:
+      '前景/背景搭配错误是低对比度渲染的头号原因。请使用以下默认值。',
+    pairing1: '在实色品牌表面上的白色文字',
+    pairing2: '正文文本——或 fg-brand-primary 用于强调',
+    pairing3: '正文文本——仅在图标和强调元素上搭配 fg-{success/warning/...}',
+    pairing4: '细微的悬停/按下渲染——仅用于白色表面之上',
+    pairing5: '仅用于模态遮罩——切勿在遮罩本身上放置正文文本',
+    fidelityTitle: '⚠ 保真度警告',
+    fidelityLeadPart1:
+      '简单模式派生近似于 Brand Switcher 手工调校的色调。对于色度非常高的品牌主色（鲜艳的粉色、紫色、橙色 > ~70% 饱和度），通过 OKLCH 派生的 ',
+    fidelityLeadPart2:
+      ' 色调在感知上保持平衡，但可能与设计师手选的值不完全一致。',
+    fidelityLeadPart3: '切换到完整模式并按单个令牌覆盖',
+    fidelityLeadPart4:
+      '，如果你需要与真实的基础库精确对齐（例如匹配 Mastercard 特定的警告黄色阴影）。完整模式完全绕过派生——你输入的就是发布的内容。',
+    primitivesSection: '14 个原语',
+    drivesPrefix: '驱动 ',
+    tokenSuffix: ' 个令牌',
+    tokenPlural: '',
+    seenOn: '出现在：',
+    compressionSafePart1: 'Brand Switcher 压缩了 ',
+    compressionMidPart1: ' 个不同的变量',
+    compressionSafePart2: '（在每个品牌中相同——安全）',
+    compressionLossyPart2: '（在某些品牌中值有差异——有损）',
+    fixedTitle: '固定值——不可由用户编辑',
+    fixedLeadPart1: '9 个令牌不由任何原语驱动。',
+    fixedLeadPart2: '5',
+    fixedLeadPart3: ' 个真正通用——每个品牌都将它们解析为相同的十六进制值。另外 ',
+    fixedLeadPart4: '4',
+    fixedLeadPart5:
+      ' 个为"基本固定"：门户使用单一合理的默认值，但 Brand Switcher 在实际 Atom 库中提供按模式覆盖。如果默认值与自定义品牌不匹配，请在导出的 CSS 中覆盖它们。',
+    universalTitle: '在全部 6 个品牌中通用（',
+    variesTitle: '基本固定——按品牌变化（',
+    closeParen: '）',
+    variesLead:
+      '门户使用左侧显示的默认十六进制值。每行下方的 6 个色板显示 Brand Switcher 实际为每个内置品牌将令牌解析为的值——带虚线琥珀色边框的色板是与门户默认值不同的品牌特定覆盖。',
+    portalDefault: '门户默认值',
+  },
+} as const;
 
 // ─── Brand Switcher reconciliation notes ─────────────────────────────────────
 // For each primitive, which Brand Switcher variables it subsumes, and whether
@@ -26,7 +192,8 @@ type PrimitiveKey = keyof CorePrimitives;
 type CompressionNote = {
   tokens: SemanticTokenKey[];       // Brand Switcher variables consolidated
   safeInAll: boolean;                // true = identical hex in every foundations lib
-  note?: string;                     // explanation when !safeInAll
+  noteEn?: string;                   // explanation when !safeInAll (English)
+  noteZh?: string;                   // explanation when !safeInAll (Simplified Chinese)
 };
 
 const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
@@ -37,8 +204,10 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
       'atom.border.states.border-interactive',
     ],
     safeInAll: false,
-    note:
+    noteEn:
       'In DragonPass / Mastercard / Assurant these three share the same hex. In Visa and Greyscale fg-link collapses to #000 while fg-interactive-icon keeps brand primary. The portal treats them as one; edit the generated CSS by hand for per-token nuance.',
+    noteZh:
+      '在 DragonPass / Mastercard / Assurant 中，这三个共享相同的十六进制值。在 Visa 和 Greyscale 中，fg-link 折叠为 #000，而 fg-interactive-icon 保持品牌主色。门户将它们视为一个；如需按单个令牌微调，请手动编辑生成的 CSS。',
   },
   borderDefault: {
     tokens: [
@@ -47,8 +216,10 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
       'atom.border.states.border-disabled',
     ],
     safeInAll: false,
-    note:
+    noteEn:
       'DragonPass/Greyscale/Assurant keep all three identical. Investec differs border-divider (#e6e5e1) from border-default (#dbdad4) by ~2%. The portal uses the single borderDefault primitive; divider will look slightly heavier than Investec.',
+    noteZh:
+      'DragonPass/Greyscale/Assurant 三个保持相同。Investec 的 border-divider (#e6e5e1) 与 border-default (#dbdad4) 相差约 2%。门户使用单一的 borderDefault 原语；分割线看起来会比 Investec 稍微厚一些。',
   },
   textTertiary: {
     tokens: [
@@ -56,8 +227,10 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
       'atom.foreground.states.fg-disabled',
     ],
     safeInAll: false,
-    note:
+    noteEn:
       'In DragonPass, fg-tertiary (#afaead) is lighter than fg-disabled (#91908f). The portal uses textTertiary for both. If you need disabled text to read darker than placeholders, override in the exported CSS block.',
+    noteZh:
+      '在 DragonPass 中，fg-tertiary (#afaead) 比 fg-disabled (#91908f) 浅。门户对两者都使用 textTertiary。如果你需要禁用文本比占位符更深，请在导出的 CSS 块中覆盖。',
   },
   backgroundSecondary: {
     tokens: [
@@ -81,23 +254,22 @@ const COMPRESSION_NOTES: Partial<Record<PrimitiveKey, CompressionNote>> = {
       'atom.border.selection-and-focus.border-brand-hover',
     ],
     safeInAll: false,
-    note:
+    noteEn:
       'In Assurant, fg-brand-primary (#01194d) differs from bg-primary-default (#103265) — the darker shade is used for text, the mid shade for surfaces. The portal compresses both to brandPrimary. Assurant’s distinction is lost; re-introduce by editing the exported CSS for the two tokens.',
+    noteZh:
+      '在 Assurant 中，fg-brand-primary (#01194d) 与 bg-primary-default (#103265) 不同——较深的色调用于文本，中等色调用于表面。门户将两者都压缩为 brandPrimary。Assurant 的区分丢失；通过编辑导出的 CSS 中两个令牌来重新引入。',
   },
   accent: {
     tokens: ['atom.background.core.bg-accent'],
     safeInAll: false,
-    note:
+    noteEn:
       'Promoted to its own primitive in v2 — DragonPass uses #d53f34 (red), Investec #c1803d (gold), and Assurant #fcc166 (gold) as decorative accents that are deliberately distinct from brandPrimary. Earlier the portal collapsed bg-accent into brandPrimary, which gave the worst fidelity gap (avg RGB error ~212 across the 6 brands).',
+    noteZh:
+      '在 v2 中提升为独立原语——DragonPass 使用 #d53f34（红色）、Investec #c1803d（金色）、Assurant #fcc166（金色）作为有意与 brandPrimary 区分开的装饰性强调色。早先门户将 bg-accent 折叠到 brandPrimary 中，这造成了最大的保真度差距（在 6 个品牌中平均 RGB 误差约为 212）。',
   },
 };
 
 // ─── Fixed values ────────────────────────────────────────────────────────────
-// TOKEN_DERIVATION flags 9 tokens as { kind: 'fixed' }, but a Brand Switcher
-// audit (April 2026) confirmed only 5 actually resolve to the same hex in
-// every built-in brand. The other 4 ship per-mode overrides in Figma — the
-// portal still uses a single sensible default, but we surface the per-brand
-// overrides below so the trade-off is explicit.
 type FixedNote = { token: SemanticTokenKey; value: string; note: string };
 
 const FIXED_VALUES: FixedNote[] = (Object.keys(TOKEN_DERIVATION) as SemanticTokenKey[])
@@ -131,7 +303,8 @@ const VARIES_PER_BRAND_VALUES = FIXED_VALUES.filter((f) => VARIES_PER_BRAND.incl
 const BUILTIN_BRANDS = BRANDS.filter((b) => b.id !== 'custom');
 
 // ─── MappingPage ─────────────────────────────────────────────────────────────
-export function MappingPage({ brand }: MappingPageProps) {
+export function MappingPage({ brand, lang = 'en' }: MappingPageProps) {
+  const t = COPY[lang];
   // Use current brand's effective tokens for the "computed value" column — so
   // designers on different brand pills see what tokens actually resolve to for
   // that brand. For the 'custom' brand, pull the user's primitives; otherwise
@@ -142,10 +315,6 @@ export function MappingPage({ brand }: MappingPageProps) {
       const p = snap?.primitives ?? DEFAULT_PRIMITIVES;
       return { primitives: p, computed: deriveTokens(p) };
     }
-    // For built-in brands, show RESOLVED_SEMANTIC_TOKENS values but label the
-    // mapping using the DEFAULT_PRIMITIVES (since the portal's rules are
-    // authored against DragonPass). This keeps the mapping page illustrative
-    // rather than requiring a reverse-lookup.
     return {
       primitives: DEFAULT_PRIMITIVES,
       computed: RESOLVED_SEMANTIC_TOKENS[brand],
@@ -187,108 +356,102 @@ export function MappingPage({ brand }: MappingPageProps) {
       <header>
         <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 mb-3">
           <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-          Tools · Token Mapping
+          {t.chip}
         </div>
         <h1 className="text-[32px] leading-[1.15] font-bold text-slate-900 tracking-tight mb-3">
-          From 67 tokens to 14 primitives
+          {t.title}
         </h1>
         <p className="text-slate-600 leading-relaxed max-w-3xl">
-          Brand Switcher's "Brands" variable collection publishes <strong>67 semantic
-          tokens</strong> (<code className="text-xs font-mono">atom/foreground/*</code>,{' '}
-          <code className="text-xs font-mono">atom/background/*</code>,{' '}
-          <code className="text-xs font-mono">atom/border/*</code>,{' '}
-          <code className="text-xs font-mono">atom/progress-indicator/*</code>). For the
-          White-label Portal we compressed that surface to 14 inputs by applying three rules,
-          in order: (1) keep one primitive where Brand Switcher already assigns the same hex
-          to a group of variables, (2) derive lightened/darkened variants algorithmically,
-          (3) hard-code the handful of values that are universally white, black, or
-          alpha-black across every Foundations library.
+          {t.leadPart1}<strong>{t.leadPart2}</strong>{t.leadPart3}
+          <code className="text-xs font-mono">atom/foreground/*</code>{t.leadPart4}
+          <code className="text-xs font-mono">atom/background/*</code>{t.leadPart4}
+          <code className="text-xs font-mono">atom/border/*</code>{t.leadPart4}
+          <code className="text-xs font-mono">atom/progress-indicator/*</code>
+          {t.leadPart5}
         </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3 max-w-xl">
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-2xl font-bold text-slate-900">14</div>
-            <div className="text-xs text-slate-500 mt-1">primitive inputs</div>
+            <div className="text-xs text-slate-500 mt-1">{t.statPrimitives}</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-2xl font-bold text-slate-900">{derivedCount}</div>
-            <div className="text-xs text-slate-500 mt-1">derived tokens</div>
+            <div className="text-xs text-slate-500 mt-1">{t.statDerived}</div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-2xl font-bold text-slate-900">{fixedCount}</div>
-            <div className="text-xs text-slate-500 mt-1">fixed values</div>
+            <div className="text-xs text-slate-500 mt-1">{t.statFixed}</div>
           </div>
         </div>
       </header>
 
       {/* Legend */}
       <section className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-        <h2 className="text-sm font-semibold text-slate-800 mb-3">Derivation rules</h2>
+        <h2 className="text-sm font-semibold text-slate-800 mb-3">{t.rulesTitle}</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">= primitive</code>
-            <p className="text-slate-500 mt-1">Direct use — token value equals the primitive.</p>
+            <code className="font-mono text-slate-700 font-semibold">{t.rulePrimitiveLabel}</code>
+            <p className="text-slate-500 mt-1">{t.rulePrimitiveDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
             <code className="font-mono text-slate-700 font-semibold">p @ OKLCH L=N</code>
-            <p className="text-slate-500 mt-1">Set perceptual lightness to N (0..1) preserving hue + chroma. Used for alert tints so all 4 feedback families look balanced.</p>
+            <p className="text-slate-500 mt-1">{t.ruleOklchDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
             <code className="font-mono text-slate-700 font-semibold">lighten(p, X%) / darken(p, X%)</code>
-            <p className="text-slate-500 mt-1">HSL mix toward white / black. Used for hover &amp; pressed states.</p>
+            <p className="text-slate-500 mt-1">{t.ruleHslDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
             <code className="font-mono text-slate-700 font-semibold">p @ X%</code>
-            <p className="text-slate-500 mt-1">Apply alpha at X%. Used for focus rings + muted surfaces.</p>
+            <p className="text-slate-500 mt-1">{t.ruleAlphaDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">fixed</code>
-            <p className="text-slate-500 mt-1">Hard-coded (white / black-alpha). Not user-editable.</p>
+            <code className="font-mono text-slate-700 font-semibold">{t.ruleFixedLabel}</code>
+            <p className="text-slate-500 mt-1">{t.ruleFixedDesc}</p>
           </div>
         </div>
       </section>
 
-      {/* Rules of application — when component authors should reach for which token */}
+      {/* Rules of application */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-          Rules of application
+          {t.rulesAppLabel}
         </h2>
         <p className="text-sm text-slate-600 max-w-3xl">
-          Most "weird-looking" custom-brand renders trace back to a token used in
-          the wrong tier — e.g. a Badge built on <code className="text-xs font-mono">bg-success-lightest</code>{' '}
-          instead of <code className="text-xs font-mono">bg-success-light</code> reads as a faint blob
-          on white surfaces. These rules document where each token belongs.
+          {t.rulesAppLeadPart1}<code className="text-xs font-mono">bg-success-lightest</code>{t.rulesAppLeadPart2}
+          <code className="text-xs font-mono">bg-success-light</code>{t.rulesAppLeadPart3}
         </p>
 
         {/* Tier guidance */}
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
           <div className="px-5 py-3 border-b border-slate-100">
-            <h3 className="text-sm font-semibold text-slate-800">Tier guidance — when to use which background</h3>
-            <p className="text-xs text-slate-500 mt-0.5">The 4 feedback families each ship 3 tiers. Pick by visual weight, not by hue.</p>
+            <h3 className="text-sm font-semibold text-slate-800">{t.tierTitle}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{t.tierLead}</p>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[20%]">Tier</th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">Use for</th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">Don't use for</th>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[20%]">{t.colTier}</th>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">{t.colUseFor}</th>
+                <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 w-[40%]">{t.colDontUseFor}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-slate-100">
                 <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-full</code></td>
-                <td className="px-4 py-3 text-slate-700">Solid feedback fills — Toast solid bg, success Badge with white text, Destructive button.</td>
-                <td className="px-4 py-3 text-slate-500">Body text — contrast varies across brands; pair with white only.</td>
+                <td className="px-4 py-3 text-slate-700">{t.tierFullUse}</td>
+                <td className="px-4 py-3 text-slate-500">{t.tierFullAvoid}</td>
               </tr>
               <tr className="border-b border-slate-100">
                 <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-light / bg-*-default</code></td>
-                <td className="px-4 py-3 text-slate-700">Alert containers with title + body text. Calibrated to OKLCH L=0.92 — always readable for body copy.</td>
-                <td className="px-4 py-3 text-slate-500">Compact UI like Badge — too prominent at small sizes.</td>
+                <td className="px-4 py-3 text-slate-700">{t.tierLightUse}</td>
+                <td className="px-4 py-3 text-slate-500">{t.tierLightAvoid}</td>
               </tr>
               <tr>
                 <td className="px-4 py-3"><code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">bg-*-lightest</code></td>
-                <td className="px-4 py-3 text-slate-700">Subtle row tinting, callout backgrounds, hover overlays on coloured rows. OKLCH L=0.96 — very subtle wash.</td>
-                <td className="px-4 py-3 text-slate-500">Standalone Badge backgrounds — too faint to read as a chip.</td>
+                <td className="px-4 py-3 text-slate-700">{t.tierLightestUse}</td>
+                <td className="px-4 py-3 text-slate-500">{t.tierLightestAvoid}</td>
               </tr>
             </tbody>
           </table>
@@ -297,60 +460,55 @@ export function MappingPage({ brand }: MappingPageProps) {
         {/* Surface pairings */}
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
           <div className="px-5 py-3 border-b border-slate-100">
-            <h3 className="text-sm font-semibold text-slate-800">Surface pairings — which fg goes with which bg</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Mismatched fg/bg pairs are the #1 cause of low-contrast rendering. Use these defaults.</p>
+            <h3 className="text-sm font-semibold text-slate-800">{t.pairingsTitle}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{t.pairingsLead}</p>
           </div>
           <ul className="divide-y divide-slate-100 text-sm">
             <li className="px-5 py-2.5 flex items-baseline gap-3">
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-primary-default</code>
               <span className="text-slate-400">⇄</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-brand-primary-inverse</code>
-              <span className="text-slate-500 text-xs">white text on solid brand surface</span>
+              <span className="text-slate-500 text-xs">{t.pairing1}</span>
             </li>
             <li className="px-5 py-2.5 flex items-baseline gap-3">
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-primary-inverse</code>
               <span className="text-slate-400">⇄</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
-              <span className="text-slate-500 text-xs">body text — or fg-brand-primary for emphasis</span>
+              <span className="text-slate-500 text-xs">{t.pairing2}</span>
             </li>
             <li className="px-5 py-2.5 flex items-baseline gap-3 flex-wrap">
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-{'{success,warning,error,info}'}-{'{light,lightest}'}</code>
               <span className="text-slate-400">⇄</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
-              <span className="text-slate-500 text-xs">body copy — pair with fg-{'{success/warning/...}'} only for icons + accents</span>
+              <span className="text-slate-500 text-xs">{t.pairing3}</span>
             </li>
             <li className="px-5 py-2.5 flex items-baseline gap-3">
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-muted</code>
               <span className="text-slate-400">⇄</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-primary</code>
-              <span className="text-slate-500 text-xs">subtle hover/pressed wash — only over white surfaces</span>
+              <span className="text-slate-500 text-xs">{t.pairing4}</span>
             </li>
             <li className="px-5 py-2.5 flex items-baseline gap-3">
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">bg-overlay</code>
               <span className="text-slate-400">⇄</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded flex-shrink-0">fg-brand-primary-inverse</code>
-              <span className="text-slate-500 text-xs">modal scrim only — never put body copy on the overlay itself</span>
+              <span className="text-slate-500 text-xs">{t.pairing5}</span>
             </li>
           </ul>
         </div>
 
         {/* Fidelity warning */}
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 leading-relaxed">
-          <strong className="block text-sm mb-1">⚠ Fidelity warning</strong>
-          Simple-mode derivation approximates Brand Switcher's hand-curated tints. For brand
-          primaries with very high chroma (vibrant pinks, purples, oranges &gt; ~70% saturation),
-          the OKLCH-derived <code className="font-mono">bg-*-lightest</code> tints stay perceptually balanced
-          but may not exactly match the values a designer would pick. <strong>Switch to Full mode
-          and override per-token</strong> if you need exact alignment with a real Foundations library
-          (e.g. matching Mastercard's specific shade of warning yellow). Full mode bypasses
-          derivation entirely — what you type is what ships.
+          <strong className="block text-sm mb-1">{t.fidelityTitle}</strong>
+          {t.fidelityLeadPart1}<code className="font-mono">bg-*-lightest</code>
+          {t.fidelityLeadPart2}<strong>{t.fidelityLeadPart3}</strong>{t.fidelityLeadPart4}
         </div>
       </section>
 
-      {/* The 13 primitives, each with their driven tokens */}
+      {/* The 14 primitives, each with their driven tokens */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-          The 14 primitives
+          {t.primitivesSection}
         </h2>
         {primitiveOrder.map((pk) => {
           const descriptor = PRIMITIVE_DESCRIPTORS[pk];
@@ -374,11 +532,11 @@ export function MappingPage({ brand }: MappingPageProps) {
                       {primitiveHex}
                     </code>
                     <span className="text-xs text-slate-500">
-                      drives <strong>{tokens.length}</strong> token{tokens.length === 1 ? '' : 's'}
+                      {t.drivesPrefix}<strong>{tokens.length}</strong>{t.tokenSuffix}{tokens.length === 1 ? '' : t.tokenPlural}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 mt-1">
-                    <span className="font-medium text-slate-700">Seen on: </span>
+                    <span className="font-medium text-slate-700">{t.seenOn}</span>
                     {descriptor.seenOn}
                   </p>
                 </div>
@@ -399,13 +557,17 @@ export function MappingPage({ brand }: MappingPageProps) {
                   </span>
                   <div className="flex-1">
                     <div className="font-medium mb-0.5">
-                      Brand Switcher compresses {compression.tokens.length} distinct variables
-                      {compression.safeInAll ? ' (identical in every brand — safe)' : ' (values diverge in some brands — lossy)'}
+                      {t.compressionSafePart1}{compression.tokens.length}{t.compressionMidPart1}
+                      {compression.safeInAll ? t.compressionSafePart2 : t.compressionLossyPart2}
                     </div>
                     <div className="font-mono text-[11px] leading-relaxed opacity-90 mb-1">
                       {compression.tokens.join(' · ')}
                     </div>
-                    {compression.note && <div className="leading-relaxed">{compression.note}</div>}
+                    {(lang === 'zh' ? compression.noteZh : compression.noteEn) && (
+                      <div className="leading-relaxed">
+                        {lang === 'zh' ? compression.noteZh : compression.noteEn}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -443,22 +605,18 @@ export function MappingPage({ brand }: MappingPageProps) {
       <section className="space-y-6">
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">
-            Fixed values — not user-editable
+            {t.fixedTitle}
           </h2>
           <p className="text-sm text-slate-600 mb-4 max-w-3xl">
-            9 tokens aren't driven by any primitive. <strong>5</strong> are genuinely
-            universal — every brand resolves them to the same hex. The other{' '}
-            <strong>4</strong> are "mostly fixed": the portal uses a single sensible
-            default, but Brand Switcher ships per-mode overrides you'll see in the live
-            Atom library. If the defaults don't match a custom brand, override them in
-            the exported CSS.
+            {t.fixedLeadPart1}<strong>{t.fixedLeadPart2}</strong>{t.fixedLeadPart3}
+            <strong>{t.fixedLeadPart4}</strong>{t.fixedLeadPart5}
           </p>
         </div>
 
         {/* Universally fixed */}
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
-            Universal across all 6 brands ({UNIVERSAL_FIXED_VALUES.length})
+            {t.universalTitle}{UNIVERSAL_FIXED_VALUES.length}{t.closeParen}
           </h3>
           <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
             {UNIVERSAL_FIXED_VALUES.map((f) => (
@@ -482,13 +640,10 @@ export function MappingPage({ brand }: MappingPageProps) {
         {/* Mostly fixed — varies per brand */}
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
-            Mostly fixed — varies per brand ({VARIES_PER_BRAND_VALUES.length})
+            {t.variesTitle}{VARIES_PER_BRAND_VALUES.length}{t.closeParen}
           </h3>
           <p className="text-xs text-slate-500 mb-3 max-w-3xl">
-            The portal ships the default hex shown on the left. The 6 swatches below
-            each row show what Brand Switcher actually resolves the token to for each
-            built-in brand — swatches with a dashed amber border are brand-specific
-            overrides that differ from the portal default.
+            {t.variesLead}
           </p>
           <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
             {VARIES_PER_BRAND_VALUES.map((f) => (
@@ -504,7 +659,7 @@ export function MappingPage({ brand }: MappingPageProps) {
                   <code className="text-[11px] font-mono text-slate-500 flex-shrink-0 w-[84px]">
                     {f.value}
                   </code>
-                  <span className="text-xs text-slate-600 flex-1 min-w-0">Portal default</span>
+                  <span className="text-xs text-slate-600 flex-1 min-w-0">{t.portalDefault}</span>
                 </div>
                 <div className="pl-8 grid grid-cols-6 gap-2">
                   {BUILTIN_BRANDS.map((b) => {

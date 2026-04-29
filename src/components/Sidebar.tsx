@@ -2,13 +2,20 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Brand } from '../data/tokens';
+import { type Language } from '../data/languages';
 import { type CustomBrand } from '../data/deriveTokens';
-import { NAV_SECTIONS } from '../data/navigation';
+import { getNavSections } from '../data/navigation';
 
 interface SidebarProps {
   brand: Brand;
   customBrand: CustomBrand | null;
+  lang: Language;
 }
+
+const COPY = {
+  en: { title: 'Atom Docs', footer: 'Atom Design System' },
+  zh: { title: 'Atom 文档', footer: 'Atom 设计系统' },
+} as const;
 
 /* ── section header icons ── */
 const sectionIcons: Record<string, React.ReactNode> = {
@@ -35,6 +42,13 @@ const sectionIcons: Record<string, React.ReactNode> = {
   tools: (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
       <path d="M9.5 2.5l2 2-4 4-2-2 4-4zM5.5 6.5l-3 3a1.5 1.5 0 102 2l3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  'token-component-link': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <circle cx="3" cy="3" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <circle cx="11" cy="11" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <line x1="4.5" y1="4.5" x2="9.5" y2="9.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
     </svg>
   ),
 };
@@ -69,6 +83,13 @@ const itemIcons: Record<string, React.ReactNode> = {
   '/foundations/spacing': (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
       <path d="M2 3h10M2 7h7M2 11h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  ),
+  '/token-component-link': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
+      <circle cx="3" cy="3" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <circle cx="11" cy="11" r="2" stroke="currentColor" strokeWidth="1.25" />
+      <line x1="4.5" y1="4.5" x2="9.5" y2="9.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
     </svg>
   ),
   '/components/accordion': (
@@ -294,11 +315,13 @@ const itemIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-export function Sidebar({ brand, customBrand }: SidebarProps) {
+export function Sidebar({ brand, customBrand, lang }: SidebarProps) {
   const { pathname } = useLocation();
+  const t = COPY[lang];
+  const navSections = getNavSections(lang);
 
   /* determine which section should be open based on the current route */
-  const activeSectionId = NAV_SECTIONS.find((s) =>
+  const activeSectionId = navSections.find((s) =>
     pathname.startsWith(s.basePath),
   )?.id ?? 'getting-started';
 
@@ -313,7 +336,7 @@ export function Sidebar({ brand, customBrand }: SidebarProps) {
     setOpenSection((prev) => (prev === id ? '' : id));
 
   const showCustomLogo = brand === 'custom' && customBrand?.logo;
-  const customLabel = brand === 'custom' && customBrand?.name ? customBrand.name : 'Atom Docs';
+  const customLabel = brand === 'custom' && customBrand?.name ? customBrand.name : t.title;
 
   return (
     <aside className="fixed top-0 left-0 h-full w-60 bg-slate-900 flex flex-col z-10">
@@ -348,7 +371,7 @@ export function Sidebar({ brand, customBrand }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {NAV_SECTIONS.map((section) => {
+        {navSections.map((section) => {
           const isOpen = openSection === section.id;
           return (
             <div key={section.id} className="mb-1">
@@ -430,7 +453,7 @@ export function Sidebar({ brand, customBrand }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-slate-700/60">
-        <p className="text-xs text-slate-600">Atom Design System</p>
+        <p className="text-xs text-slate-600">{t.footer}</p>
       </div>
     </aside>
   );

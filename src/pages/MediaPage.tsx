@@ -2,10 +2,218 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MediaLive, type MediaState, type MediaAspect } from '../components/media/MediaLive';
 import { type Brand, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
+import { type Language } from '../data/languages';
 
 interface MediaPageProps {
   brand: Brand;
+  lang?: Language;
 }
+
+// ─── Bilingual copy block ─────────────────────────────────────────────────
+const COPY = {
+  en: {
+    // Controls
+    ctrlState: 'State',
+    ctrlAspect: 'Aspect ratio',
+    ctrlSource: 'Source',
+    figmaTag: 'Figma',
+    useSampleImage: 'Use sample image',
+    sampleImageHint:
+      'Uncheck to render the Default state without a source — Media falls back to the Empty placeholder.',
+    sampleImageAlt: 'Sunlit mountain lake at dawn',
+    anatomyAlt: 'Anatomy reference',
+    previewAlt: 'Preview',
+    aspectAlt: 'Aspect preview',
+    // Section 2 — Component Info
+    componentTitle: 'Media',
+    description:
+      "Displays imagery, video, or audio assets. Use it to enrich visual storytelling or provide contextual media alongside text — embed it inside a card, list item, or hero layout. The component is a flexible fill surface: it adapts to the parent's width and preserves the chosen aspect ratio.",
+    pillContent: 'Content',
+    pillStable: 'Stable',
+    // Section 3 — Anatomy
+    anatomyTitle: 'Anatomy',
+    anatomyLead:
+      'Media is a container + fill. The Empty and Loading states are built-in fallbacks when no source is available.',
+    miniLabelEmpty: '3 · Empty',
+    miniLabelLoading: '4 · Loading',
+    anatomyParts: [
+      { num: '1', name: 'Container',     desc: '638 × 305 in Figma (aspect ratio ≈ 2.09:1). No corner radius, no stroke. Width is fluid — the component fills its parent.' },
+      { num: '2', name: 'Image fill',    desc: 'Single IMAGE fill with scaleMode=FILL in Figma, which maps 1:1 to CSS object-fit: cover. Source is provided at the call-site via the src prop.' },
+      { num: '3', name: 'Empty state',   desc: 'Rendered when src is omitted. Checkerboard over bg-muted with a 40 × 40 picture-frame icon above a "No image" caption — mirrors Figma\'s default placeholder render.' },
+      { num: '4', name: 'Loading state', desc: 'A left-to-right shimmer sweep over bg-muted plus a visually hidden "Loading image" label for screen readers.' },
+    ],
+    // Section 4 — Variants
+    variantsTitle: 'Variants',
+    propertyHeader: 'Property',
+    valuesHeader: 'Values',
+    propertyState: 'State',
+    propertyAspect: 'Aspect ratio',
+    propertyObjectFit: 'Object fit',
+    objectFitHint: '(scaleMode=FILL in Figma)',
+    figmaDefault: ' · Figma default',
+    variantsFootnote:
+      'The underlying Figma component ("image", node 399:4121) exposes no variants. The State and Aspect ratio options above are container-level affordances provided by the React wrapper.',
+    // Section 5 — Design Tokens
+    tokensTitle: 'Design Tokens',
+    tokensLead:
+      'Media has no coloured chrome of its own — it is a transparent frame. The only tokens in play render the Empty and Loading fallbacks.',
+    tokenHeader: 'Token',
+    cssVarHeader: 'CSS Variable',
+    valueHeader: 'Value',
+    tokenLabels: {
+      'Surface (muted)':    'Surface (muted)',
+      'Foreground (muted)': 'Foreground (muted)',
+    } as Record<string, string>,
+    // Section 6 — Accessibility
+    a11yTitle: 'Accessibility',
+    a11yLead: 'Guidelines for implementing Media in an inclusive way.',
+    a11yRows: [
+      {
+        icon: '🖼️',
+        title: 'Alt text is mandatory',
+        body: 'Every non-decorative image must pass a meaningful alt string. Describe what the image conveys, not the fact that it is an image — avoid prefixes like "Image of…" or "Photo of…".',
+      },
+      {
+        icon: '🎭',
+        title: 'Decorative images',
+        body: 'When an image is purely ornamental (e.g. a background pattern that sits next to descriptive text), set `decorative` so the component renders aria-hidden with an empty alt attribute. Screen readers will skip it entirely.',
+      },
+      {
+        icon: '⏳',
+        title: 'Loading state',
+        body: 'The Loading shimmer is paired with a visually hidden "Loading image" label. Assistive tech announces the state so low-bandwidth users know the image is pending, not missing.',
+      },
+      {
+        icon: '🚫',
+        title: 'Empty fallback',
+        body: 'When no src is provided, Media renders an Empty placeholder with an icon + "No image" label. The icon is aria-hidden; the visible text communicates the state to all users without needing a separate error string.',
+      },
+      {
+        icon: '🎨',
+        title: 'Contrast',
+        body: 'Placeholder chrome (icon, label) uses fg-secondary against bg-muted. Both resolve to WCAG AA 4.5:1 across all 6 brands, so the Empty state remains legible regardless of theme.',
+      },
+    ],
+    // Section 7 — Usage
+    usageTitle: 'Usage',
+    usageLead: 'When and how to use the Media component.',
+    whenUseTitle: '✓ When to use',
+    whenNotUseTitle: '✗ When not to use',
+    whenUseItems: [
+      'Product, lounge, or destination photography inside cards',
+      'Hero imagery at the top of a detail page',
+      'Thumbnail tiles in galleries, carousels, or photo grids',
+      'Video poster frames or loading placeholders for remote assets',
+    ],
+    whenNotUseItems: [
+      "Don't use for icons or glyphs — use the Icon library instead",
+      "Don't use for brand logos — use the Brand Logo component",
+      "Don't use for country flags — use the Flag component in List Item",
+      "Don't use as a static colour block — style the parent surface with a background token",
+    ],
+  },
+  zh: {
+    // Controls
+    ctrlState: '状态',
+    ctrlAspect: '宽高比',
+    ctrlSource: '来源',
+    figmaTag: 'Figma',
+    useSampleImage: '使用示例图片',
+    sampleImageHint:
+      '取消勾选可在没有来源的情况下渲染默认状态——Media 将回退到空状态占位符。',
+    sampleImageAlt: '黎明时分阳光下的山间湖泊',
+    anatomyAlt: '结构剖析参考',
+    previewAlt: '预览',
+    aspectAlt: '宽高比预览',
+    // Section 2 — Component Info
+    componentTitle: '媒体',
+    description:
+      '展示图像、视频或音频资源。用于丰富视觉叙事或在文本旁提供上下文媒体——可嵌入卡片、列表项或主视觉布局中。该组件是一个灵活的填充容器：它适应父级宽度并保留所选的宽高比。',
+    pillContent: '内容',
+    pillStable: '稳定版',
+    // Section 3 — Anatomy
+    anatomyTitle: '结构剖析',
+    anatomyLead:
+      'Media 由容器 + 填充组成。在没有可用来源时，空状态和加载状态作为内置的回退显示。',
+    miniLabelEmpty: '3 · 空状态',
+    miniLabelLoading: '4 · 加载中',
+    anatomyParts: [
+      { num: '1', name: '容器',     desc: '在 Figma 中为 638 × 305（宽高比 ≈ 2.09:1）。无圆角、无描边。宽度自适应——组件填充其父级。' },
+      { num: '2', name: '图像填充',  desc: 'Figma 中使用 scaleMode=FILL 的单一 IMAGE 填充，与 CSS object-fit: cover 1:1 对应。来源通过 src 属性在调用处传入。' },
+      { num: '3', name: '空状态',    desc: '当 src 被省略时渲染。在 bg-muted 上呈现棋盘图案，搭配 40 × 40 的相框图标和"无图片"说明文字——与 Figma 的默认占位渲染一致。' },
+      { num: '4', name: '加载状态',  desc: '在 bg-muted 上自左向右的微光扫光，加上一个针对屏幕阅读器的隐藏"正在加载图片"标签。' },
+    ],
+    // Section 4 — Variants
+    variantsTitle: '变体',
+    propertyHeader: '属性',
+    valuesHeader: '值',
+    propertyState: '状态',
+    propertyAspect: '宽高比',
+    propertyObjectFit: '对象适应',
+    objectFitHint: '（Figma 中为 scaleMode=FILL）',
+    figmaDefault: ' · Figma 默认值',
+    variantsFootnote:
+      '底层 Figma 组件（"image"，节点 399:4121）不暴露任何变体。上方的状态和宽高比选项是 React 包装层提供的容器级支持。',
+    // Section 5 — Design Tokens
+    tokensTitle: '设计令牌',
+    tokensLead:
+      'Media 自身没有彩色装饰——它是一个透明框架。仅在渲染空状态和加载回退时使用相关令牌。',
+    tokenHeader: '设计令牌',
+    cssVarHeader: 'CSS 变量',
+    valueHeader: '值',
+    tokenLabels: {
+      'Surface (muted)':    '表面（柔和）',
+      'Foreground (muted)': '前景（柔和）',
+    } as Record<string, string>,
+    // Section 6 — Accessibility
+    a11yTitle: '可访问性',
+    a11yLead: '以包容性方式实现媒体组件的指引。',
+    a11yRows: [
+      {
+        icon: '🖼️',
+        title: '必须提供 alt 文本',
+        body: '每个非装饰性图片都必须传入有意义的 alt 字符串。描述图片所传达的内容，而非"它是一张图片"这一事实——避免使用"图片：……"或"照片：……"等前缀。',
+      },
+      {
+        icon: '🎭',
+        title: '装饰性图片',
+        body: '当图片纯粹是装饰（例如位于描述性文本旁的背景图案）时，设置 `decorative`，组件将以 aria-hidden 渲染并使用空 alt 属性。屏幕阅读器会完全跳过它。',
+      },
+      {
+        icon: '⏳',
+        title: '加载状态',
+        body: '加载微光会搭配一个视觉上隐藏的"正在加载图片"标签。辅助技术会宣告该状态，让网络受限的用户知道图片是在加载中而非缺失。',
+      },
+      {
+        icon: '🚫',
+        title: '空状态回退',
+        body: '当未提供 src 时，Media 会渲染一个空状态占位符，包含图标 + "无图片"标签。图标为 aria-hidden；可见文本向所有用户传达状态，无需单独的错误字符串。',
+      },
+      {
+        icon: '🎨',
+        title: '对比度',
+        body: '占位符装饰元素（图标、标签）在 bg-muted 上使用 fg-secondary。两者在所有 6 个品牌中均满足 WCAG AA 4.5:1，因此空状态在任何主题下都保持可读。',
+      },
+    ],
+    // Section 7 — Usage
+    usageTitle: '用法',
+    usageLead: '何时以及如何使用媒体组件。',
+    whenUseTitle: '✓ 何时使用',
+    whenNotUseTitle: '✗ 何时不使用',
+    whenUseItems: [
+      '卡片中的产品、休息室或目的地摄影',
+      '详情页面顶部的主视觉图像',
+      '画廊、轮播或图片网格中的缩略图',
+      '远程资源的视频海报帧或加载占位符',
+    ],
+    whenNotUseItems: [
+      '不要用于图标或字形——请改用 Icon 库',
+      '不要用于品牌徽标——请使用 Brand Logo 组件',
+      '不要用于国家旗帜——请使用列表项中的 Flag 组件',
+      '不要作为静态色块使用——请用背景令牌为父级表面设置样式',
+    ],
+  },
+} as const;
 
 // ─── Design-token table rows ────────────────────────────────────────────────
 const TOKEN_TABLE_ROWS: { label: string; key: string; cssVar: string; states: MediaState[] }[] = [
@@ -19,43 +227,6 @@ const DOTTED_BG: React.CSSProperties = {
   backgroundImage: 'radial-gradient(circle, #c8c8c8 1px, transparent 1px)',
   backgroundSize: '20px 20px',
 };
-
-// ─── Accessibility rows ─────────────────────────────────────────────────────
-const A11Y_ROWS = [
-  {
-    icon: '🖼️',
-    title: 'Alt text is mandatory',
-    body: 'Every non-decorative image must pass a meaningful alt string. Describe what the image conveys, not the fact that it is an image — avoid prefixes like "Image of…" or "Photo of…".',
-  },
-  {
-    icon: '🎭',
-    title: 'Decorative images',
-    body: 'When an image is purely ornamental (e.g. a background pattern that sits next to descriptive text), set `decorative` so the component renders aria-hidden with an empty alt attribute. Screen readers will skip it entirely.',
-  },
-  {
-    icon: '⏳',
-    title: 'Loading state',
-    body: 'The Loading shimmer is paired with a visually hidden "Loading image" label. Assistive tech announces the state so low-bandwidth users know the image is pending, not missing.',
-  },
-  {
-    icon: '🚫',
-    title: 'Empty fallback',
-    body: 'When no src is provided, Media renders an Empty placeholder with an icon + "No image" label. The icon is aria-hidden; the visible text communicates the state to all users without needing a separate error string.',
-  },
-  {
-    icon: '🎨',
-    title: 'Contrast',
-    body: 'Placeholder chrome (icon, label) uses fg-secondary against bg-muted. Both resolve to WCAG AA 4.5:1 across all 6 brands, so the Empty state remains legible regardless of theme.',
-  },
-];
-
-// ─── Anatomy callouts ───────────────────────────────────────────────────────
-const ANATOMY_PARTS = [
-  { num: '1', name: 'Container',     desc: '638 × 305 in Figma (aspect ratio ≈ 2.09:1). No corner radius, no stroke. Width is fluid — the component fills its parent.' },
-  { num: '2', name: 'Image fill',    desc: 'Single IMAGE fill with scaleMode=FILL in Figma, which maps 1:1 to CSS object-fit: cover. Source is provided at the call-site via the src prop.' },
-  { num: '3', name: 'Empty state',   desc: 'Rendered when src is omitted. Checkerboard over bg-muted with a 40 × 40 picture-frame icon above a "No image" caption — mirrors Figma\'s default placeholder render.' },
-  { num: '4', name: 'Loading state', desc: 'A left-to-right shimmer sweep over bg-muted plus a visually hidden "Loading image" label for screen readers.' },
-];
 
 // ─── Sample images (Unsplash-hosted, CC-licensed) ───────────────────────────
 const SAMPLE_SRC = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1280&q=80&auto=format&fit=crop';
@@ -88,7 +259,8 @@ function SegBtn({
 const ALL_STATES: MediaState[] = ['Default', 'Empty', 'Loading'];
 const ALL_ASPECTS: MediaAspect[] = ['638:305', '16:9', '4:3', '1:1', '3:4'];
 
-export function MediaPage({ brand }: MediaPageProps) {
+export function MediaPage({ brand, lang = 'en' }: MediaPageProps) {
+  const t = COPY[lang];
   const tokens = RESOLVED_SEMANTIC_TOKENS[brand];
 
   const [state, setState] = useState<MediaState>('Default');
@@ -120,7 +292,7 @@ export function MediaPage({ brand }: MediaPageProps) {
                     state={state}
                     aspect={aspect}
                     src={previewSrc}
-                    alt="Sunlit mountain lake at dawn"
+                    alt={t.sampleImageAlt}
                     brand={brand}
                   />
                 </motion.div>
@@ -131,7 +303,7 @@ export function MediaPage({ brand }: MediaPageProps) {
 
               {/* State */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">State</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.ctrlState}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {ALL_STATES.map((s) => (
                     <SegBtn key={s} active={state === s} onClick={() => setState(s)}>
@@ -143,12 +315,12 @@ export function MediaPage({ brand }: MediaPageProps) {
 
               {/* Aspect ratio */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Aspect ratio</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.ctrlAspect}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {ALL_ASPECTS.map((a) => (
                     <SegBtn key={a} active={aspect === a} onClick={() => setAspect(a)}>
                       {a}
-                      {a === '638:305' && <span className="text-[9px] ml-1 text-slate-400">Figma</span>}
+                      {a === '638:305' && <span className="text-[9px] ml-1 text-slate-400">{t.figmaTag}</span>}
                     </SegBtn>
                   ))}
                 </div>
@@ -156,7 +328,7 @@ export function MediaPage({ brand }: MediaPageProps) {
 
               {/* Sample image toggle */}
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Source</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{t.ctrlSource}</p>
                 <label className={['flex items-center gap-2.5 select-none group', state !== 'Default' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'].join(' ')}>
                   <button
                     role="checkbox"
@@ -174,10 +346,10 @@ export function MediaPage({ brand }: MediaPageProps) {
                       </svg>
                     )}
                   </button>
-                  <span className="text-xs text-slate-600">Use sample image</span>
+                  <span className="text-xs text-slate-600">{t.useSampleImage}</span>
                 </label>
                 <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                  Uncheck to render the Default state without a source — Media falls back to the Empty placeholder.
+                  {t.sampleImageHint}
                 </p>
               </div>
             </div>
@@ -189,9 +361,9 @@ export function MediaPage({ brand }: MediaPageProps) {
       <section>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Media</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">{t.componentTitle}</h1>
             <p className="text-slate-500 text-sm max-w-xl">
-              Displays imagery, video, or audio assets. Use it to enrich visual storytelling or provide contextual media alongside text — embed it inside a card, list item, or hero layout. The component is a flexible fill surface: it adapts to the parent's width and preserves the chosen aspect ratio.
+              {t.description}
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 mt-1">
@@ -200,11 +372,11 @@ export function MediaPage({ brand }: MediaPageProps) {
                 <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.25" />
                 <path d="M5 3v3M5 7.5v.25" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
               </svg>
-              Content
+              {t.pillContent}
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Stable
+              {t.pillStable}
             </span>
           </div>
         </div>
@@ -214,14 +386,14 @@ export function MediaPage({ brand }: MediaPageProps) {
 
       {/* ── 3. ANATOMY ───────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Anatomy</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.anatomyTitle}</h2>
         <p className="text-sm text-slate-500 mb-5">
-          Media is a container + fill. The Empty and Loading states are built-in fallbacks when no source is available.
+          {t.anatomyLead}
         </p>
 
         <div className="relative flex items-center justify-center py-20 px-8 rounded-xl" style={DOTTED_BG}>
           <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
-            <MediaLive state="Default" aspect="638:305" src={SAMPLE_SRC} alt="Anatomy reference" brand={brand} />
+            <MediaLive state="Default" aspect="638:305" src={SAMPLE_SRC} alt={t.anatomyAlt} brand={brand} />
 
             {/* Callout 1: Container (bottom-center) */}
             <div className="absolute flex flex-col items-center pointer-events-none" style={{ left: '50%', bottom: '-56px', transform: 'translateX(-50%)' }}>
@@ -240,18 +412,18 @@ export function MediaPage({ brand }: MediaPageProps) {
         {/* Inline mini-previews for Empty / Loading */}
         <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
           <div style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', backgroundColor: '#fff' }}>
-            <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>3 · Empty</p>
+            <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{t.miniLabelEmpty}</p>
             <MediaLive state="Empty" aspect="16:9" brand={brand} />
           </div>
           <div style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', backgroundColor: '#fff' }}>
-            <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>4 · Loading</p>
+            <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{t.miniLabelLoading}</p>
             <MediaLive state="Loading" aspect="16:9" brand={brand} />
           </div>
         </div>
 
         {/* Legend */}
         <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-          {ANATOMY_PARTS.map((row) => (
+          {t.anatomyParts.map((row) => (
             <div key={row.num} style={{ display: 'flex', gap: '10px', padding: '12px', borderRadius: '8px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827', flexShrink: 0, marginTop: '1px', minWidth: '12px' }}>{row.num}</span>
               <div>
@@ -265,18 +437,18 @@ export function MediaPage({ brand }: MediaPageProps) {
 
       {/* ── 4. VARIANTS ──────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Variants</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">{t.variantsTitle}</h2>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">Property</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Values</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">{t.propertyHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.valuesHeader}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-slate-100">
-                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">State</td>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.propertyState}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-1.5">
                     {ALL_STATES.map((s) => (
@@ -286,22 +458,22 @@ export function MediaPage({ brand }: MediaPageProps) {
                 </td>
               </tr>
               <tr className="border-b border-slate-100">
-                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">Aspect ratio</td>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.propertyAspect}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-1.5">
                     {ALL_ASPECTS.map((a) => (
                       <span key={a} className="inline-flex items-center px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-xs font-medium">
-                        {a}{a === '638:305' ? ' · Figma default' : ''}
+                        {a}{a === '638:305' ? t.figmaDefault : ''}
                       </span>
                     ))}
                   </div>
                 </td>
               </tr>
               <tr>
-                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">Object fit</td>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.propertyObjectFit}</td>
                 <td className="px-5 py-3.5">
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-xs font-medium">
-                    cover <span className="text-slate-400 ml-1">(scaleMode=FILL in Figma)</span>
+                    cover <span className="text-slate-400 ml-1">{t.objectFitHint}</span>
                   </span>
                 </td>
               </tr>
@@ -310,7 +482,7 @@ export function MediaPage({ brand }: MediaPageProps) {
         </div>
 
         <p className="text-xs text-slate-400 mt-4 italic">
-          The underlying Figma component ("image", node 399:4121) exposes no variants. The State and Aspect ratio options above are container-level affordances provided by the React wrapper.
+          {t.variantsFootnote}
         </p>
 
         {/* Visual preview grid */}
@@ -322,7 +494,7 @@ export function MediaPage({ brand }: MediaPageProps) {
                 state={s}
                 aspect="16:9"
                 src={s === 'Default' ? SAMPLE_SRC : undefined}
-                alt="Preview"
+                alt={t.previewAlt}
                 brand={brand}
               />
             </div>
@@ -334,7 +506,7 @@ export function MediaPage({ brand }: MediaPageProps) {
           {ALL_ASPECTS.map((a) => (
             <div key={a} style={{ padding: '12px', borderRadius: '10px', border: '1px solid #f3f4f6', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#6b7280' }}>{a}</p>
-              <MediaLive state="Default" aspect={a} src={SAMPLE_SRC} alt="Aspect preview" brand={brand} />
+              <MediaLive state="Default" aspect={a} src={SAMPLE_SRC} alt={t.aspectAlt} brand={brand} />
             </div>
           ))}
         </div>
@@ -342,17 +514,17 @@ export function MediaPage({ brand }: MediaPageProps) {
 
       {/* ── 5. DESIGN TOKENS ─────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Design Tokens</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.tokensTitle}</h2>
         <p className="text-sm text-slate-500 mb-4">
-          Media has no coloured chrome of its own — it is a transparent frame. The only tokens in play render the Empty and Loading fallbacks.
+          {t.tokensLead}
         </p>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-48">Token</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">CSS Variable</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">Value ({brand})</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-48">{t.tokenHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.cssVarHeader}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">{t.valueHeader} ({brand})</th>
               </tr>
             </thead>
             <tbody>
@@ -372,7 +544,7 @@ export function MediaPage({ brand }: MediaPageProps) {
                     ].join(' ')}
                     style={isActive ? { borderLeft: '3px solid #3b82f6' } : { borderLeft: '3px solid transparent' }}
                   >
-                    <td className="px-5 py-3 font-medium text-slate-700 text-xs">{row.label}</td>
+                    <td className="px-5 py-3 font-medium text-slate-700 text-xs">{t.tokenLabels[row.label] ?? row.label}</td>
                     <td className="px-5 py-3">
                       <code className="font-mono text-xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 whitespace-nowrap">
                         {row.cssVar}
@@ -414,12 +586,12 @@ export function MediaPage({ brand }: MediaPageProps) {
 
       {/* ── 6. ACCESSIBILITY ─────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Accessibility</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-1">{t.a11yTitle}</h2>
         <p className="text-sm text-slate-500 mb-4">
-          Guidelines for implementing Media in an inclusive way.
+          {t.a11yLead}
         </p>
         <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm divide-y divide-slate-100">
-          {A11Y_ROWS.map((row, i) => (
+          {t.a11yRows.map((row, i) => (
             <div key={row.title} className={['flex items-start gap-4 px-5 py-4', i % 2 === 1 ? 'bg-slate-50/50' : ''].join(' ')}>
               <span className="text-xl flex-shrink-0 mt-0.5" aria-hidden="true">{row.icon}</span>
               <div>
@@ -433,27 +605,25 @@ export function MediaPage({ brand }: MediaPageProps) {
 
       {/* ── 7. USAGE ─────────────────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', margin: '0 0 4px' }}>Usage</h2>
+        <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', margin: '0 0 4px' }}>{t.usageTitle}</h2>
         <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>
-          When and how to use the Media component.
+          {t.usageLead}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           <div style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4' }}>
-            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#166534' }}>✓ When to use</p>
+            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#166534' }}>{t.whenUseTitle}</p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '12.5px', color: '#15803d', lineHeight: 1.4 }}>
-              <li style={{ marginBottom: '6px' }}>• Product, lounge, or destination photography inside cards</li>
-              <li style={{ marginBottom: '6px' }}>• Hero imagery at the top of a detail page</li>
-              <li style={{ marginBottom: '6px' }}>• Thumbnail tiles in galleries, carousels, or photo grids</li>
-              <li>• Video poster frames or loading placeholders for remote assets</li>
+              {t.whenUseItems.map((item, i) => (
+                <li key={i} style={{ marginBottom: i < t.whenUseItems.length - 1 ? '6px' : 0 }}>• {item}</li>
+              ))}
             </ul>
           </div>
           <div style={{ padding: '14px 16px', borderRadius: '10px', border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}>
-            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#991b1b' }}>✗ When not to use</p>
+            <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 600, color: '#991b1b' }}>{t.whenNotUseTitle}</p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '12.5px', color: '#b91c1c', lineHeight: 1.4 }}>
-              <li style={{ marginBottom: '6px' }}>• Don't use for icons or glyphs — use the Icon library instead</li>
-              <li style={{ marginBottom: '6px' }}>• Don't use for brand logos — use the Brand Logo component</li>
-              <li style={{ marginBottom: '6px' }}>• Don't use for country flags — use the Flag component in List Item</li>
-              <li>• Don't use as a static colour block — style the parent surface with a background token</li>
+              {t.whenNotUseItems.map((item, i) => (
+                <li key={i} style={{ marginBottom: i < t.whenNotUseItems.length - 1 ? '6px' : 0 }}>• {item}</li>
+              ))}
             </ul>
           </div>
         </div>
