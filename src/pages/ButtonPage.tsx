@@ -84,7 +84,7 @@ const COPY = {
           { text: 'Destructive', note: '' },
           { text: 'White', note: '' },
           { text: 'Loading', note: '' },
-          { text: 'Destructive-Text', note: '' },
+          { text: 'Destructive - Text', note: '' },
           { text: 'ApplePay', note: '' },
           { text: 'PayPal', note: '' },
           { text: 'GooglePay', note: '' },
@@ -107,6 +107,20 @@ const COPY = {
           { text: 'Active', note: '' },
           { text: 'Disabled', note: '' },
           { text: 'Loading', note: '' },
+        ],
+      },
+      {
+        label: 'Booleans (3)',
+        chips: [
+          { text: 'Icon Left', note: 'default on' },
+          { text: 'Icon Right', note: 'default on' },
+          { text: 'Label', note: 'default on' },
+        ],
+      },
+      {
+        label: 'Text slots (1)',
+        chips: [
+          { text: 'Button Label', note: 'default "Button Label"' },
         ],
       },
       {
@@ -235,7 +249,7 @@ const COPY = {
           { text: 'Destructive', note: '' },
           { text: 'White', note: '' },
           { text: 'Loading', note: '' },
-          { text: 'Destructive-Text', note: '' },
+          { text: 'Destructive - Text', note: '' },
           { text: 'ApplePay', note: '' },
           { text: 'PayPal', note: '' },
           { text: 'GooglePay', note: '' },
@@ -258,6 +272,20 @@ const COPY = {
           { text: 'Active', note: '' },
           { text: 'Disabled', note: '' },
           { text: 'Loading', note: '' },
+        ],
+      },
+      {
+        label: '布尔值 (3)',
+        chips: [
+          { text: 'Icon Left', note: '默认开' },
+          { text: 'Icon Right', note: '默认开' },
+          { text: 'Label', note: '默认开' },
+        ],
+      },
+      {
+        label: '文本插槽 (1)',
+        chips: [
+          { text: 'Button Label', note: '默认 "Button Label"' },
         ],
       },
       {
