@@ -540,15 +540,17 @@ function evaluateRule(rule: TokenRule, p: CorePrimitives): string {
   }
 }
 
-// Human-readable rule summary used by the Token Mapping page.
+// Human-readable rule summary used by the Token Mapping page. Designed to be
+// readable by designers without colour-science background — no function syntax,
+// no jargon like "OKLCH" or "alpha". One short sentence per rule kind.
 export function describeRule(rule: TokenRule): string {
   switch (rule.kind) {
-    case 'direct':     return `= ${rule.from}`;
-    case 'lighten':    return `lighten(${rule.from}, ${Math.round(rule.by * 100)}%)`;
-    case 'darken':     return `darken(${rule.from}, ${Math.round(rule.by * 100)}%)`;
-    case 'lightenToL': return `${rule.from} @ OKLCH L=${rule.L}`;
-    case 'alpha':      return `${rule.from} @ ${Math.round(rule.a * 100)}%`;
-    case 'fixed':      return `fixed (${rule.note})`;
+    case 'direct':     return `Same as ${rule.from}`;
+    case 'lighten':    return `${rule.from} + ${Math.round(rule.by * 100)}% white`;
+    case 'darken':     return `${rule.from} + ${Math.round(rule.by * 100)}% black`;
+    case 'lightenToL': return `${rule.from} tint, ${Math.round(rule.L * 100)}% bright`;
+    case 'alpha':      return `${rule.from} at ${Math.round(rule.a * 100)}% opacity`;
+    case 'fixed':      return `Fixed: ${rule.note}`;
   }
 }
 

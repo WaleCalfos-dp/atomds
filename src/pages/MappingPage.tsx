@@ -23,162 +23,175 @@ type PrimitiveKey = keyof CorePrimitives;
 const COPY = {
   en: {
     chip: 'Tools · Token Mapping',
-    title: 'From 67 tokens to 14 primitives',
-    leadPart1: 'Brand Switcher\'s "Brands" variable collection publishes ',
-    leadPart2: '67 semantic tokens',
+    title: 'From 67 tokens to 14 colours you pick',
+    leadPart1: 'Brand Switcher\'s "Brands" variable collection ships ',
+    leadPart2: '67 colour tokens',
     leadPart3: ' (',
     leadPart4: ', ',
     leadPart5:
-      '). For the White-label Portal we compressed that surface to 14 inputs by applying three rules, in order: (1) keep one primitive where Brand Switcher already assigns the same hex to a group of variables, (2) derive lightened/darkened variants algorithmically, (3) hard-code the handful of values that are universally white, black, or alpha-black across every Foundations library.',
-    statPrimitives: 'primitive inputs',
-    statDerived: 'derived tokens',
-    statFixed: 'fixed values',
-    rulesTitle: 'Derivation rules',
-    rulePrimitiveLabel: '= primitive',
-    rulePrimitiveDesc: 'Direct use — token value equals the primitive.',
+      '). The White-label Portal cuts that down to 14 colours you actually pick, then fills in the rest using a few simple rules: (1) when the same hex shows up against a whole group of tokens in every brand, just reuse one input; (2) for things like alert backgrounds and hover states, mix the input with white or black to hit a target shade; (3) the handful of tokens that are always white or always a transparent black are hard-coded.',
+    statPrimitives: 'colours you pick',
+    statDerived: 'colours we work out for you',
+    statFixed: 'always-the-same colours',
+    rulesTitle: 'How each derived colour is worked out',
+    rulePrimitiveLabel: 'Same colour',
+    rulePrimitiveDesc:
+      'The token uses one of your input colours exactly, with no change.',
+    ruleOklchLabel: 'Light tint',
     ruleOklchDesc:
-      'Set perceptual lightness to N (0..1) preserving hue + chroma. Used for alert tints so all 4 feedback families look balanced.',
-    ruleHslDesc: 'HSL mix toward white / black. Used for hover & pressed states.',
-    ruleAlphaDesc: 'Apply alpha at X%. Used for focus rings + muted surfaces.',
-    ruleFixedLabel: 'fixed',
-    ruleFixedDesc: 'Hard-coded (white / black-alpha). Not user-editable.',
-    rulesAppLabel: 'Rules of application',
+      'Mix the input with white until it hits a target brightness — keeping the same hue. We use 92% brightness for alert containers and 96% for very subtle row backgrounds, so green/yellow/red/blue tints all look equally light side-by-side.',
+    ruleLightenLabel: 'Darker / lighter',
+    ruleHslDesc:
+      'Blend the input with white (lighter) or black (darker) by a fixed percentage. Used for hover and pressed button states.',
+    ruleAlphaLabel: 'Faded (see-through)',
+    ruleAlphaDesc:
+      'Show the input at reduced opacity so what\'s behind shows through. Used for focus rings, muted hovers, and modal overlays.',
+    ruleFixedLabel: 'Always the same',
+    ruleFixedDesc:
+      'A hard-coded colour (usually pure white, black, or a transparent black). Doesn\'t depend on any input — you can\'t edit it.',
+    rulesAppLabel: 'Where each token belongs',
     rulesAppLeadPart1:
-      'Most "weird-looking" custom-brand renders trace back to a token used in the wrong tier — e.g. a Badge built on ',
+      'Most "weird-looking" custom-brand renders trace back to using a token in the wrong place — e.g. a Badge built on ',
     rulesAppLeadPart2: ' instead of ',
     rulesAppLeadPart3:
-      ' reads as a faint blob on white surfaces. These rules document where each token belongs.',
-    tierTitle: 'Tier guidance — when to use which background',
-    tierLead: 'The 4 feedback families each ship 3 tiers. Pick by visual weight, not by hue.',
-    colTier: 'Tier',
+      ' reads as a faint blob on white. The rules below say where each token is meant to be used.',
+    tierTitle: 'Background tiers — pick by how heavy you want it to look',
+    tierLead: 'Each of the 4 feedback colours (success/warning/error/info) comes in 3 strengths.',
+    colTier: 'Token',
     colUseFor: 'Use for',
     colDontUseFor: "Don't use for",
     tierFullUse:
-      'Solid feedback fills — Toast solid bg, success Badge with white text, Destructive button.',
-    tierFullAvoid: 'Body text — contrast varies across brands; pair with white only.',
+      'Solid feedback colours — Toast backgrounds, a success Badge with white text, the Destructive button.',
+    tierFullAvoid: 'Body text — contrast varies brand-to-brand. Only pair with white.',
     tierLightUse:
-      'Alert containers with title + body text. Calibrated to OKLCH L=0.92 — always readable for body copy.',
-    tierLightAvoid: 'Compact UI like Badge — too prominent at small sizes.',
+      'Alert containers with a title and body text. We tune these to a fixed brightness so body copy always reads.',
+    tierLightAvoid: 'Small UI like Badges — too heavy at small sizes.',
     tierLightestUse:
-      'Subtle row tinting, callout backgrounds, hover overlays on coloured rows. OKLCH L=0.96 — very subtle wash.',
-    tierLightestAvoid: 'Standalone Badge backgrounds — too faint to read as a chip.',
-    pairingsTitle: 'Surface pairings — which fg goes with which bg',
+      'Subtle row tinting, callout backgrounds, hover washes over coloured rows. A very faint background wash.',
+    tierLightestAvoid: 'Standalone Badge backgrounds — too faint to register as a chip.',
+    pairingsTitle: 'Foreground / background combos that always work',
     pairingsLead:
-      'Mismatched fg/bg pairs are the #1 cause of low-contrast rendering. Use these defaults.',
-    pairing1: 'white text on solid brand surface',
-    pairing2: 'body text — or fg-brand-primary for emphasis',
-    pairing3: 'body copy — pair with fg-{success/warning/...} only for icons + accents',
-    pairing4: 'subtle hover/pressed wash — only over white surfaces',
-    pairing5: 'modal scrim only — never put body copy on the overlay itself',
-    fidelityTitle: '⚠ Fidelity warning',
+      'Mismatched text-and-background pairs are the #1 cause of unreadable components. These pairings are safe across every brand.',
+    pairing1: 'white text on a solid brand surface',
+    pairing2: 'body text — or fg-brand-primary when you want extra emphasis',
+    pairing3: 'body copy. Only pair with fg-{success/warning/...} for icons or small accents',
+    pairing4: 'subtle hover or pressed wash — only on top of white surfaces',
+    pairing5: 'modal scrim only — never put body copy directly on the overlay',
+    fidelityTitle: '⚠ When the auto-derived values won\'t cut it',
     fidelityLeadPart1:
-      'Simple-mode derivation approximates Brand Switcher\'s hand-curated tints. For brand primaries with very high chroma (vibrant pinks, purples, oranges > ~70% saturation), the OKLCH-derived ',
+      'The 14-colour mode is an approximation. For very vibrant brand colours (saturated pinks, purples, oranges), the auto-generated ',
     fidelityLeadPart2:
-      ' tints stay perceptually balanced but may not exactly match the values a designer would pick. ',
-    fidelityLeadPart3: 'Switch to Full mode and override per-token',
+      ' tints will stay balanced against each other but may not exactly match what a designer would pick by hand. ',
+    fidelityLeadPart3: 'Switch to Full mode and edit individual tokens',
     fidelityLeadPart4:
-      ' if you need exact alignment with a real Foundations library (e.g. matching Mastercard\'s specific shade of warning yellow). Full mode bypasses derivation entirely — what you type is what ships.',
-    primitivesSection: 'The 14 primitives',
-    drivesPrefix: 'drives ',
+      ' if you need to match a specific brand shade exactly (e.g. Mastercard\'s warning yellow). Full mode skips derivation completely — what you type is what gets used.',
+    primitivesSection: 'The 14 colours you pick',
+    drivesPrefix: 'controls ',
     tokenSuffix: ' token',
     tokenPlural: 's',
-    seenOn: 'Seen on: ',
-    compressionSafePart1: 'Brand Switcher compresses ',
-    compressionMidPart1: ' distinct variables',
-    compressionSafePart2: ' (identical in every brand — safe)',
-    compressionLossyPart2: ' (values diverge in some brands — lossy)',
-    fixedTitle: 'Fixed values — not user-editable',
-    fixedLeadPart1: '9 tokens aren\'t driven by any primitive. ',
+    seenOn: 'Used on: ',
+    compressionSafePart1: 'This one input replaces ',
+    compressionMidPart1: ' separate Brand Switcher variables',
+    compressionSafePart2: ' (same value in every built-in brand — safe to combine)',
+    compressionLossyPart2: ' (values differ in some brands — combining them is a small trade-off)',
+    fixedTitle: 'Always-the-same colours — you can\'t edit these',
+    fixedLeadPart1: '9 tokens don\'t come from any of your inputs. ',
     fixedLeadPart2: '5',
-    fixedLeadPart3: ' are genuinely universal — every brand resolves them to the same hex. The other ',
+    fixedLeadPart3:
+      ' are truly universal — every brand uses the same hex for them. The other ',
     fixedLeadPart4: '4',
     fixedLeadPart5:
-      ' are "mostly fixed": the portal uses a single sensible default, but Brand Switcher ships per-mode overrides you\'ll see in the live Atom library. If the defaults don\'t match a custom brand, override them in the exported CSS.',
-    universalTitle: 'Universal across all 6 brands (',
-    variesTitle: 'Mostly fixed — varies per brand (',
+      ' are "mostly fixed": the portal uses one sensible default, but the real Atom library ships per-brand overrides for them. If a default doesn\'t match your custom brand, edit the exported CSS by hand.',
+    universalTitle: 'Same in every brand (',
+    variesTitle: 'Mostly fixed — but does change in some brands (',
     closeParen: ')',
     variesLead:
-      'The portal ships the default hex shown on the left. The 6 swatches below each row show what Brand Switcher actually resolves the token to for each built-in brand — swatches with a dashed amber border are brand-specific overrides that differ from the portal default.',
+      'The portal uses the default hex on the left. The 6 swatches below show the actual value each built-in brand uses for this token — swatches with a dashed amber border are the ones that differ from the portal default.',
     portalDefault: 'Portal default',
   },
   zh: {
     chip: '工具 · 令牌映射',
-    title: '从 67 个设计令牌到 14 个原语',
-    leadPart1: 'Brand Switcher 的"Brands"变量集合发布了',
-    leadPart2: '67 个语义化设计令牌',
+    title: '从 67 个令牌到 14 种你挑选的颜色',
+    leadPart1: 'Brand Switcher 的"Brands"变量集合提供了 ',
+    leadPart2: '67 个颜色令牌',
     leadPart3: '（',
     leadPart4: '、',
     leadPart5:
-      '）。在白标门户中，我们按以下三条规则依次将该表面压缩为 14 个输入：（1）当 Brand Switcher 已将同一十六进制值分配给一组变量时，保留一个原语；（2）用算法派生出变浅/变深的变体；（3）对于在每个基础库中都为白色、黑色或 alpha 黑色的少数值进行硬编码。',
-    statPrimitives: '个原语输入',
-    statDerived: '个派生令牌',
-    statFixed: '个固定值',
-    rulesTitle: '派生规则',
-    rulePrimitiveLabel: '= 原语',
-    rulePrimitiveDesc: '直接使用——令牌值等于原语。',
+      '）。白标门户将其精简为 14 种你实际挑选的颜色，其余的由几条简单规则自动生成：（1）当某些令牌在所有品牌中共用同一个十六进制值时，只用一个输入；（2）alert 背景和悬停状态等，通过把输入和白色或黑色按比例混合来生成；（3）少数始终为白色或始终为透明黑色的令牌则硬编码。',
+    statPrimitives: '种你挑选的颜色',
+    statDerived: '个自动算出的颜色',
+    statFixed: '个始终一致的颜色',
+    rulesTitle: '每个派生颜色是怎么算出来的',
+    rulePrimitiveLabel: '相同颜色',
+    rulePrimitiveDesc: '令牌直接采用你输入的某个颜色，不做任何变化。',
+    ruleOklchLabel: '浅色调',
     ruleOklchDesc:
-      '将感知亮度设置为 N（0..1），同时保留色相和色度。用于 alert 色调，使 4 个反馈家族看起来平衡。',
-    ruleHslDesc: 'HSL 向白色/黑色混合。用于悬停和按下状态。',
-    ruleAlphaDesc: '应用 X% 透明度。用于焦点环和柔和表面。',
-    ruleFixedLabel: '固定',
-    ruleFixedDesc: '硬编码（白色/黑色透明）。不可由用户编辑。',
-    rulesAppLabel: '应用规则',
+      '把输入和白色按比例混合，直到达到目标亮度，同时保留同样的色相。我们用 92% 亮度做 alert 容器，用 96% 做非常细微的行背景，让绿/黄/红/蓝四种色调看起来同样浅。',
+    ruleLightenLabel: '更浅 / 更深',
+    ruleHslDesc: '把输入和白色（更浅）或黑色（更深）按固定百分比混合。用于按钮的悬停和按下状态。',
+    ruleAlphaLabel: '半透明（可看穿）',
+    ruleAlphaDesc:
+      '让输入以较低不透明度显示，背后的内容透出来。用于焦点环、柔和的悬停背景和模态遮罩。',
+    ruleFixedLabel: '始终一致',
+    ruleFixedDesc:
+      '硬编码颜色（通常是纯白、黑色或透明黑色）。不依赖任何输入——不可编辑。',
+    rulesAppLabel: '每个令牌该用在哪里',
     rulesAppLeadPart1:
-      '大多数"看起来奇怪"的自定义品牌渲染都可以追溯到令牌被用在错误的层级——例如使用 ',
-    rulesAppLeadPart2: ' 而非 ',
+      '大多数"看起来奇怪"的自定义品牌渲染，问题都出在把令牌用错了地方——例如用 ',
+    rulesAppLeadPart2: ' 替代 ',
     rulesAppLeadPart3:
-      ' 构建的徽章在白色表面上显得很模糊。这些规则记录了每个令牌的归属位置。',
-    tierTitle: '层级指南——何时使用哪种背景',
-    tierLead: '4 个反馈家族每个都有 3 个层级。按视觉重量而非色相选择。',
-    colTier: '层级',
+      ' 来做徽章，结果在白色背景上几乎看不见。下面这些规则说明每个令牌应该用在哪里。',
+    tierTitle: '背景层级——根据视觉重量来挑',
+    tierLead: '4 种反馈颜色（成功/警告/错误/信息）每种都有 3 个强度。',
+    colTier: '令牌',
     colUseFor: '用于',
     colDontUseFor: '不要用于',
     tierFullUse:
-      '实色反馈填充——Toast 实色背景、带白色文字的成功徽章、破坏性按钮。',
-    tierFullAvoid: '正文文本——各品牌对比度差异大；仅与白色搭配。',
+      '实色反馈颜色——Toast 背景、带白色文字的成功徽章、破坏性按钮。',
+    tierFullAvoid: '正文文本——各品牌对比度差异大，只能搭配白色文字。',
     tierLightUse:
-      '带标题和正文的 Alert 容器。校准到 OKLCH L=0.92——正文始终可读。',
-    tierLightAvoid: '紧凑 UI 如徽章——在小尺寸下过于显眼。',
+      '带标题和正文的 Alert 容器。我们将其调到固定亮度，确保正文始终可读。',
+    tierLightAvoid: '小型 UI 如徽章——在小尺寸下显得过重。',
     tierLightestUse:
-      '细微的行着色、提示框背景、彩色行上的悬停叠加。OKLCH L=0.96——非常细微的渲染。',
+      '细微的行着色、提示框背景、彩色行上的悬停叠加。一种非常浅的背景渲染。',
     tierLightestAvoid: '独立徽章背景——太淡而无法识别为 chip。',
-    pairingsTitle: '表面搭配——哪个前景搭配哪个背景',
+    pairingsTitle: '前景与背景的安全组合',
     pairingsLead:
-      '前景/背景搭配错误是低对比度渲染的头号原因。请使用以下默认值。',
+      '前景和背景搭配错误是组件不可读的头号原因。下面这些组合在所有品牌下都安全。',
     pairing1: '在实色品牌表面上的白色文字',
-    pairing2: '正文文本——或 fg-brand-primary 用于强调',
-    pairing3: '正文文本——仅在图标和强调元素上搭配 fg-{success/warning/...}',
-    pairing4: '细微的悬停/按下渲染——仅用于白色表面之上',
+    pairing2: '正文文本——或 fg-brand-primary 用于额外强调',
+    pairing3: '正文文本。仅在图标和小型强调元素上搭配 fg-{success/warning/...}',
+    pairing4: '细微的悬停或按下渲染——只用在白色表面之上',
     pairing5: '仅用于模态遮罩——切勿在遮罩本身上放置正文文本',
-    fidelityTitle: '⚠ 保真度警告',
+    fidelityTitle: '⚠ 自动派生的值不够用时',
     fidelityLeadPart1:
-      '简单模式派生近似于 Brand Switcher 手工调校的色调。对于色度非常高的品牌主色（鲜艳的粉色、紫色、橙色 > ~70% 饱和度），通过 OKLCH 派生的 ',
+      '14 色模式只是一个近似。对于非常鲜艳的品牌色（饱和度高的粉色、紫色、橙色），自动生成的 ',
     fidelityLeadPart2:
-      ' 色调在感知上保持平衡，但可能与设计师手选的值不完全一致。',
-    fidelityLeadPart3: '切换到完整模式并按单个令牌覆盖',
+      ' 色调彼此之间会保持平衡，但可能与设计师手选的值不完全一致。',
+    fidelityLeadPart3: '切换到完整模式并按单个令牌编辑',
     fidelityLeadPart4:
-      '，如果你需要与真实的基础库精确对齐（例如匹配 Mastercard 特定的警告黄色阴影）。完整模式完全绕过派生——你输入的就是发布的内容。',
-    primitivesSection: '14 个原语',
-    drivesPrefix: '驱动 ',
+      '，如果你需要精确匹配某个品牌的特定色调（例如 Mastercard 的警告黄色）。完整模式完全跳过派生——你输入什么就用什么。',
+    primitivesSection: '你挑选的 14 种颜色',
+    drivesPrefix: '控制 ',
     tokenSuffix: ' 个令牌',
     tokenPlural: '',
-    seenOn: '出现在：',
-    compressionSafePart1: 'Brand Switcher 压缩了 ',
-    compressionMidPart1: ' 个不同的变量',
-    compressionSafePart2: '（在每个品牌中相同——安全）',
-    compressionLossyPart2: '（在某些品牌中值有差异——有损）',
-    fixedTitle: '固定值——不可由用户编辑',
-    fixedLeadPart1: '9 个令牌不由任何原语驱动。',
+    seenOn: '使用位置：',
+    compressionSafePart1: '这一个输入替代了 ',
+    compressionMidPart1: ' 个独立的 Brand Switcher 变量',
+    compressionSafePart2: '（在每个内置品牌中都是同一个值——可以放心合并）',
+    compressionLossyPart2: '（在某些品牌中值有差异——合并是个小取舍）',
+    fixedTitle: '始终一致的颜色——不可编辑',
+    fixedLeadPart1: '9 个令牌不依赖你的任何输入。',
     fixedLeadPart2: '5',
-    fixedLeadPart3: ' 个真正通用——每个品牌都将它们解析为相同的十六进制值。另外 ',
+    fixedLeadPart3: ' 个真正通用——每个品牌的取值都相同。另外 ',
     fixedLeadPart4: '4',
     fixedLeadPart5:
-      ' 个为"基本固定"：门户使用单一合理的默认值，但 Brand Switcher 在实际 Atom 库中提供按模式覆盖。如果默认值与自定义品牌不匹配，请在导出的 CSS 中覆盖它们。',
-    universalTitle: '在全部 6 个品牌中通用（',
-    variesTitle: '基本固定——按品牌变化（',
+      ' 个属于"基本固定"：门户使用一个合理的默认值，但实际的 Atom 库中各品牌可能有自己的覆盖。如果默认值不适合你的自定义品牌，请在导出的 CSS 中手动调整。',
+    universalTitle: '所有品牌中都相同（',
+    variesTitle: '基本固定——但在某些品牌中会变化（',
     closeParen: '）',
     variesLead:
-      '门户使用左侧显示的默认十六进制值。每行下方的 6 个色板显示 Brand Switcher 实际为每个内置品牌将令牌解析为的值——带虚线琥珀色边框的色板是与门户默认值不同的品牌特定覆盖。',
+      '门户使用左侧的默认十六进制值。下方的 6 个色板显示每个内置品牌为该令牌实际使用的值——带虚线琥珀色边框的色板表示与门户默认值不同的品牌特定值。',
     portalDefault: '门户默认值',
   },
 } as const;
@@ -391,23 +404,23 @@ export function MappingPage({ brand, lang = 'en' }: MappingPageProps) {
         <h2 className="text-sm font-semibold text-slate-800 mb-3">{t.rulesTitle}</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">{t.rulePrimitiveLabel}</code>
+            <div className="text-slate-800 font-semibold">{t.rulePrimitiveLabel}</div>
             <p className="text-slate-500 mt-1">{t.rulePrimitiveDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">p @ OKLCH L=N</code>
+            <div className="text-slate-800 font-semibold">{t.ruleOklchLabel}</div>
             <p className="text-slate-500 mt-1">{t.ruleOklchDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">lighten(p, X%) / darken(p, X%)</code>
+            <div className="text-slate-800 font-semibold">{t.ruleLightenLabel}</div>
             <p className="text-slate-500 mt-1">{t.ruleHslDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">p @ X%</code>
+            <div className="text-slate-800 font-semibold">{t.ruleAlphaLabel}</div>
             <p className="text-slate-500 mt-1">{t.ruleAlphaDesc}</p>
           </div>
           <div className="bg-white rounded-md p-3 border border-slate-200">
-            <code className="font-mono text-slate-700 font-semibold">{t.ruleFixedLabel}</code>
+            <div className="text-slate-800 font-semibold">{t.ruleFixedLabel}</div>
             <p className="text-slate-500 mt-1">{t.ruleFixedDesc}</p>
           </div>
         </div>
