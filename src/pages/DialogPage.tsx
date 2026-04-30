@@ -464,9 +464,21 @@ export function DialogPage({ brand, lang = 'en' }: DialogPageProps) {
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.variantRowLabels.tertiary}</td>
                 <td className="px-5 py-3.5 text-slate-500 text-sm">{t.showHide}</td>
               </tr>
-              <tr>
+              <tr className="border-b border-slate-100">
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.variantRowLabels.close}</td>
                 <td className="px-5 py-3.5 text-slate-500 text-sm">{t.showHideDesktopOnly}</td>
+              </tr>
+              <tr className="border-b border-slate-100">
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">Booleans (10)</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">
+                  Buttons, Primary Button, Secondary Button, Tertiary Button, Slot 1, Slot 2, Title, Description, Icon, Close
+                </td>
+              </tr>
+              <tr>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">Text slots (2)</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">
+                  Title Text (default "Title"), Description Text (default "Description")
+                </td>
               </tr>
             </tbody>
           </table>
