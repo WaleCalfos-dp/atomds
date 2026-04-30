@@ -65,7 +65,9 @@ const COPY = {
       { prop: 'Subtitle', vals: 'Show \u00b7 Hide (optional toggle)' },
       { prop: 'Checkbox', vals: 'Show \u00b7 Hide \u2014 renders a leading checkbox (checked / unchecked)' },
       { prop: 'Switch', vals: 'Show \u00b7 Hide \u2014 renders a trailing switch toggle (on / off)' },
-      { prop: 'Location', vals: 'Free-form string (Flight type only) \u2014 e.g. "London, UK"' },
+      { prop: 'Checkbox and Switch', vals: 'On \u00b7 Off \u2014 master toggle for the trailing Checkbox/Switch cluster' },
+      { prop: 'Booleans (Airport)', vals: 'Airport2, Airport Code \u2014 visible only when Type=Flight' },
+      { prop: 'Text slots', vals: 'Title Text, Subtitle Text, Country, Airport, Code, Location, Description (default values vary by Type)' },
     ],
     previewLabels: {
       lightRegular: 'Light / Regular',
@@ -180,6 +182,9 @@ const COPY = {
       { prop: '复选框', vals: '显示 \u00b7 隐藏 \u2014 渲染一个前置复选框（已选 / 未选）' },
       { prop: '开关', vals: '显示 \u00b7 隐藏 \u2014 渲染一个尾部开关（开 / 关）' },
       { prop: '位置', vals: '自由格式字符串（仅限 Flight 类型）\u2014 例如 "英国伦敦"' },
+      { prop: 'Checkbox and Switch', vals: 'On · Off — 控制尾部复选框/开关组合的总开关' },
+      { prop: '布尔值（Airport）', vals: 'Airport2、Airport Code — 仅当 Type=Flight 时显示' },
+      { prop: '文本插槽', vals: 'Title Text、Subtitle Text、Country、Airport、Code、Location、Description（默认值因 Type 而异）' },
     ],
     previewLabels: {
       lightRegular: 'Light / Regular',

@@ -65,6 +65,7 @@ const COPY = {
       { prop: 'Title', values: 'boolean (default true)' },
       { prop: 'Description', values: 'boolean (default true)' },
       { prop: 'Close Icon', values: 'boolean (default true)' },
+      { prop: 'Text slots (2)', values: 'Title Text (default "Title"), Description Text (default "Content goes here")' },
     ],
     tokenRows: [
       { label: 'Info bg',        key: 'atom.background.alert.bg-info-lightest',          cssVar: '--atom-background-alert-bg-info-lightest',          types: ['Information'] as AlertType[] },
@@ -174,6 +175,7 @@ const COPY = {
       { prop: '标题', values: '布尔值(默认 true)' },
       { prop: '描述', values: '布尔值(默认 true)' },
       { prop: '关闭图标', values: '布尔值(默认 true)' },
+      { prop: '文本插槽 (2)', values: 'Title Text(默认 "Title")、Description Text(默认 "Content goes here")' },
     ],
     tokenRows: [
       { label: '信息背景',     key: 'atom.background.alert.bg-info-lightest',          cssVar: '--atom-background-alert-bg-info-lightest',          types: ['Information'] as AlertType[] },

@@ -58,6 +58,10 @@ const COPY = {
     typeValues: 'General · Sticky Bottom · Sticky Bottom - eSIM · Toast',
     backgroundProp: 'Background Fill',
     backgroundValues: 'Yes · No',
+    booleansProp: 'Booleans (7)',
+    booleansValues: 'Button 1 (default on), Button 2 (default on), Button 3 (default off), Buttons (default on), Content Left (default on), Title (default on), Description (default on)',
+    textSlotsProp: 'Text slots (2)',
+    textSlotsValues: 'Title Text (default "Title"), Description Text (default "Description")',
     designTokensHeading: 'Design Tokens',
     designTokensTagline:
       'Button Group itself owns container-level tokens. The Primary and Secondary pills inherit their state tokens from the Button component.',
@@ -161,6 +165,10 @@ const COPY = {
     typeValues: 'General · Sticky Bottom · Sticky Bottom - eSIM · Toast',
     backgroundProp: '背景填充',
     backgroundValues: 'Yes · No',
+    booleansProp: '布尔值 (7)',
+    booleansValues: 'Button 1（默认开）、Button 2（默认开）、Button 3（默认关）、Buttons（默认开）、Content Left（默认开）、Title（默认开）、Description（默认开）',
+    textSlotsProp: '文本插槽 (2)',
+    textSlotsValues: 'Title Text（默认 "Title"）、Description Text（默认 "Description"）',
     designTokensHeading: '设计令牌',
     designTokensTagline:
       '按钮组本身拥有容器级令牌。主要和次要胶囊从按钮组件继承其状态令牌。',
@@ -467,9 +475,17 @@ export function ButtonGroupPage({ brand, lang = 'en' }: ButtonGroupPageProps) {
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.typeProp}</td>
                 <td className="px-5 py-3.5 text-slate-500 text-sm">{t.typeValues}</td>
               </tr>
-              <tr>
+              <tr className="border-b border-slate-100">
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.backgroundProp}</td>
                 <td className="px-5 py-3.5 text-slate-500 text-sm">{t.backgroundValues}</td>
+              </tr>
+              <tr className="border-b border-slate-100">
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">{t.booleansProp}</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">{t.booleansValues}</td>
+              </tr>
+              <tr>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">{t.textSlotsProp}</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">{t.textSlotsValues}</td>
               </tr>
             </tbody>
           </table>

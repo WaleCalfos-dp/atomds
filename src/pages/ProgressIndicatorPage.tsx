@@ -31,8 +31,12 @@ const COPY = {
     variantsTitle: 'Variants',
     propertyHeader: 'Property',
     valuesHeader: 'Values',
-    variantRowLabel: 'Variant',
-    variantRowValues: 'Percentage Bar \u00B7 Multiple Bars',
+    variantRows: [
+      { prop: 'Style', vals: 'Percentage Bar \u00B7 Multiple Bars (default Percentage Bar)' },
+      { prop: 'Count', vals: '2 \u00B7 3 \u00B7 4 \u00B7 5 \u00B7 6 \u00B7 10% \u00B7 20% \u00B7 30% \u00B7 40% \u00B7 50% \u00B7 60% \u00B7 70% \u00B7 80% \u00B7 90% \u00B7 100% (default 10%)' },
+      { prop: 'Booleans (4)', vals: 'Progress Name (default on), Progress Description (default on), Content Bottom (default on), Percentage (default on)' },
+      { prop: 'Text slots (2)', vals: 'Progress Name Text (default "Step 1:"), Progress description Text (default "Text block")' },
+    ],
     tokensTitle: 'Design Tokens',
     tokensLead: 'Tokens used by the Progress Indicator across both variants.',
     roleHeader: 'Role',
@@ -100,8 +104,12 @@ const COPY = {
     variantsTitle: '变体',
     propertyHeader: '属性',
     valuesHeader: '取值',
-    variantRowLabel: '变体',
-    variantRowValues: 'Percentage Bar \u00B7 Multiple Bars',
+    variantRows: [
+      { prop: '\u6837\u5F0F', vals: 'Percentage Bar \u00B7 Multiple Bars\uFF08\u9ED8\u8BA4 Percentage Bar\uFF09' },
+      { prop: '\u6570\u91CF', vals: '2 \u00B7 3 \u00B7 4 \u00B7 5 \u00B7 6 \u00B7 10% \u00B7 20% \u00B7 30% \u00B7 40% \u00B7 50% \u00B7 60% \u00B7 70% \u00B7 80% \u00B7 90% \u00B7 100%\uFF08\u9ED8\u8BA4 10%\uFF09' },
+      { prop: '\u5E03\u5C14\u503C (4)', vals: 'Progress Name\uFF08\u9ED8\u8BA4\u5F00\uFF09\u3001Progress Description\uFF08\u9ED8\u8BA4\u5F00\uFF09\u3001Content Bottom\uFF08\u9ED8\u8BA4\u5F00\uFF09\u3001Percentage\uFF08\u9ED8\u8BA4\u5F00\uFF09' },
+      { prop: '\u6587\u672C\u63D2\u69FD (2)', vals: 'Progress Name Text\uFF08\u9ED8\u8BA4 "Step 1:"\uFF09\u3001Progress description Text\uFF08\u9ED8\u8BA4 "Text block"\uFF09' },
+    ],
     tokensTitle: '设计令牌',
     tokensLead: '进度指示器在两种变体中使用的令牌。',
     roleHeader: '角色',
@@ -393,10 +401,12 @@ export function ProgressIndicatorPage({ brand, lang = 'en' }: ProgressIndicatorP
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151' }}>{t.variantRowLabel}</td>
-                <td style={{ padding: '10px 16px', color: '#6b7280' }}>{t.variantRowValues}</td>
-              </tr>
+              {t.variantRows.map((row, i) => (
+                <tr key={row.prop} style={{ borderBottom: i < t.variantRows.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                  <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151', verticalAlign: 'top' }}>{row.prop}</td>
+                  <td style={{ padding: '10px 16px', color: '#6b7280' }}>{row.vals}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

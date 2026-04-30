@@ -462,7 +462,7 @@ export function BadgePage({ brand, lang = 'en' }: BadgePageProps) {
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr className="border-b border-slate-100">
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.curveRadiusLabel}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex gap-1.5">
@@ -471,6 +471,14 @@ export function BadgePage({ brand, lang = 'en' }: BadgePageProps) {
                     ))}
                   </div>
                 </td>
+              </tr>
+              <tr className="border-b border-slate-100">
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">Booleans (2)</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">Icon Left (default on), Icon Right (default on)</td>
+              </tr>
+              <tr>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">Text slots (1)</td>
+                <td className="px-5 py-3.5 text-slate-500 text-xs leading-relaxed">Label (default "Label")</td>
               </tr>
             </tbody>
           </table>
