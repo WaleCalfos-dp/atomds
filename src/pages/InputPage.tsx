@@ -51,6 +51,8 @@ const COPY = {
       { prop: 'Label Position', values: 'Outside · Inside' },
       { prop: 'State', values: 'Default · Focus · Focus - Accessibility · Error · Disabled' },
       { prop: 'Filled', values: 'No · Yes' },
+      { prop: 'Booleans (17)', values: 'Helper Text, Label Icon, Flag, Placeholder, Icon, Chevron, Country Code, Show 1–6 (Verification digits), Password Criteria, Clear icon, Payment Icon, Search Label' },
+      { prop: 'Text slots (6)', values: 'Label Text, Placeholder Text, Data Text, Number Placeholder, Number Data, Country Code Text' },
     ],
     labelPositionPrefix: 'Label Position: ',
     // Section 5 — Design Tokens
@@ -146,6 +148,8 @@ const COPY = {
       { prop: '标签位置', values: '外部 · 内部' },
       { prop: '状态', values: '默认 · 焦点 · 焦点 - 无障碍 · 错误 · 禁用' },
       { prop: '是否填充', values: '否 · 是' },
+      { prop: '布尔值 (17)', values: 'Helper Text、Label Icon、Flag、Placeholder、Icon、Chevron、Country Code、Show 1–6（验证码位）、Password Criteria、Clear icon、Payment Icon、Search Label' },
+      { prop: '文本插槽 (6)', values: 'Label Text、Placeholder Text、Data Text、Number Placeholder、Number Data、Country Code Text' },
     ],
     labelPositionPrefix: '标签位置：',
     // Section 5 — Design Tokens
@@ -428,7 +432,7 @@ export function InputPage({ brand, lang = 'en' }: InputPageProps) {
             </thead>
             <tbody>
               {t.propertyRows.map(({ prop, values }, i) => (
-                <tr key={prop} style={{ borderBottom: i < 3 ? '1px solid #f3f4f6' : 'none' }}>
+                <tr key={prop} style={{ borderBottom: i < t.propertyRows.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
                   <td style={{ padding: '10px 16px', fontWeight: 600, color: '#374151' }}>{prop}</td>
                   <td style={{ padding: '10px 16px', color: '#6b7280' }}>{values}</td>
                 </tr>
