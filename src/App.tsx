@@ -20,9 +20,16 @@ import { BrandFoundationsPage } from './pages/BrandFoundationsPage';
 import { BrandSwitcherPage } from './pages/BrandSwitcherPage';
 import { BordersPage } from './pages/BordersPage';
 import { SpacingPage } from './pages/SpacingPage';
+import { TitlePage } from './pages/TitlePage';
+import { BodyPage } from './pages/BodyPage';
+import { TextLinkPage } from './pages/TextLinkPage';
 
 // Components
 import { AccordionPage } from './pages/AccordionPage';
+import { CountryCodeDropdownPage } from './pages/CountryCodeDropdownPage';
+import { LightboxImageViewerPage } from './pages/LightboxImageViewerPage';
+import { LoaderPage } from './pages/LoaderPage';
+import { OverlayPage } from './pages/OverlayPage';
 import { AlertPage } from './pages/AlertPage';
 import { AvatarPage } from './pages/AvatarPage';
 import { BadgePage } from './pages/BadgePage';
@@ -55,6 +62,23 @@ import { TimePickerPage } from './pages/TimePickerPage';
 import { ToastPage } from './pages/ToastPage';
 import { TooltipPage } from './pages/TooltipPage';
 import { TransportCardPage } from './pages/TransportCardPage';
+
+// Chrome
+import { HeaderPage } from './pages/HeaderPage';
+import { MenuBarPage } from './pages/MenuBarPage';
+import { BottomNavigationPage } from './pages/BottomNavigationPage';
+import { DesktopFooterPage } from './pages/DesktopFooterPage';
+import { WebSearchPage } from './pages/WebSearchPage';
+
+// Widgets
+import { BookingWidgetPage } from './pages/BookingWidgetPage';
+import { BookingDetailsPage } from './pages/BookingDetailsPage';
+import { ProductCardPage } from './pages/ProductCardPage';
+import { ProductImagesPage } from './pages/ProductImagesPage';
+import { ProductPreviewPage } from './pages/ProductPreviewPage';
+import { PaymentMethodPage } from './pages/PaymentMethodPage';
+import { PaymentBreakdownPage } from './pages/PaymentBreakdownPage';
+import { PaymentIconsPage } from './pages/PaymentIconsPage';
 
 export default function App() {
   const { brand, setBrand } = useBrand();
@@ -93,9 +117,16 @@ export default function App() {
           <Route path="/foundations/brand-switcher" element={<BrandSwitcherPage brand={brand} lang={lang} />} />
           <Route path="/foundations/borders" element={<BordersPage brand={brand} lang={lang} />} />
           <Route path="/foundations/spacing" element={<SpacingPage brand={brand} lang={lang} />} />
+          <Route path="/foundations/title" element={<TitlePage brand={brand} lang={lang} />} />
+          <Route path="/foundations/body" element={<BodyPage brand={brand} lang={lang} />} />
+          <Route path="/foundations/text-link" element={<TextLinkPage brand={brand} lang={lang} />} />
 
           {/* Components */}
           <Route path="/components/accordion" element={<AccordionPage brand={brand} lang={lang} />} />
+          <Route path="/components/country-code-dropdown" element={<CountryCodeDropdownPage brand={brand} lang={lang} />} />
+          <Route path="/components/lightbox-image-viewer" element={<LightboxImageViewerPage brand={brand} lang={lang} />} />
+          <Route path="/components/loader" element={<LoaderPage brand={brand} lang={lang} />} />
+          <Route path="/components/overlay" element={<OverlayPage brand={brand} lang={lang} />} />
           <Route path="/components/alert" element={<AlertPage brand={brand} lang={lang} />} />
           <Route path="/components/avatar" element={<AvatarPage brand={brand} lang={lang} />} />
           <Route path="/components/badge" element={<BadgePage brand={brand} lang={lang} />} />
@@ -128,6 +159,23 @@ export default function App() {
           <Route path="/components/toast" element={<ToastPage brand={brand} lang={lang} />} />
           <Route path="/components/tooltip" element={<TooltipPage brand={brand} lang={lang} />} />
           <Route path="/components/transport-card" element={<TransportCardPage brand={brand} lang={lang} />} />
+
+          {/* Chrome */}
+          <Route path="/chrome/header" element={<HeaderPage brand={brand} lang={lang} />} />
+          <Route path="/chrome/menu-bar" element={<MenuBarPage brand={brand} lang={lang} />} />
+          <Route path="/chrome/bottom-navigation" element={<BottomNavigationPage brand={brand} lang={lang} />} />
+          <Route path="/chrome/desktop-footer" element={<DesktopFooterPage brand={brand} lang={lang} />} />
+          <Route path="/chrome/web-search" element={<WebSearchPage brand={brand} lang={lang} />} />
+
+          {/* Widgets */}
+          <Route path="/widgets/booking-widget" element={<BookingWidgetPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/booking-details" element={<BookingDetailsPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/product-card" element={<ProductCardPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/product-images" element={<ProductImagesPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/product-preview" element={<ProductPreviewPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/payment-method" element={<PaymentMethodPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/payment-breakdown" element={<PaymentBreakdownPage brand={brand} lang={lang} />} />
+          <Route path="/widgets/payment-icons" element={<PaymentIconsPage brand={brand} lang={lang} />} />
         </Routes>
       </Shell>
     </BrowserRouter>
