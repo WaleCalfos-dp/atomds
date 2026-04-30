@@ -47,6 +47,10 @@ const COPY = {
     propertyType: 'Type',
     propertyStyle: 'Style',
     propertyState: 'State',
+    propertyBooleans: 'Booleans (25)',
+    propertyBooleansValues: 'Icon Left, Title, Subtitle, Icon Right, Checkbox Left, Checkbox right, Title Right, Subtitle Right, Content Right, Title and Sub Right, Content Left, Country Flag, Continents, List Item 1–6, List Item (Last), Icon Left 2, Subtitle 2, Content Bottom, Slot Left, Slot Right',
+    propertyTextSlots: 'Text slots (7)',
+    propertyTextSlotsValues: 'Title Left, Subtitle Left, Subtitle Text 2, Title Right Text, Subtitle Right Text, Region, Country',
     // Section 5 — Design Tokens
     tokensTitle: 'Design Tokens',
     tokensLead: 'Active tokens for the selected state are highlighted. Switch State or Brand to see values update.',
@@ -146,6 +150,10 @@ const COPY = {
     propertyType: '类型',
     propertyStyle: '样式',
     propertyState: '状态',
+    propertyBooleans: '布尔值 (25)',
+    propertyBooleansValues: 'Icon Left、Title、Subtitle、Icon Right、Checkbox Left、Checkbox right、Title Right、Subtitle Right、Content Right、Title and Sub Right、Content Left、Country Flag、Continents、List Item 1–6、List Item (Last)、Icon Left 2、Subtitle 2、Content Bottom、Slot Left、Slot Right',
+    propertyTextSlots: '文本插槽 (7)',
+    propertyTextSlotsValues: 'Title Left、Subtitle Left、Subtitle Text 2、Title Right Text、Subtitle Right Text、Region、Country',
     // Section 5 — Design Tokens
     tokensTitle: '设计令牌',
     tokensLead: '所选状态下的活动令牌已高亮显示。切换状态或品牌可查看值的更新。',
@@ -618,7 +626,7 @@ export function ListItemPage({ brand, lang = 'en' }: ListItemPageProps) {
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr className="border-b border-slate-100">
                 <td className="px-5 py-3.5 font-medium text-slate-700 text-sm">{t.propertyState}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex flex-wrap gap-1.5">
@@ -630,6 +638,14 @@ export function ListItemPage({ brand, lang = 'en' }: ListItemPageProps) {
                     ))}
                   </div>
                 </td>
+              </tr>
+              <tr className="border-b border-slate-100">
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">{t.propertyBooleans}</td>
+                <td className="px-5 py-3.5 text-slate-600 text-xs leading-relaxed">{t.propertyBooleansValues}</td>
+              </tr>
+              <tr>
+                <td className="px-5 py-3.5 font-medium text-slate-700 text-sm align-top">{t.propertyTextSlots}</td>
+                <td className="px-5 py-3.5 text-slate-600 text-xs leading-relaxed">{t.propertyTextSlotsValues}</td>
               </tr>
             </tbody>
           </table>
