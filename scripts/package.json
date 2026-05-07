@@ -1,0 +1,19 @@
+{
+  "name": "atomdoc-token-tools",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone CLI tooling for generating Atom design system tokens from minimum brand seeds. Run from this folder: `npm install` then `npm run gen:tokens`.",
+  "scripts": {
+    "gen:tokens": "tsx validate-dragonpass.ts",
+    "gen:demo": "tsx demo-cross-brand.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^24.12.2",
+    "culori": "^4.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "~5.6.3"
+  }
+}

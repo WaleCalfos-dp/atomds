@@ -76,6 +76,7 @@ const SECTIONS: BilingualNavSection[] = [
     items: [
       { to: '/portal', label: { en: 'White-label Portal', zh: '白标门户' } },
       { to: '/portal/mapping', label: { en: 'Token Mapping', zh: '令牌映射' } },
+      { to: '/portal/token-generator', label: { en: 'Token Generator', zh: '令牌生成器' } },
     ],
   },
   {

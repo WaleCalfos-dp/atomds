@@ -10,6 +10,7 @@ import { GettingStartedPage } from './pages/GettingStartedPage';
 // Tools
 import { PortalPage } from './pages/PortalPage';
 import { MappingPage } from './pages/MappingPage';
+import { TokenGeneratorPage } from './pages/TokenGeneratorPage';
 
 // Token-Component Link
 import { TokenComponentLinkOverviewPage } from './pages/TokenComponentLinkOverviewPage';
@@ -107,6 +108,7 @@ export default function App() {
             }
           />
           <Route path="/portal/mapping" element={<MappingPage brand={brand} lang={lang} />} />
+          <Route path="/portal/token-generator" element={<TokenGeneratorPage brand={brand} lang={lang} />} />
 
           {/* Token-Component Link */}
           <Route path="/token-component-link" element={<TokenComponentLinkOverviewPage brand={brand} lang={lang} />} />
