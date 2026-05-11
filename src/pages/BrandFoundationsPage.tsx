@@ -231,6 +231,7 @@ const BRAND_INITIAL: Record<Brand, string> = {
   greyscale:  'G',
   assurant:   'A',
   custom:     'C',
+  studio:     'S',
 };
 
 // ─── Colour palette to surface for the current brand ─────────────────────

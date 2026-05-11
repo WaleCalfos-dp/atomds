@@ -1,4 +1,4 @@
-export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant' | 'custom';
+export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant' | 'custom' | 'studio';
 
 export const BRANDS: { id: Brand; label: string; primary: string }[] = [
   { id: 'dragonpass', label: 'Dragonpass', primary: '#0a2333' },
@@ -504,4 +504,13 @@ RESOLVED_SEMANTIC_TOKENS.custom = RESOLVED_SEMANTIC_TOKENS.dragonpass;
 
 export function setCustomTokens(tokens: BrandTokens | null) {
   RESOLVED_SEMANTIC_TOKENS.custom = tokens ?? RESOLVED_SEMANTIC_TOKENS.dragonpass;
+}
+
+// The 'studio' brand is populated at runtime by useBrandStudio. Default to
+// dragonpass so swatch tables on documentation pages still render before a
+// studio brand is applied.
+RESOLVED_SEMANTIC_TOKENS.studio = RESOLVED_SEMANTIC_TOKENS.dragonpass;
+
+export function setStudioTokens(tokens: BrandTokens | null) {
+  RESOLVED_SEMANTIC_TOKENS.studio = tokens ?? RESOLVED_SEMANTIC_TOKENS.dragonpass;
 }
