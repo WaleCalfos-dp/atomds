@@ -6,6 +6,7 @@ import { cloneBrand, emptyBrand } from '../lib/brandStudio/catalog';
 import { BrandList } from '../components/brandStudio/BrandList';
 import { BrandEditor } from '../components/brandStudio/BrandEditor';
 import { BrandPreview } from '../components/brandStudio/BrandPreview';
+import { HowItWorks } from '../components/brandStudio/HowItWorks';
 
 interface BrandStudioPageProps {
   brand: Brand;
@@ -85,6 +86,7 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
             onDelete={handleDelete}
             onAdd={handleAdd}
           />
+          <HowItWorks />
         </div>
         <div className="space-y-10">
           {selected ? (

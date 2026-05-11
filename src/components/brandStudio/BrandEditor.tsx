@@ -130,19 +130,36 @@ function SeedInput({
   return (
     <label className="block">
       <div className="text-sm font-medium text-slate-900 mb-1">{label}</div>
-      <div className="flex items-stretch gap-2 border border-slate-200 rounded-md overflow-hidden focus-within:border-slate-400 transition-colors bg-white">
-        <input
-          type="color"
-          value={isValidHex ? value : '#000000'}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-12 h-10 cursor-pointer border-0 p-0 m-0 bg-transparent"
-          aria-label={`${label} colour picker`}
-        />
+      <div className="flex items-stretch gap-2">
+        {/* Big visible swatch — entire square is the click target for the native picker */}
+        <div
+          className="relative w-12 h-10 rounded-md border border-slate-200 overflow-hidden cursor-pointer hover:border-slate-400 transition-colors flex-shrink-0"
+          style={{
+            backgroundColor: isValidHex ? value : 'transparent',
+            backgroundImage: isValidHex
+              ? undefined
+              : 'repeating-conic-gradient(#e2e8f0 0% 25%, #fff 0% 50%) 50% / 8px 8px',
+          }}
+          title="Click to open colour picker"
+        >
+          <input
+            type="color"
+            value={isValidHex ? value : '#000000'}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            aria-label={`${label} colour picker`}
+          />
+        </div>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-2 py-2 text-sm font-mono outline-none bg-transparent"
+          className={[
+            'flex-1 px-3 py-2 text-sm font-mono border rounded-md outline-none transition-colors bg-white',
+            isValidHex
+              ? 'border-slate-200 focus:border-slate-400'
+              : 'border-rose-300 focus:border-rose-500 text-rose-700',
+          ].join(' ')}
           spellCheck={false}
           maxLength={9}
         />
