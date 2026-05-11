@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Shell } from './components/Shell';
 import { useBrand } from './hooks/useBrand';
 import { useCustomBrand } from './hooks/useCustomBrand';
+import { useBrandStudio } from './hooks/useBrandStudio';
 import { useLanguage } from './hooks/useLanguage';
 
 // Getting Started
@@ -11,6 +12,7 @@ import { GettingStartedPage } from './pages/GettingStartedPage';
 import { PortalPage } from './pages/PortalPage';
 import { MappingPage } from './pages/MappingPage';
 import { TokenGeneratorPage } from './pages/TokenGeneratorPage';
+import { BrandStudioPage } from './pages/BrandStudioPage';
 
 // Token-Component Link
 import { TokenComponentLinkOverviewPage } from './pages/TokenComponentLinkOverviewPage';
@@ -84,10 +86,18 @@ import { PaymentIconsPage } from './pages/PaymentIconsPage';
 export default function App() {
   const { brand, setBrand } = useBrand();
   const { customBrand, setCustomBrand, clearCustomBrand } = useCustomBrand();
+  const { activeBrand: studioBrand } = useBrandStudio();
   const { lang, setLang } = useLanguage();
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Shell brand={brand} setBrand={setBrand} customBrand={customBrand} lang={lang} setLang={setLang}>
+      <Shell
+        brand={brand}
+        setBrand={setBrand}
+        customBrand={customBrand}
+        studioBrand={studioBrand}
+        lang={lang}
+        setLang={setLang}
+      >
         <Routes>
           <Route path="/" element={<Navigate to="/getting-started" replace />} />
 
@@ -109,6 +119,7 @@ export default function App() {
           />
           <Route path="/portal/mapping" element={<MappingPage brand={brand} lang={lang} />} />
           <Route path="/portal/token-generator" element={<TokenGeneratorPage brand={brand} lang={lang} />} />
+          <Route path="/portal/brand-studio" element={<BrandStudioPage brand={brand} lang={lang} setBrand={setBrand} />} />
 
           {/* Token-Component Link */}
           <Route path="/token-component-link" element={<TokenComponentLinkOverviewPage brand={brand} lang={lang} />} />
