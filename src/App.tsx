@@ -81,14 +81,14 @@ import { PaymentIconsPage } from './pages/PaymentIconsPage';
 
 export default function App() {
   const { brand, setBrand } = useBrand();
-  const { activeBrand: studioBrand } = useBrandStudio();
+  const studio = useBrandStudio();
   const { lang, setLang } = useLanguage();
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Shell
         brand={brand}
         setBrand={setBrand}
-        studioBrand={studioBrand}
+        studioBrand={studio.activeBrand}
         lang={lang}
         setLang={setLang}
       >
@@ -99,7 +99,7 @@ export default function App() {
           <Route path="/getting-started" element={<GettingStartedPage brand={brand} lang={lang} />} />
 
           {/* Tools */}
-          <Route path="/brand-studio" element={<BrandStudioPage brand={brand} lang={lang} setBrand={setBrand} />} />
+          <Route path="/brand-studio" element={<BrandStudioPage brand={brand} lang={lang} setBrand={setBrand} studio={studio} />} />
 
           {/* Token-Component Link */}
           <Route path="/token-component-link" element={<TokenComponentLinkOverviewPage brand={brand} lang={lang} />} />

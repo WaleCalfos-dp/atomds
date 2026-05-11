@@ -5,7 +5,6 @@ interface BrandListProps {
   selectedId: string | null;
   activeId: string | null;
   onSelect: (id: string) => void;
-  onApply: (id: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
@@ -16,7 +15,6 @@ export function BrandList({
   selectedId,
   activeId,
   onSelect,
-  onApply,
   onDuplicate,
   onDelete,
   onAdd,
@@ -60,13 +58,6 @@ export function BrandList({
                 <div className="text-xs text-slate-500 font-mono truncate">{b.seeds.primary}</div>
               </div>
               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => onApply(b.id)}
-                  disabled={isActive}
-                  className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {isActive ? 'Applied' : 'Apply'}
-                </button>
                 <button
                   onClick={() => onDuplicate(b.id)}
                   className="text-xs px-2 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-100"

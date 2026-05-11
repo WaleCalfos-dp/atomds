@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { type Brand } from '../data/tokens';
 import { type Language } from '../data/languages';
-import { useBrandStudio } from '../hooks/useBrandStudio';
+import { type useBrandStudio } from '../hooks/useBrandStudio';
 import { cloneBrand, emptyBrand } from '../lib/brandStudio/catalog';
 import { BrandList } from '../components/brandStudio/BrandList';
 import { BrandEditor } from '../components/brandStudio/BrandEditor';
@@ -12,10 +12,11 @@ interface BrandStudioPageProps {
   brand: Brand;
   lang?: Language;
   setBrand: (brand: Brand) => void;
+  studio: ReturnType<typeof useBrandStudio>;
 }
 
-export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
-  const { catalog, activeId, setActive, addBrand, editBrand, deleteBrand } = useBrandStudio();
+export function BrandStudioPage({ brand, setBrand, studio }: BrandStudioPageProps) {
+  const { catalog, activeId, setActive, addBrand, editBrand, deleteBrand } = studio;
   const [selectedId, setSelectedId] = useState<string | null>(activeId ?? catalog[0]?.id ?? null);
 
   // If the selected brand vanishes (e.g. just deleted), fall back to the active one or the first.
@@ -27,7 +28,10 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
 
   const selected = catalog.find((b) => b.id === selectedId) ?? null;
 
-  const handleApply = (id: string) => {
+  // Selecting / editing a brand applies it to the running app directly —
+  // no separate "Apply" gate. Any interaction with a brand makes it live.
+  const activate = (id: string) => {
+    setSelectedId(id);
     setActive(id);
     setBrand('studio');
   };
@@ -37,13 +41,13 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
     if (!source) return;
     const copy = cloneBrand(source, `${source.name} (copy)`);
     addBrand(copy);
-    setSelectedId(copy.id);
+    activate(copy.id);
   };
 
   const handleAdd = () => {
     const fresh = emptyBrand();
     addBrand(fresh);
-    setSelectedId(fresh.id);
+    activate(fresh.id);
   };
 
   const handleDelete = (id: string) => {
@@ -63,9 +67,9 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
         </h1>
         <p className="text-slate-600 text-base leading-relaxed max-w-3xl">
           Define a brand by six seed colours, a name, a logo, and a font. The token generator
-          derives the full 67-token atom palette, and clicking <strong>Apply</strong> retheme
-          every component in this app. Dragonpass is pre-seeded as the reference — its seeds
-          produce the production dragonpass tokens byte-for-byte.
+          derives the full 67-token atom palette and every change rethemes the app instantly —
+          no apply step. Dragonpass is pre-seeded as the reference; its seeds produce the
+          production dragonpass tokens byte-for-byte.
           {brand === 'studio' && (
             <span className="block mt-2 text-emerald-700 font-medium">
               Studio brand is currently live — switch to a fixed brand from the top-right pill row to release it.
@@ -80,8 +84,7 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
             catalog={catalog}
             selectedId={selectedId}
             activeId={brand === 'studio' ? activeId : null}
-            onSelect={setSelectedId}
-            onApply={handleApply}
+            onSelect={activate}
             onDuplicate={handleDuplicate}
             onDelete={handleDelete}
             onAdd={handleAdd}
@@ -93,9 +96,11 @@ export function BrandStudioPage({ brand, setBrand }: BrandStudioPageProps) {
             <>
               <BrandEditor
                 brand={selected}
-                isActive={brand === 'studio' && activeId === selected.id}
-                onChange={(patch) => editBrand(selected.id, patch)}
-                onApply={() => handleApply(selected.id)}
+                onChange={(patch) => {
+                  editBrand(selected.id, patch);
+                  // Editing implies applying — keep this brand live as the user types.
+                  if (brand !== 'studio' || activeId !== selected.id) activate(selected.id);
+                }}
               />
               <BrandPreview brand={selected} />
             </>

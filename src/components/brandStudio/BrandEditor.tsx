@@ -3,9 +3,7 @@ import type { BrandSeeds, StudioBrand } from '../../lib/brandStudio/types';
 
 interface BrandEditorProps {
   brand: StudioBrand;
-  isActive: boolean;
   onChange: (patch: Partial<StudioBrand>) => void;
-  onApply: () => void;
 }
 
 const SEED_META: Array<{ key: keyof BrandSeeds; label: string; caption: string }> = [
@@ -17,7 +15,7 @@ const SEED_META: Array<{ key: keyof BrandSeeds; label: string; caption: string }
   { key: 'error', label: 'Error', caption: 'Negative feedback' },
 ];
 
-export function BrandEditor({ brand, isActive, onChange, onApply }: BrandEditorProps) {
+export function BrandEditor({ brand, onChange }: BrandEditorProps) {
   const updateSeed = (key: keyof BrandSeeds, value: string) => {
     const v = value.trim().toLowerCase();
     const normalised = v.length === 0 ? '#000000' : v.startsWith('#') ? v : `#${v}`;
@@ -28,13 +26,7 @@ export function BrandEditor({ brand, isActive, onChange, onApply }: BrandEditorP
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-slate-900">Edit brand</h2>
-        <button
-          onClick={onApply}
-          disabled={isActive}
-          className="text-xs px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {isActive ? 'Currently applied' : 'Apply to app'}
-        </button>
+        <span className="text-xs text-slate-500">Changes apply instantly</span>
       </div>
 
       <div className="space-y-4">
