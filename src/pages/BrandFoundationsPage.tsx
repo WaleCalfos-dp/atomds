@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { type Brand, BRANDS, RESOLVED_SEMANTIC_TOKENS } from '../data/tokens';
 import { type Language } from '../data/languages';
-import { getCustomBrandSnapshot } from '../hooks/useCustomBrand';
 import { ButtonLive } from '../components/button/ButtonLive';
 import { BadgeLive } from '../components/badge/BadgeLive';
 import { TagsLive } from '../components/tags/TagsLive';
@@ -230,7 +229,6 @@ const BRAND_INITIAL: Record<Brand, string> = {
   visa:       'V',
   greyscale:  'G',
   assurant:   'A',
-  custom:     'C',
   studio:     'S',
 };
 
@@ -255,11 +253,8 @@ const ICON_PATHS = [
 export function BrandFoundationsPage({ brand, lang = 'en' }: BrandFoundationsPageProps) {
   const t = COPY[lang];
   const resolved = RESOLVED_SEMANTIC_TOKENS[brand];
-  const custom = brand === 'custom' ? getCustomBrandSnapshot() : null;
-  const currentBrand = custom
-    ? { id: 'custom' as const, label: custom.name, primary: custom.primitives.brandPrimary }
-    : (BRANDS.find((b) => b.id === brand) ?? BRANDS[0]);
-  const initial = custom ? (custom.name.charAt(0).toUpperCase() || 'C') : BRAND_INITIAL[brand];
+  const currentBrand = BRANDS.find((b) => b.id === brand) ?? BRANDS[0];
+  const initial = BRAND_INITIAL[brand];
 
   return (
     <div className="space-y-20">

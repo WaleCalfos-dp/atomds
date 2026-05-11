@@ -122,7 +122,7 @@ const COPY = {
   },
 } as const;
 
-const BUILTIN_BRANDS = BRANDS.filter((b) => b.id !== 'custom');
+const BUILTIN_BRANDS = BRANDS;
 
 const PROPERTY_KIND_COLORS: Record<CSSPropertyKind, string> = {
   text: 'bg-blue-50 text-blue-700 border-blue-200',

@@ -1,13 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { type Brand, BRANDS } from '../data/tokens';
-import { type CustomBrand } from '../data/deriveTokens';
 import { type StudioBrand } from '../lib/brandStudio/types';
 import { type Language, LANGUAGES } from '../data/languages';
 
 interface TopBarProps {
   brand: Brand;
   setBrand: (brand: Brand) => void;
-  customBrand: CustomBrand | null;
   studioBrand: StudioBrand | null;
   lang: Language;
   setLang: (lang: Language) => void;
@@ -21,9 +19,6 @@ const COPY = {
     tools: 'Tools',
     tokenComponentLink: 'Token-Component Link',
     gettingStarted: 'Getting Started',
-    whiteLabelPortal: 'White-label Portal',
-    customBrandTitle: 'Create a custom brand in the White-label Portal',
-    customBrandLabel: 'Custom',
     studioBrandTitle: 'Open the Brand Studio to define a brand from a few seed colours',
     studioBrandLabel: 'Studio',
   },
@@ -34,9 +29,6 @@ const COPY = {
     tools: '工具',
     tokenComponentLink: '令牌-组件关联',
     gettingStarted: '入门',
-    whiteLabelPortal: '白标门户',
-    customBrandTitle: '在白标门户中创建自定义品牌',
-    customBrandLabel: '自定义',
     studioBrandTitle: '打开品牌工作室，用几种种子颜色定义品牌',
     studioBrandLabel: '工作室',
   },
@@ -109,11 +101,8 @@ function routeMeta(pathname: string, lang: Language): { parent: string; label: s
   if (segments[0] === 'components' && segments[1]) {
     return { parent: t.components, label: pageLabel(segments[1], lang) };
   }
-  if (segments[0] === 'portal' && segments[1] === 'brand-studio') {
+  if (segments[0] === 'brand-studio') {
     return { parent: t.tools, label: lang === 'zh' ? '品牌工作室' : 'Brand Studio' };
-  }
-  if (segments[0] === 'portal') {
-    return { parent: t.tools, label: t.whiteLabelPortal };
   }
   if (segments[0] === 'token-component-link') {
     return { parent: t.tools, label: t.tokenComponentLink };
@@ -121,7 +110,7 @@ function routeMeta(pathname: string, lang: Language): { parent: string; label: s
   return { parent: t.docs, label: '' };
 }
 
-export function TopBar({ brand, setBrand, customBrand, studioBrand, lang, setLang }: TopBarProps) {
+export function TopBar({ brand, setBrand, studioBrand, lang, setLang }: TopBarProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const t = COPY[lang];
@@ -179,37 +168,6 @@ export function TopBar({ brand, setBrand, customBrand, studioBrand, lang, setLan
           );
         })}
 
-        {/* Custom brand pill — appears once the user has saved one in /portal */}
-        {customBrand ? (
-          <button
-            onClick={() => setBrand('custom')}
-            title={`${customBrand.name} (${t.customBrandLabel})`}
-            className={[
-              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150',
-              brand === 'custom'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100',
-            ].join(' ')}
-          >
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: customBrand.primitives.brandPrimary }}
-            />
-            {customBrand.name || t.customBrandLabel}
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate('/portal')}
-            title={t.customBrandTitle}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-dashed border-slate-300 ml-1"
-          >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-              <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            {t.customBrandLabel}
-          </button>
-        )}
-
         {/* Studio brand pill — themes the app from the active Brand Studio entry */}
         {studioBrand ? (
           <button
@@ -238,7 +196,7 @@ export function TopBar({ brand, setBrand, customBrand, studioBrand, lang, setLan
           </button>
         ) : (
           <button
-            onClick={() => navigate('/portal/brand-studio')}
+            onClick={() => navigate('/brand-studio')}
             title={t.studioBrandTitle}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-dashed border-slate-300 ml-1"
           >

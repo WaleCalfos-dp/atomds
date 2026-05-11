@@ -9,7 +9,6 @@ const VALID_BRANDS: Brand[] = [
   'visa',
   'greyscale',
   'assurant',
-  'custom',
   'studio',
 ];
 

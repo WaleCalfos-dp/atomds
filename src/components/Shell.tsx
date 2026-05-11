@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react';
 import { type Brand } from '../data/tokens';
 import { type Language } from '../data/languages';
-import { type CustomBrand, generateCss, resolveCustomBrandTokens } from '../data/deriveTokens';
 import { type StudioBrand } from '../lib/brandStudio/types';
 import { buildStudioCss } from '../lib/brandStudio/cssBuilder';
 import { Sidebar } from './Sidebar';
@@ -10,7 +9,6 @@ import { TopBar } from './TopBar';
 interface ShellProps {
   brand: Brand;
   setBrand: (brand: Brand) => void;
-  customBrand: CustomBrand | null;
   studioBrand: StudioBrand | null;
   lang: Language;
   setLang: (lang: Language) => void;
@@ -20,22 +18,11 @@ interface ShellProps {
 export function Shell({
   brand,
   setBrand,
-  customBrand,
   studioBrand,
   lang,
   setLang,
   children,
 }: ShellProps) {
-  const customCss =
-    customBrand && brand === 'custom'
-      ? generateCss(
-          resolveCustomBrandTokens(customBrand),
-          '[data-brand="custom"]',
-          customBrand.primitives,
-          customBrand.font,
-        )
-      : null;
-
   const studioCss = (() => {
     if (!studioBrand || brand !== 'studio') return null;
     try {
@@ -53,13 +40,11 @@ export function Shell({
       className="min-h-screen bg-slate-50 font-sans"
       style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
     >
-      {customCss && <style>{customCss}</style>}
       {studioCss && <style>{studioCss}</style>}
-      <Sidebar brand={brand} customBrand={customBrand} lang={lang} />
+      <Sidebar brand={brand} studioBrand={studioBrand} lang={lang} />
       <TopBar
         brand={brand}
         setBrand={setBrand}
-        customBrand={customBrand}
         studioBrand={studioBrand}
         lang={lang}
         setLang={setLang}
