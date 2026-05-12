@@ -30,13 +30,30 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
-      - name: Build
-        run: npm run build
+      - name: Build atom-docs
+        run: npm run build:docs
 
-      - name: Copy index.html to 404.html (SPA fallback for deep links)
-        run: cp dist/index.html dist/404.html
+      - name: Build portal
+        env:
+          # Optional. Without these the deployed portal renders a friendly
+          # "Setup needed" screen. The anon key is safe to expose in client
+          # bundles — Supabase RLS enforces row ownership.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build:portal
+
+      - name: Assemble combined Pages site
+        run: |
+          mkdir -p dist
+          cp -R apps/atom-docs/dist/. dist/
+          mkdir -p dist/portal
+          cp -R apps/portal/dist/. dist/portal/
+          # SPA fallback: GitHub Pages serves 404.html for unknown paths.
+          # Copying index.html keeps React Router deep links working.
+          cp dist/index.html dist/404.html
+          cp dist/portal/index.html dist/portal/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
