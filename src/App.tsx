@@ -1,14 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Shell } from './components/Shell';
 import { useBrand } from './hooks/useBrand';
-import { useBrandStudio } from './hooks/useBrandStudio';
+import { useCustomBrand } from './hooks/useCustomBrand';
 import { useLanguage } from './hooks/useLanguage';
 
 // Getting Started
 import { GettingStartedPage } from './pages/GettingStartedPage';
 
 // Tools
-import { BrandStudioPage } from './pages/BrandStudioPage';
+import { PortalPage } from './pages/PortalPage';
+import { MappingPage } from './pages/MappingPage';
+import { TokenGeneratorPage } from './pages/TokenGeneratorPage';
 
 // Token-Component Link
 import { TokenComponentLinkOverviewPage } from './pages/TokenComponentLinkOverviewPage';
@@ -81,17 +83,11 @@ import { PaymentIconsPage } from './pages/PaymentIconsPage';
 
 export default function App() {
   const { brand, setBrand } = useBrand();
-  const studio = useBrandStudio();
+  const { customBrand, setCustomBrand, clearCustomBrand } = useCustomBrand();
   const { lang, setLang } = useLanguage();
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Shell
-        brand={brand}
-        setBrand={setBrand}
-        studioBrand={studio.activeBrand}
-        lang={lang}
-        setLang={setLang}
-      >
+      <Shell brand={brand} setBrand={setBrand} customBrand={customBrand} lang={lang} setLang={setLang}>
         <Routes>
           <Route path="/" element={<Navigate to="/getting-started" replace />} />
 
@@ -99,7 +95,20 @@ export default function App() {
           <Route path="/getting-started" element={<GettingStartedPage brand={brand} lang={lang} />} />
 
           {/* Tools */}
-          <Route path="/brand-studio" element={<BrandStudioPage brand={brand} lang={lang} setBrand={setBrand} studio={studio} />} />
+          <Route
+            path="/portal"
+            element={
+              <PortalPage
+                customBrand={customBrand}
+                setCustomBrand={setCustomBrand}
+                clearCustomBrand={clearCustomBrand}
+                setBrand={setBrand}
+                lang={lang}
+              />
+            }
+          />
+          <Route path="/portal/mapping" element={<MappingPage brand={brand} lang={lang} />} />
+          <Route path="/portal/token-generator" element={<TokenGeneratorPage brand={brand} lang={lang} />} />
 
           {/* Token-Component Link */}
           <Route path="/token-component-link" element={<TokenComponentLinkOverviewPage brand={brand} lang={lang} />} />

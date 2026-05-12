@@ -9,7 +9,7 @@ const VALID_BRANDS: Brand[] = [
   'visa',
   'greyscale',
   'assurant',
-  'studio',
+  'custom',
 ];
 
 function readInitialBrand(): Brand {

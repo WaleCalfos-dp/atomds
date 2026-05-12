@@ -1,4 +1,4 @@
-export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant' | 'studio';
+export type Brand = 'dragonpass' | 'mastercard' | 'investec' | 'visa' | 'greyscale' | 'assurant' | 'custom';
 
 export const BRANDS: { id: Brand; label: string; primary: string }[] = [
   { id: 'dragonpass', label: 'Dragonpass', primary: '#0a2333' },
@@ -497,11 +497,11 @@ export const RESOLVED_SEMANTIC_TOKENS: Record<string, BrandTokens> = {
   },
 };
 
-// The 'studio' brand is populated at runtime by useBrandStudio. Default to
-// dragonpass so swatch tables on documentation pages still render before a
-// studio brand is applied.
-RESOLVED_SEMANTIC_TOKENS.studio = RESOLVED_SEMANTIC_TOKENS.dragonpass;
+// The 'custom' brand is populated at runtime by useCustomBrand when the user
+// saves a portal-authored theme. Default to dragonpass so unexpected early
+// reads are safe.
+RESOLVED_SEMANTIC_TOKENS.custom = RESOLVED_SEMANTIC_TOKENS.dragonpass;
 
-export function setStudioTokens(tokens: BrandTokens | null) {
-  RESOLVED_SEMANTIC_TOKENS.studio = tokens ?? RESOLVED_SEMANTIC_TOKENS.dragonpass;
+export function setCustomTokens(tokens: BrandTokens | null) {
+  RESOLVED_SEMANTIC_TOKENS.custom = tokens ?? RESOLVED_SEMANTIC_TOKENS.dragonpass;
 }

@@ -3,12 +3,12 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Brand } from '../data/tokens';
 import { type Language } from '../data/languages';
-import { type StudioBrand } from '../lib/brandStudio/types';
+import { type CustomBrand } from '../data/deriveTokens';
 import { getNavSections } from '../data/navigation';
 
 interface SidebarProps {
   brand: Brand;
-  studioBrand: StudioBrand | null;
+  customBrand: CustomBrand | null;
   lang: Language;
 }
 
@@ -315,7 +315,7 @@ const itemIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-export function Sidebar({ brand, studioBrand, lang }: SidebarProps) {
+export function Sidebar({ brand, customBrand, lang }: SidebarProps) {
   const { pathname } = useLocation();
   const t = COPY[lang];
   const navSections = getNavSections(lang);
@@ -335,8 +335,8 @@ export function Sidebar({ brand, studioBrand, lang }: SidebarProps) {
   const toggle = (id: string) =>
     setOpenSection((prev) => (prev === id ? '' : id));
 
-  const showCustomLogo = brand === 'studio' && studioBrand?.logo;
-  const customLabel = brand === 'studio' && studioBrand?.name ? studioBrand.name : t.title;
+  const showCustomLogo = brand === 'custom' && customBrand?.logo;
+  const customLabel = brand === 'custom' && customBrand?.name ? customBrand.name : t.title;
 
   return (
     <aside className="fixed top-0 left-0 h-full w-60 bg-slate-900 flex flex-col z-10">
@@ -345,7 +345,7 @@ export function Sidebar({ brand, studioBrand, lang }: SidebarProps) {
         <div className="flex items-center gap-2.5">
           {showCustomLogo ? (
             <img
-              src={studioBrand!.logo}
+              src={customBrand!.logo}
               alt={`${customLabel} logo`}
               className="w-7 h-7 rounded-md object-contain bg-white/10"
               onError={(e) => {
